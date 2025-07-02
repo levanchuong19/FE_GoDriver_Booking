@@ -10,7 +10,6 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 // Mock data cho tài xế trên bản đồ
 const driversOnMap = [
@@ -27,7 +26,6 @@ const driversOnMap = [
     status: "available",
     distance: 0.5,
     eta: 3,
-    vehicle: "Honda City",
     specialties: ["Lái xe an toàn", "Đúng giờ"],
   },
   {
@@ -43,7 +41,6 @@ const driversOnMap = [
     status: "available",
     distance: 1.2,
     eta: 5,
-    vehicle: "Toyota Vios",
     specialties: ["Lái xe nữ", "Cẩn thận"],
   },
   {
@@ -59,7 +56,6 @@ const driversOnMap = [
     status: "busy",
     distance: 0.8,
     eta: 4,
-    vehicle: "Honda Accord",
     specialties: ["Đường dài", "VIP"],
   },
   {
@@ -75,7 +71,6 @@ const driversOnMap = [
     status: "available",
     distance: 0.3,
     eta: 2,
-    vehicle: "Mazda 3",
     specialties: ["Thân thiện", "Nhiệt tình"],
   },
   {
@@ -86,17 +81,54 @@ const driversOnMap = [
     rating: 4.9,
     reviews: 203,
     price: 160000,
-    lat: 10.7812,
-    lng: 106.6956,
+    lat: 10.8188,
+    lng: 106.6518,
     status: "available",
     distance: 1.5,
     eta: 7,
-    vehicle: "Toyota Camry",
     specialties: ["Lái xe nữ", "VIP", "Kinh nghiệm"],
   },
 ];
 
 type Driver = (typeof driversOnMap)[number];
+
+// Hàm tính khoảng cách Haversine (km)
+function haversineDistance(
+  coord1: { lat: number; lng: number },
+  coord2: { lat: number; lng: number }
+) {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371; // Bán kính Trái Đất (km)
+  const dLat = toRad(coord2.lat - coord1.lat);
+  const dLng = toRad(coord2.lng - coord1.lng);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(coord1.lat)) *
+      Math.cos(toRad(coord2.lat)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Hàm demo: lấy lat/lng từ địa chỉ (hardcode một số địa chỉ phổ biến)
+function getLatLngFromAddress(
+  address: string
+): { lat: number; lng: number } | null {
+  const map: Record<string, { lat: number; lng: number }> = {
+    "Bến Thành": { lat: 10.7721, lng: 106.6983 },
+    "Quận 1": { lat: 10.7769, lng: 106.7009 },
+    "Quận 3": { lat: 10.7797, lng: 106.6867 },
+    "Quận 7": { lat: 10.7293, lng: 106.7217 },
+    "Sân bay Tân Sơn Nhất": { lat: 10.8188, lng: 106.6518 },
+  };
+  for (const key in map) {
+    if (address.toLowerCase().includes(key.toLowerCase())) {
+      return map[key];
+    }
+  }
+  return null;
+}
 
 export default function MapPage() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -132,20 +164,20 @@ export default function MapPage() {
     }
   }, []);
 
+  // Lấy lat/lng điểm đón nếu có
+  const pickupLatLng = getLatLngFromAddress(pickupLocation);
+
   const filteredDrivers: Driver[] = driversOnMap.filter((driver: Driver) => {
-    if (serviceType !== "all") {
-      const serviceMap: Record<string, string[]> = {
-        hourly: ["Lái xe an toàn", "Đúng giờ", "Thân thiện"],
-        vip: ["VIP", "Kinh nghiệm"],
-        female: ["Lái xe nữ"],
-      };
-      if (
-        !driver.specialties.some((s) => serviceMap[serviceType]?.includes(s))
-      ) {
-        return false;
-      }
-    }
-    return driver.price >= priceRange[0] && driver.price <= priceRange[1];
+    // Nếu chưa nhập điểm đón hoặc điểm đến thì không hiển thị tài xế
+    if (!pickupLocation || !destination) return false;
+    // Nếu không tìm được lat/lng điểm đón thì không hiển thị
+    if (!pickupLatLng) return false;
+    // Chỉ hiển thị tài xế cách điểm đón < 10km
+    const distance = haversineDistance(
+      { lat: driver.lat, lng: driver.lng },
+      pickupLatLng
+    );
+    return distance <= 10;
   });
 
   const handleDriverSelect = (driver: Driver) => {
@@ -333,11 +365,8 @@ export default function MapPage() {
                           <span>{driver.eta} phút</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="text-xs text-gray-600">
-                            {driver.vehicle}
-                          </div>
                           <div className="text-sm font-semibold text-blue-600">
-                            {driver.price.toLocaleString()}đ/h
+                            {driver.price.toLocaleString()}đ/km
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -382,6 +411,19 @@ export default function MapPage() {
             >
               {/* Base map color */}
               <div className="w-full h-full bg-gray-100">
+                {/* Marker vị trí của bạn */}
+                {pickupLocation && destination && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: `calc(50% - 16px)`,
+                      top: `calc(50% - 16px)`,
+                      zIndex: 10,
+                    }}
+                  >
+                    <Locate className="h-8 w-8 text-blue-600" />
+                  </div>
+                )}
                 {/* Street grid */}
                 <svg
                   className="w-full h-full absolute inset-0"
@@ -623,7 +665,7 @@ export default function MapPage() {
                             : "bg-white text-gray-800 border border-gray-200"
                         }`}
                       >
-                        {driver.price.toLocaleString()}đ/h
+                        {driver.price.toLocaleString()}đ/km
                       </div>
 
                       {/* Distance Badge */}
@@ -676,9 +718,6 @@ export default function MapPage() {
                                     {driver.rating} ({driver.reviews} đánh giá)
                                   </span>
                                 </div>
-                                <div className="text-xs text-gray-600">
-                                  {driver.vehicle}
-                                </div>
                               </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 text-center mb-2">
@@ -703,7 +742,7 @@ export default function MapPage() {
                                   {driver.price.toLocaleString()}đ
                                 </div>
                                 <div className="text-[11px] text-gray-600">
-                                  Giá/giờ
+                                  Giá/km
                                 </div>
                               </div>
                             </div>
