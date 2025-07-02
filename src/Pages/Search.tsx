@@ -20,9 +20,11 @@ const drivers = [
     rating: 4.9,
     reviews: 127,
     experience: "5 năm",
-    price: 12000,
+    pricePerKm: 12000,
+    pricePerHour: 150000,
+    pricePerTrip: 250000,
     location: "Quận 1, TP.HCM",
-    specialties: ["Lái xe an toàn", "Đúng giờ", "Thân thiện"],
+    specialties: ["hourly", "vip"],
     available: true,
     description:
       "Tài xế chuyên nghiệp với 5 năm kinh nghiệm, am hiểu đường sá TP.HCM",
@@ -35,9 +37,11 @@ const drivers = [
     rating: 4.8,
     reviews: 89,
     experience: "3 năm",
-    price: 14000,
+    pricePerKm: 14000,
+    pricePerHour: 170000,
+    pricePerTrip: 300000,
     location: "Quận 3, TP.HCM",
-    specialties: ["Lái xe nữ", "Cẩn thận", "Nhiệt tình"],
+    specialties: ["hourly", "airport"],
     available: true,
     description:
       "Tài xế nữ chuyên nghiệp, phù hợp cho khách hàng nữ và gia đình có trẻ em",
@@ -50,21 +54,75 @@ const drivers = [
     rating: 4.7,
     reviews: 156,
     experience: "7 năm",
-    price: 155000,
+    pricePerKm: 15500,
+    pricePerHour: 200000,
+    pricePerTrip: 350000,
     location: "Quận 7, TP.HCM",
-    specialties: ["Đường dài", "VIP", "Kinh nghiệm"],
+    specialties: ["long-distance", "vip"],
     available: false,
     description:
       "Chuyên gia lái xe đường dài, có kinh nghiệm phục vụ khách VIP",
   },
 ];
 
+// Định nghĩa danh sách dịch vụ giống RegisterPartner.tsx
+const services = [
+  {
+    id: "hourly",
+    label: "Lái xe theo giờ",
+    description: "Dịch vụ lái xe trong thành phố",
+  },
+  {
+    id: "long-distance",
+    label: "Lái xe đường dài",
+    description: "Chuyến đi liên tỉnh, du lịch",
+  },
+  {
+    id: "vip",
+    label: "Dịch vụ VIP",
+    description: "Phục vụ khách hàng cao cấp",
+  },
+  {
+    id: "airport",
+    label: "Tài xế đưa đón sân bay",
+    description: "Chuyên đưa đón sân bay",
+  },
+];
+
 export default function SearchPage() {
   const navigate = useNavigate();
   const [date, setDate] = useState("");
-  const [priceRange, setPriceRange] = useState([100000, 300000]);
+  const [priceRange, setPriceRange] = useState([2000, 30000]);
   const [selectedService, setSelectedService] = useState("");
   const [location, setLocation] = useState("");
+
+  // Hàm lọc tài xế
+  const filteredDrivers = drivers.filter((driver) => {
+    // Lọc theo địa điểm (nếu có nhập)
+    if (
+      location &&
+      !driver.location.toLowerCase().includes(location.toLowerCase())
+    ) {
+      return false;
+    }
+    // Lọc theo loại dịch vụ (nếu có chọn)
+    if (
+      selectedService &&
+      !driver.specialties.some((s) =>
+        s.toLowerCase().includes(selectedService.toLowerCase())
+      )
+    ) {
+      return false;
+    }
+    // Lọc theo khoảng giá
+    if (
+      driver.pricePerKm < priceRange[0] ||
+      driver.pricePerKm > priceRange[1]
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -125,9 +183,11 @@ export default function SearchPage() {
                     onChange={(e) => setSelectedService(e.target.value)}
                   >
                     <option value="">Chọn dịch vụ</option>
-                    <option value="hourly">Theo giờ</option>
-                    <option value="long-distance">Đường dài</option>
-                    <option value="vip">VIP</option>
+                    {services.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -195,7 +255,7 @@ export default function SearchPage() {
             </div>
 
             <div className="space-y-6">
-              {drivers.map((driver) => (
+              {filteredDrivers.map((driver) => (
                 <div
                   key={driver.id}
                   className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
@@ -224,7 +284,20 @@ export default function SearchPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-blue-600">
-                            {driver.price.toLocaleString()}đ/km
+                            {(() => {
+                              if (selectedService === "hourly") {
+                                return `${driver.pricePerKm.toLocaleString()}đ/km`;
+                              } else if (
+                                selectedService === "vip" ||
+                                selectedService === "long-distance"
+                              ) {
+                                return `${driver.pricePerHour.toLocaleString()}đ/giờ`;
+                              } else if (selectedService === "airport") {
+                                return `${driver.pricePerTrip.toLocaleString()}đ/chuyến`;
+                              } else {
+                                return `${driver.pricePerKm.toLocaleString()}đ/km`;
+                              }
+                            })()}
                           </div>
                           <span
                             className={`inline-block px-2 py-1 rounded text-xs font-semibold ${

@@ -265,7 +265,7 @@ export default function LoginPage() {
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Chưa có tài khoản? </span>
               <Link
-                to="/auth/register"
+                to="/register"
                 className="text-blue-600 hover:underline font-medium"
               >
                 Đăng ký ngay
