@@ -240,7 +240,7 @@ export default function RegisterPage() {
                     đủ. Nhấn vào nút bên dưới để bắt đầu.
                   </p>
                 </div>
-                <Link to="/driver/register" className="block">
+                <Link to="/register-partner" className="block">
                   <button className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">
                     Bắt đầu đăng ký tài xế
                   </button>

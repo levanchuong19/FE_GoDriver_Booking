@@ -15,11 +15,12 @@ const drivers = [
   {
     id: 1,
     name: "Nguyễn Văn Minh",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.9,
     reviews: 127,
     experience: "5 năm",
-    price: 150000,
+    price: 12000,
     location: "Quận 1, TP.HCM",
     specialties: ["Lái xe an toàn", "Đúng giờ", "Thân thiện"],
     available: true,
@@ -29,11 +30,12 @@ const drivers = [
   {
     id: 2,
     name: "Trần Thị Lan",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.8,
     reviews: 89,
     experience: "3 năm",
-    price: 140000,
+    price: 14000,
     location: "Quận 3, TP.HCM",
     specialties: ["Lái xe nữ", "Cẩn thận", "Nhiệt tình"],
     available: true,
@@ -43,11 +45,12 @@ const drivers = [
   {
     id: 3,
     name: "Lê Hoàng Nam",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.7,
     reviews: 156,
     experience: "7 năm",
-    price: 180000,
+    price: 155000,
     location: "Quận 7, TP.HCM",
     specialties: ["Đường dài", "VIP", "Kinh nghiệm"],
     available: false,
@@ -221,7 +224,7 @@ export default function SearchPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-blue-600">
-                            {driver.price.toLocaleString()}đ/giờ
+                            {driver.price.toLocaleString()}đ/km
                           </div>
                           <span
                             className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
