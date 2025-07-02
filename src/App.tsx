@@ -6,6 +6,7 @@ import Layout from "./Components/Layout";
 import AuthLayout from "./Components/AuthLayout";
 import SearchPage from "./Pages/Search";
 import MapPage from "./Pages/Map";
+import RegisterPartner from "./Pages/RegisterPartner";
 
 function App() {
   const router = createBrowserRouter([
@@ -24,6 +25,10 @@ function App() {
         {
           path: "/map",
           element: <MapPage />,
+        },
+        {
+          path: "/register-partner",
+          element: <RegisterPartner />,
         },
       ],
     },

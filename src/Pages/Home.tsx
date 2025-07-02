@@ -31,7 +31,7 @@ export default function HomePage() {
                 Tìm tài xế ngay
               </button>
             </Link>
-            <Link to="/driver/register">
+            <Link to="/register-partner">
               <button className="text-lg px-6 py-3 rounded border border-blue-600 text-blue-600 bg-transparent hover:bg-blue-50 flex items-center justify-center">
                 <Users className="mr-2 h-5 w-5" />
                 Trở thành tài xế
@@ -176,11 +176,11 @@ export default function HomePage() {
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-8 text-center"
               >
                 <img
-                  src="/placeholder.svg"
+                  src="https://cdn.santino.com.vn/storage/upload/news/2023/10/trang-phuc-lich-su-cho-nam-anh10.jpg"
                   alt="Driver"
                   width={80}
                   height={80}
-                  className="rounded-full mx-auto mb-4"
+                  className=" w-20 h-20 rounded-full object-cover mx-auto mb-4 "
                 />
                 <div className="text-2xl font-bold mb-2">Nguyễn Văn A</div>
                 <div className="text-gray-600 mb-2">
@@ -204,7 +204,7 @@ export default function HomePage() {
                     Đúng giờ
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">150,000đ/giờ</p>
+                <p className="text-2xl font-bold text-blue-600">15,000đ/km</p>
               </div>
             ))}
           </div>
@@ -224,7 +224,7 @@ export default function HomePage() {
                 Tìm tài xế ngay
               </button>
             </Link>
-            <Link to="/driver/register">
+            <Link to="/register-partner">
               <button className="text-lg px-6 py-3 rounded border border-white text-white hover:bg-white hover:text-blue-600 bg-transparent font-semibold">
                 Đăng ký làm tài xế
               </button>
