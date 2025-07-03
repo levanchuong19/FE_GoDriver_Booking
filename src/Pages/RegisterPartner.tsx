@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Car,
   Upload,
@@ -20,36 +20,37 @@ const provinces = [
   { code: "31", name: "Hải Phòng" },
 ];
 
-const districts = {
+const districts: Record<string, { code: string; name: string }[]> = {
   "79": [
     { code: "760", name: "Quận 1" },
-    { code: "761", name: "Quận 2" },
-    { code: "762", name: "Quận 3" },
-    { code: "763", name: "Quận 4" },
-    { code: "764", name: "Quận 5" },
-    { code: "765", name: "Quận 6" },
-    { code: "766", name: "Quận 7" },
-    { code: "767", name: "Quận 8" },
-    { code: "768", name: "Quận 9" },
-    { code: "769", name: "Quận 10" },
-    { code: "770", name: "Quận 11" },
-    { code: "771", name: "Quận 12" },
-    { code: "772", name: "Quận Bình Thạnh" },
-    { code: "773", name: "Quận Gò Vấp" },
-    { code: "774", name: "Quận Phú Nhuận" },
-    { code: "775", name: "Quận Tân Bình" },
-    { code: "776", name: "Quận Tân Phú" },
-    { code: "777", name: "Quận Thủ Đức" },
-    { code: "778", name: "Huyện Bình Chánh" },
-    { code: "779", name: "Huyện Cần Giờ" },
-    { code: "780", name: "Huyện Củ Chi" },
-    { code: "781", name: "Huyện Hóc Môn" },
-    { code: "782", name: "Huyện Nhà Bè" },
+    { code: "761", name: "Quận 3" }, // Mã code cho Quận 3 thường là 761 hoặc 762, tùy nguồn
+    { code: "762", name: "Quận 4" },
+    { code: "763", name: "Quận 5" },
+    { code: "764", name: "Quận 6" },
+    { code: "765", name: "Quận 7" },
+    { code: "766", name: "Quận 8" },
+    { code: "767", name: "Quận 10" },
+    { code: "768", name: "Quận 11" },
+    { code: "769", name: "Quận 12" },
+    { code: "770", name: "Quận Bình Thạnh" },
+    { code: "771", name: "Quận Gò Vấp" },
+    { code: "772", name: "Quận Phú Nhuận" },
+    { code: "773", name: "Quận Tân Bình" },
+    { code: "774", name: "Quận Tân Phú" },
+    { code: "775", name: "Thành phố Thủ Đức" },
+    { code: "776", name: "Huyện Bình Chánh" },
+    { code: "777", name: "Huyện Cần Giờ" },
+    { code: "778", name: "Huyện Củ Chi" },
+    { code: "786", name: "Huyện Hóc Môn" },
+    { code: "787", name: "Huyện Nhà Bè" },
   ],
+  // Thêm dữ liệu cho các tỉnh thành khác ở đây nếu cần
 };
 
-const wards = {
+// **ĐÃ CẬP NHẬT:** Mở rộng dữ liệu phường/xã cho TP.HCM
+const wards: Record<string, { code: string; name: string }[]> = {
   "760": [
+    // Quận 1
     { code: "26734", name: "Phường Bến Nghé" },
     { code: "26737", name: "Phường Bến Thành" },
     { code: "26740", name: "Phường Cầu Kho" },
@@ -61,6 +62,77 @@ const wards = {
     { code: "26758", name: "Phường Phạm Ngũ Lão" },
     { code: "26761", name: "Phường Tân Định" },
   ],
+  "761": [
+    // Quận 3
+    { code: "26764", name: "Phường 01" },
+    { code: "26767", name: "Phường 02" },
+    { code: "26770", name: "Phường 03" },
+    { code: "26773", name: "Phường 04" },
+    { code: "26776", name: "Phường 05" },
+    { code: "26779", name: "Phường Võ Thị Sáu" },
+    { code: "26782", name: "Phường 09" },
+    { code: "26785", name: "Phường 10" },
+    { code: "26788", name: "Phường 11" },
+    { code: "26791", name: "Phường 12" },
+    { code: "26794", name: "Phường 13" },
+    { code: "26797", name: "Phường 14" },
+  ],
+  "765": [
+    // Quận 7
+    { code: "27007", name: "Phường Bình Thuận" },
+    { code: "27004", name: "Phường Phú Mỹ" },
+    { code: "27010", name: "Phường Phú Thuận" },
+    { code: "26998", name: "Phường Tân Hưng" },
+    { code: "26995", name: "Phường Tân Kiểng" },
+    { code: "27016", name: "Phường Tân Phong" },
+    { code: "27013", name: "Phường Tân Phú" },
+    { code: "27001", name: "Phường Tân Quy" },
+    { code: "26992", name: "Phường Tân Thuận Đông" },
+    { code: "26989", name: "Phường Tân Thuận Tây" },
+  ],
+  "770": [
+    // Quận Bình Thạnh
+    { code: "27205", name: "Phường 01" },
+    { code: "27208", name: "Phường 02" },
+    { code: "27211", name: "Phường 03" },
+    { code: "27217", name: "Phường 05" },
+    { code: "27220", name: "Phường 06" },
+    { code: "27223", name: "Phường 07" },
+    { code: "27226", name: "Phường 11" },
+    { code: "27229", name: "Phường 12" },
+    { code: "27232", name: "Phường 13" },
+    { code: "27235", name: "Phường 14" },
+    { code: "27238", name: "Phường 15" },
+    { code: "27241", name: "Phường 17" },
+    { code: "27244", name: "Phường 19" },
+    { code: "27247", name: "Phường 21" },
+    { code: "27250", name: "Phường 22" },
+    { code: "27253", name: "Phường 24" },
+    { code: "27256", name: "Phường 25" },
+    { code: "27259", name: "Phường 26" },
+    { code: "27262", name: "Phường 27" },
+    { code: "27265", name: "Phường 28" },
+  ],
+  "776": [
+    // Huyện Bình Chánh
+    { code: "27496", name: "Thị trấn Tân Túc" },
+    { code: "27502", name: "Xã An Phú Tây" },
+    { code: "27520", name: "Xã Bình Chánh" },
+    { code: "27511", name: "Xã Bình Hưng" },
+    { code: "27508", name: "Xã Bình Lợi" },
+    { code: "27529", name: "Xã Đa Phước" },
+    { code: "27517", name: "Xã Hưng Long" },
+    { code: "27505", name: "Xã Lê Minh Xuân" },
+    { code: "27499", name: "Xã Phạm Văn Hai" },
+    { code: "27514", name: "Xã Phong Phú" },
+    { code: "27523", name: "Xã Quy Đức" },
+    { code: "27506", name: "Xã Tân Kiên" },
+    { code: "27518", name: "Xã Tân Nhựt" },
+    { code: "27526", name: "Xã Tân Quý Tây" },
+    { code: "27493", name: "Xã Vĩnh Lộc A" },
+    { code: "27494", name: "Xã Vĩnh Lộc B" },
+  ],
+  // Thêm dữ liệu cho các quận/huyện khác nếu cần
 };
 
 interface UploadedFile {
@@ -69,40 +141,33 @@ interface UploadedFile {
   name: string;
 }
 
+const initialFormData = {
+  fullName: "",
+  phone: "",
+  email: "",
+  cccd: "",
+  specificAddress: "",
+  province: "",
+  district: "",
+  ward: "",
+  latitude: "",
+  longitude: "",
+  licenseNumber: "",
+  licenseExpiry: "",
+  experience: "",
+  services: [] as string[],
+  cccdFront: null as UploadedFile | null,
+  cccdBack: null as UploadedFile | null,
+  licenseFront: null as UploadedFile | null,
+  licenseBack: null as UploadedFile | null,
+  termsAccepted: false,
+  backgroundCheckConsent: false,
+};
+
 export default function RegisterPartner() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    // Thông tin cá nhân
-    fullName: "",
-    phone: "",
-    email: "",
-    cccd: "",
-
-    // Địa chỉ chi tiết
-    specificAddress: "",
-    province: "",
-    district: "",
-    ward: "",
-    latitude: "",
-    longitude: "",
-
-    // Thông tin tài xế
-    licenseNumber: "",
-    licenseExpiry: "",
-    experience: "",
-    services: [] as string[],
-    servicePrices: {} as Record<string, string>,
-
-    // Tài liệu
-    cccdFront: null as UploadedFile | null,
-    cccdBack: null as UploadedFile | null,
-    licenseFront: null as UploadedFile | null,
-    licenseBack: null as UploadedFile | null,
-
-    // Đồng ý
-    termsAccepted: false,
-    backgroundCheckConsent: false,
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState(initialFormData);
 
   const [availableDistricts, setAvailableDistricts] = useState<any[]>([]);
   const [availableWards, setAvailableWards] = useState<any[]>([]);
@@ -145,15 +210,13 @@ export default function RegisterPartner() {
       district: "",
       ward: "",
     });
-    setAvailableDistricts(
-      districts[provinceCode as keyof typeof districts] || []
-    );
+    setAvailableDistricts(districts[provinceCode] || []);
     setAvailableWards([]);
   };
 
   const handleDistrictChange = (districtCode: string) => {
     setFormData({ ...formData, district: districtCode, ward: "" });
-    setAvailableWards(wards[districtCode as keyof typeof wards] || []);
+    setAvailableWards(wards[districtCode] || []);
   };
 
   const handleServiceToggle = (serviceId: string) => {
@@ -167,18 +230,15 @@ export default function RegisterPartner() {
 
   const handleFileUpload = (field: string, files: FileList | null) => {
     if (!files || files.length === 0) return;
-
     const file = files[0];
     if (!file.type.startsWith("image/")) {
       alert("Vui lòng chọn file hình ảnh");
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       alert("File không được vượt quá 5MB");
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (e) => {
       const uploadedFile: UploadedFile = {
@@ -205,7 +265,7 @@ export default function RegisterPartner() {
             longitude: position.coords.longitude.toString(),
           });
         },
-        (error) => {
+        () => {
           alert("Không thể lấy vị trí hiện tại. Vui lòng nhập thủ công.");
         }
       );
@@ -215,14 +275,93 @@ export default function RegisterPartner() {
   };
 
   const nextStep = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setAvailableDistricts([]);
+    setAvailableWards([]);
+    setCurrentStep(1);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    const provinceName =
+      provinces.find((p) => p.code === formData.province)?.name || "";
+    const districtName =
+      districts[formData.province]?.find((d) => d.code === formData.district)
+        ?.name || "";
+    const wardName =
+      wards[formData.district]?.find((w) => w.code === formData.ward)?.name ||
+      "";
+
+    const payload = {
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email,
+      cccd: formData.cccd,
+      address: {
+        specificAddress: formData.specificAddress,
+        province: provinceName,
+        district: districtName,
+        ward: wardName,
+      },
+      location: {
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+      },
+      driverInfo: {
+        licenseNumber: formData.licenseNumber,
+        licenseExpiry: formData.licenseExpiry,
+        experience: formData.experience,
+        services: formData.services.map(
+          (id) => services.find((s) => s.id === id)?.label
+        ),
+      },
+      documents: {
+        cccdFront: formData.cccdFront?.preview || null,
+        cccdBack: formData.cccdBack?.preview || null,
+        licenseFront: formData.licenseFront?.preview || null,
+        licenseBack: formData.licenseBack?.preview || null,
+      },
+      consent: {
+        termsAccepted: formData.termsAccepted,
+        backgroundCheckConsent: formData.backgroundCheckConsent,
+      },
+    };
+
+    try {
+      const API_URL =
+        "https://68662ffb89803950dbb19188.mockapi.io/api/DriverRegisForm";
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gửi biểu mẫu thất bại. Vui lòng thử lại.");
+      }
+      await response.json();
+
+      // console.log("Data: ", payload)
+      resetForm();
+      alert("Đăng ký thành công! Chúng tôi sẽ liên hệ với bạn sớm.");
+    } catch (error) {
+      console.error("Lỗi khi gửi đăng ký:", error);
+      resetForm();
+      alert(
+        (error as Error).message ||
+          "Đã có lỗi xảy ra. Vui lòng thử lại và kiểm tra lại thông tin."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -253,7 +392,7 @@ export default function RegisterPartner() {
               />
               <button
                 type="button"
-                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                className="absolute -top-2 -right-2 bg-gray-600 hover:bg-gray-800 text-white h-6 w-6 p-0 rounded-full flex items-center justify-center"
                 onClick={() => removeFile(field)}
               >
                 <X className="h-3 w-3" />
@@ -310,6 +449,10 @@ export default function RegisterPartner() {
     </div>
   );
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -322,7 +465,6 @@ export default function RegisterPartner() {
           </p>
         </div>
 
-        {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             {steps.map((step) => {
@@ -358,7 +500,7 @@ export default function RegisterPartner() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
           <div>
             <h2 className="text-xl font-bold text-gray-900">
               {steps[currentStep - 1].title}
@@ -374,7 +516,6 @@ export default function RegisterPartner() {
             </p>
           </div>
 
-          {/* Step 1: Thông tin cá nhân */}
           {currentStep === 1 && (
             <div className="space-y-6 mt-8">
               <div className="grid md:grid-cols-2 gap-4">
@@ -433,7 +574,6 @@ export default function RegisterPartner() {
             </div>
           )}
 
-          {/* Step 2: Địa chỉ */}
           {currentStep === 2 && (
             <div className="space-y-6 mt-8">
               <div className="grid md:grid-cols-3 gap-4">
@@ -452,7 +592,6 @@ export default function RegisterPartner() {
                     ))}
                   </select>
                 </div>
-
                 <div className="space-y-1 flex flex-col">
                   <label>Quận/Huyện *</label>
                   <select
@@ -469,7 +608,6 @@ export default function RegisterPartner() {
                     ))}
                   </select>
                 </div>
-
                 <div className="space-y-1 flex flex-col">
                   <label>Phường/Xã *</label>
                   <select
@@ -504,7 +642,6 @@ export default function RegisterPartner() {
                   placeholder="Số nhà, tên đường..."
                 />
               </div>
-
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1 flex flex-col">
                   <label htmlFor="latitude">Vĩ độ (Latitude) *</label>
@@ -531,11 +668,10 @@ export default function RegisterPartner() {
                   />
                 </div>
               </div>
-
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  className="bg-transparent border border-gray-300 rounded-md p-2 flex items-center cursor-pointer"
+                  className="bg-transparent border border-gray-300 rounded-md p-2 flex items-center cursor-pointer hover:bg-gray-100"
                   onClick={getCurrentLocation}
                 >
                   <MapPin className="h-4 w-4 mr-2" />
@@ -545,24 +681,22 @@ export default function RegisterPartner() {
                   Hoặc nhập tọa độ thủ công
                 </span>
               </div>
-
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-medium text-blue-800 mb-2">
                   💡 Cách lấy tọa độ:
                 </h4>
-                <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Mở Google Maps, tìm địa chỉ của bạn</li>
-                  <li>• Click chuột phải vào vị trí chính xác</li>
+                <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                  <li>Mở Google Maps, tìm địa chỉ của bạn</li>
+                  <li>Click chuột phải vào vị trí chính xác</li>
                   <li>
-                    • Chọn tọa độ đầu tiên trong menu (VD: 10.7769, 106.7009)
+                    Chọn tọa độ đầu tiên trong menu (VD: 10.7769, 106.7009)
                   </li>
-                  <li>• Sao chép và dán vào các ô trên</li>
+                  <li>Sao chép và dán vào các ô trên</li>
                 </ul>
               </div>
             </div>
           )}
 
-          {/* Step 3: Thông tin tài xế */}
           {currentStep === 3 && (
             <div className="space-y-6 mt-8">
               <div className="grid md:grid-cols-2 gap-4">
@@ -597,7 +731,6 @@ export default function RegisterPartner() {
                   />
                 </div>
               </div>
-
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1 flex flex-col">
                   <label htmlFor="experience">Số năm kinh nghiệm *</label>
@@ -616,25 +749,25 @@ export default function RegisterPartner() {
                   </select>
                 </div>
               </div>
-
               <div className="space-y-1 flex flex-col">
                 <label>Dịch vụ cung cấp *</label>
                 <div className="grid md:grid-cols-2 gap-4 mt-2">
                   {services.map((service) => (
                     <div
                       key={service.id}
-                      className={`border rounded-lg p-4 transition-colors ${
+                      className={`border rounded-lg p-4 transition-colors cursor-pointer ${
                         formData.services.includes(service.id)
                           ? "border-blue-500 bg-blue-50"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
+                      onClick={() => handleServiceToggle(service.id)}
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-start space-x-3">
                         <input
-                          className="border border-gray-300 rounded-md p-2"
+                          className="border border-gray-300 rounded-sm p-2 mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
                           type="checkbox"
                           checked={formData.services.includes(service.id)}
-                          onChange={() => handleServiceToggle(service.id)}
+                          readOnly
                         />
                         <div className="space-y-1 flex flex-col">
                           <div className="font-medium">{service.label}</div>
@@ -643,34 +776,6 @@ export default function RegisterPartner() {
                           </div>
                         </div>
                       </div>
-                      {formData.services.includes(service.id) && (
-                        <div className="mt-4">
-                          <label className="block text-sm mb-1">
-                            {service.id === "hourly"
-                              ? "Giá theo giờ (VNĐ/giờ) *"
-                              : "Giá theo km (VNĐ/km) *"}
-                          </label>
-                          <input
-                            className="border border-gray-300 rounded-md p-2 w-full"
-                            type="number"
-                            value={formData.servicePrices[service.id] || ""}
-                            onChange={(e) => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                servicePrices: {
-                                  ...prev.servicePrices,
-                                  [service.id]: e.target.value,
-                                },
-                              }));
-                            }}
-                            placeholder={
-                              service.id === "hourly"
-                                ? "Nhập giá theo giờ (VD: 150000)"
-                                : "Nhập giá theo km (VD: 10000)"
-                            }
-                          />
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -678,7 +783,6 @@ export default function RegisterPartner() {
             </div>
           )}
 
-          {/* Step 4: Tài liệu */}
           {currentStep === 4 && (
             <div className="space-y-6 mt-8">
               <div className="grid md:grid-cols-2 gap-6">
@@ -695,7 +799,6 @@ export default function RegisterPartner() {
                   uploadedFile={formData.cccdBack}
                 />
               </div>
-
               <div className="grid md:grid-cols-2 gap-6">
                 <FileUploadCard
                   title="Bằng lái xe mặt trước *"
@@ -710,27 +813,23 @@ export default function RegisterPartner() {
                   uploadedFile={formData.licenseBack}
                 />
               </div>
-
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-medium text-yellow-800 mb-2">
                   📋 Yêu cầu về hình ảnh:
                 </h4>
-                <ul className="text-sm text-yellow-700 space-y-1">
-                  <li>• Hình ảnh phải rõ nét, đầy đủ thông tin, không bị mờ</li>
-                  <li>• Định dạng: JPG, PNG (tối đa 5MB mỗi file)</li>
-                  <li>• Chụp thẳng, không bị nghiêng hoặc cắt góc</li>
+                <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+                  <li>Hình ảnh phải rõ nét, đầy đủ thông tin, không bị mờ</li>
+                  <li>Định dạng: JPG, PNG (tối đa 5MB mỗi file)</li>
+                  <li>Chụp thẳng, không bị nghiêng hoặc cắt góc</li>
                   <li>
-                    • Thông tin trên giấy tờ phải khớp với thông tin đã khai báo
+                    Thông tin trên giấy tờ phải khớp với thông tin đã khai báo
                   </li>
-                  <li>
-                    • Không chấp nhận ảnh photocopy hoặc ảnh chụp màn hình
-                  </li>
+                  <li>Không chấp nhận ảnh photocopy hoặc ảnh chụp màn hình</li>
                 </ul>
               </div>
             </div>
           )}
 
-          {/* Step 5: Hoàn tất */}
           {currentStep === 5 && (
             <div className="space-y-6 mt-8">
               <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
@@ -742,12 +841,10 @@ export default function RegisterPartner() {
                   Vui lòng kiểm tra lại thông tin trước khi gửi đăng ký.
                 </p>
               </div>
-
               <div className="border rounded-lg p-6 space-y-4">
                 <h4 className="font-semibold text-lg mb-4">
                   📋 Tóm tắt thông tin đăng ký:
                 </h4>
-
                 <div className="grid md:grid-cols-2 gap-4 text-sm">
                   <div className="space-y-2">
                     <div className="space-y-1 flex flex-col">
@@ -780,25 +877,26 @@ export default function RegisterPartner() {
                     </div>
                   </div>
                 </div>
-
                 <div className="space-y-1 flex flex-col">
                   <span className="text-gray-600">Địa chỉ:</span>
                   <div className="font-medium">
-                    {formData.specificAddress},{" "}
-                    {provinces.find((p) => p.code === formData.province)?.name},{" "}
-                    {
-                      availableDistricts.find(
+                    {`${formData.specificAddress}, ${
+                      wards[formData.district]?.find(
+                        (w) => w.code === formData.ward
+                      )?.name || ""
+                    }, ${
+                      districts[formData.province]?.find(
                         (d) => d.code === formData.district
-                      )?.name
-                    }
-                    ,{" "}
-                    {availableWards.find((w) => w.code === formData.ward)?.name}
+                      )?.name || ""
+                    }, ${
+                      provinces.find((p) => p.code === formData.province)
+                        ?.name || ""
+                    }`}
                   </div>
                   <div className="text-sm text-gray-600">
                     Tọa độ: {formData.latitude}, {formData.longitude}
                   </div>
                 </div>
-
                 <div>
                   <span className="text-gray-600">Dịch vụ:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -807,52 +905,46 @@ export default function RegisterPartner() {
                       return (
                         <span
                           key={serviceId}
-                          className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center gap-1"
+                          className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-1 text-sm"
                         >
                           {service?.label}
-                          {formData.servicePrices[serviceId] && (
-                            <span className="ml-1 text-xs text-blue-700">
-                              - {formData.servicePrices[serviceId]}đ
-                            </span>
-                          )}
                         </span>
                       );
                     })}
                   </div>
                 </div>
-
                 <div>
                   <span className="text-gray-600">Tài liệu đã tải lên:</span>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
                     {formData.cccdFront && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs text-center">
                         ✓ CCCD mặt trước
                       </span>
                     )}
                     {formData.cccdBack && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs text-center">
                         ✓ CCCD mặt sau
                       </span>
                     )}
                     {formData.licenseFront && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs text-center">
                         ✓ Bằng lái mặt trước
                       </span>
                     )}
                     {formData.licenseBack && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs text-center">
                         ✓ Bằng lái mặt sau
                       </span>
                     )}
                   </div>
                 </div>
               </div>
-
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
                     id="terms"
+                    className="h-4 w-4 mt-1 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
                     checked={formData.termsAccepted}
                     onChange={(e) =>
                       setFormData({
@@ -872,10 +964,11 @@ export default function RegisterPartner() {
                     </Link>
                   </label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
                     id="background"
+                    className="h-4 w-4 mt-1 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
                     checked={formData.backgroundCheckConsent}
                     onChange={(e) =>
                       setFormData({
@@ -893,30 +986,35 @@ export default function RegisterPartner() {
             </div>
           )}
 
-          {/* Navigation Buttons */}
           <div className="flex justify-between mt-8">
             <button
               type="button"
-              className="bg-transparent text-gray-600 border border-gray-300 rounded-md p-2"
+              className="bg-transparent text-gray-700 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={prevStep}
               disabled={currentStep === 1}
             >
               Quay lại
             </button>
-            <div className="flex space-x-3 bg-blue-600 text-white rounded-md p-2">
-              {currentStep < 5 ? (
-                <button onClick={nextStep}>Tiếp tục</button>
-              ) : (
-                <button
-                  disabled={
-                    !formData.termsAccepted || !formData.backgroundCheckConsent
-                  }
-                  className="text-white"
-                >
-                  Gửi đăng ký
-                </button>
-              )}
-            </div>
+            {currentStep < 5 ? (
+              <button
+                onClick={nextStep}
+                className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700"
+              >
+                Tiếp tục
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={
+                  !formData.termsAccepted ||
+                  !formData.backgroundCheckConsent ||
+                  isSubmitting
+                }
+                className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "Đang gửi..." : "Gửi đăng ký"}
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -25,7 +25,7 @@ export default function HomePage() {
             giá cao. Dịch vụ lái xe hộ 24/7 trên toàn quốc.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/search">
+            <Link to="/map">
               <button className="text-lg px-6 py-3 rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center">
                 <MapPin className="mr-2 h-5 w-5" />
                 Tìm tài xế ngay
@@ -204,7 +204,7 @@ export default function HomePage() {
                     Đúng giờ
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">15,000đ/km</p>
+                {/* <p className="text-2xl font-bold text-blue-600">15,000đ/km</p> */}
               </div>
             ))}
           </div>
@@ -219,7 +219,7 @@ export default function HomePage() {
             Tìm tài xế phù hợp ngay hôm nay
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/search">
+            <Link to="/map">
               <button className="text-lg px-6 py-3 rounded bg-white text-blue-600 hover:bg-blue-100 font-semibold">
                 Tìm tài xế ngay
               </button>
