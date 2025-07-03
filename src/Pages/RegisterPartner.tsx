@@ -172,6 +172,13 @@ export default function RegisterPartner() {
   const [availableDistricts, setAvailableDistricts] = useState<any[]>([]);
   const [availableWards, setAvailableWards] = useState<any[]>([]);
 
+  const [servicePrices, setServicePrices] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [servicePriceErrors, setServicePriceErrors] = useState<{
+    [key: string]: string;
+  }>({});
+
   const steps = [
     { id: 1, title: "Thông tin cá nhân", icon: User },
     { id: 2, title: "Địa chỉ", icon: MapPin },
@@ -220,12 +227,62 @@ export default function RegisterPartner() {
   };
 
   const handleServiceToggle = (serviceId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      services: prev.services.includes(serviceId)
+    setFormData((prev) => {
+      const isSelected = prev.services.includes(serviceId);
+      let newServices = isSelected
         ? prev.services.filter((s) => s !== serviceId)
-        : [...prev.services, serviceId],
-    }));
+        : [...prev.services, serviceId];
+      // Nếu bỏ chọn thì xóa giá và lỗi
+      if (isSelected) {
+        const newPrices = { ...servicePrices };
+        const newErrors = { ...servicePriceErrors };
+        delete newPrices[serviceId];
+        delete newErrors[serviceId];
+        setServicePrices(newPrices);
+        setServicePriceErrors(newErrors);
+      }
+      return {
+        ...prev,
+        services: newServices,
+      };
+    });
+  };
+
+  // Hàm validate giá theo từng dịch vụ
+  const validateServicePrice = (serviceId: string, value: string) => {
+    let num = Number(value);
+    let error = "";
+    switch (serviceId) {
+      case "hourly":
+        if (!value) error = "Vui lòng nhập giá";
+        else if (isNaN(num) || num < 100000 || num >= 200000)
+          error = "Giá phải từ 100.000 đến dưới 200.000";
+        break;
+      case "long-distance":
+        if (!value) error = "Vui lòng nhập giá";
+        else if (isNaN(num) || num < 2000 || num >= 10000)
+          error = "Giá phải từ 2.000 đến dưới 10.000";
+        break;
+      case "vip":
+        if (!value) error = "Vui lòng nhập giá";
+        else if (isNaN(num) || num < 1000000 || num >= 5000000)
+          error = "Giá phải từ 1.000.000 đến dưới 5.000.000";
+        break;
+      case "airport":
+        if (!value) error = "Vui lòng nhập giá";
+        else if (isNaN(num) || num < 5000 || num > 20000)
+          error = "Giá phải từ 5.000 đến 20.000";
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
+  const handleServicePriceChange = (serviceId: string, value: string) => {
+    setServicePrices((prev) => ({ ...prev, [serviceId]: value }));
+    const error = validateServicePrice(serviceId, value);
+    setServicePriceErrors((prev) => ({ ...prev, [serviceId]: error }));
   };
 
   const handleFileUpload = (field: string, files: FileList | null) => {
@@ -320,9 +377,10 @@ export default function RegisterPartner() {
         licenseNumber: formData.licenseNumber,
         licenseExpiry: formData.licenseExpiry,
         experience: formData.experience,
-        services: formData.services.map(
-          (id) => services.find((s) => s.id === id)?.label
-        ),
+        services: formData.services.map((id) => ({
+          label: services.find((s) => s.id === id)?.label,
+          price: servicePrices[id] || null,
+        })),
       },
       documents: {
         cccdFront: formData.cccdFront?.preview || null,
@@ -752,32 +810,94 @@ export default function RegisterPartner() {
               <div className="space-y-1 flex flex-col">
                 <label>Dịch vụ cung cấp *</label>
                 <div className="grid md:grid-cols-2 gap-4 mt-2">
-                  {services.map((service) => (
-                    <div
-                      key={service.id}
-                      className={`border rounded-lg p-4 transition-colors cursor-pointer ${
-                        formData.services.includes(service.id)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                      onClick={() => handleServiceToggle(service.id)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <input
-                          className="border border-gray-300 rounded-sm p-2 mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                          type="checkbox"
-                          checked={formData.services.includes(service.id)}
-                          readOnly
-                        />
-                        <div className="space-y-1 flex flex-col">
-                          <div className="font-medium">{service.label}</div>
-                          <div className="text-sm text-gray-600">
-                            {service.description}
+                  {services.map((service) => {
+                    const isChecked = formData.services.includes(service.id);
+                    let placeholder = "";
+                    let unit = "";
+                    let min = undefined,
+                      max = undefined;
+                    switch (service.id) {
+                      case "hourly":
+                        placeholder = "Nhập giá/giờ (100.000 - 199.999)";
+                        unit = "VNĐ/giờ";
+                        min = 100000;
+                        max = 199999;
+                        break;
+                      case "long-distance":
+                        placeholder = "Nhập giá/km (2.000 - 9.999)";
+                        unit = "VNĐ/km";
+                        min = 2000;
+                        max = 9999;
+                        break;
+                      case "vip":
+                        placeholder = "Nhập giá/chuyến mong muốn";
+                        unit = "VNĐ/chuyến";
+                        min = 1000000;
+                        max = 5000000;
+                        break;
+                      case "airport":
+                        placeholder = "Nhập giá/km (5.000 - 20.000)";
+                        unit = "VNĐ/km";
+                        min = 5000;
+                        max = 20000;
+                        break;
+                      default:
+                        break;
+                    }
+                    return (
+                      <div
+                        key={service.id}
+                        className={`border rounded-lg p-4 transition-colors cursor-pointer ${
+                          isChecked
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                        onClick={() => handleServiceToggle(service.id)}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <input
+                            className="border border-gray-300 rounded-sm p-2 mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                            type="checkbox"
+                            checked={isChecked}
+                            readOnly
+                          />
+                          <div className="space-y-1 flex flex-col w-full">
+                            <div className="font-medium">{service.label}</div>
+                            <div className="text-sm text-gray-600">
+                              {service.description}
+                            </div>
+                            {isChecked && (
+                              <div className="mt-2">
+                                <input
+                                  type="number"
+                                  className="border border-gray-300 rounded-md p-2 w-full"
+                                  placeholder={placeholder}
+                                  value={servicePrices[service.id] || ""}
+                                  min={min}
+                                  max={max}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) =>
+                                    handleServicePriceChange(
+                                      service.id,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                                <span className="ml-2 text-xs text-gray-500">
+                                  {unit}
+                                </span>
+                                {servicePriceErrors[service.id] && (
+                                  <div className="text-red-500 text-xs mt-1">
+                                    {servicePriceErrors[service.id]}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -908,6 +1028,23 @@ export default function RegisterPartner() {
                           className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-1 text-sm"
                         >
                           {service?.label}
+                          {servicePrices[serviceId] && (
+                            <span className="ml-1 text-xs text-gray-600">
+                              -{" "}
+                              {Number(
+                                servicePrices[serviceId]
+                              ).toLocaleString()}{" "}
+                              VNĐ
+                              {serviceId === "hourly"
+                                ? "/giờ"
+                                : serviceId === "long-distance" ||
+                                  serviceId === "airport"
+                                ? "/km"
+                                : serviceId === "vip"
+                                ? "/chuyến"
+                                : ""}
+                            </span>
+                          )}
                         </span>
                       );
                     })}
@@ -1008,7 +1145,10 @@ export default function RegisterPartner() {
                 disabled={
                   !formData.termsAccepted ||
                   !formData.backgroundCheckConsent ||
-                  isSubmitting
+                  isSubmitting ||
+                  formData.services.some(
+                    (id) => !servicePrices[id] || !!servicePriceErrors[id]
+                  )
                 }
                 className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
