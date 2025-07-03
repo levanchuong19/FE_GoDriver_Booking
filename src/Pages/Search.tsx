@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Star,
   MapPin,
@@ -67,11 +67,11 @@ const drivers = [
 
 // Định nghĩa danh sách dịch vụ giống RegisterPartner.tsx
 const services = [
-  {
-    id: "hourly",
-    label: "Lái xe theo giờ",
-    description: "Dịch vụ lái xe trong thành phố",
-  },
+  // {
+  //   id: "hourly",
+  //   label: "Lái xe theo giờ",
+  //   description: "Dịch vụ lái xe trong thành phố",
+  // },
   {
     id: "long-distance",
     label: "Lái xe đường dài",
@@ -97,32 +97,44 @@ export default function SearchPage() {
   const [location, setLocation] = useState("");
 
   // Hàm lọc tài xế
-  const filteredDrivers = drivers.filter((driver) => {
-    // Lọc theo địa điểm (nếu có nhập)
-    if (
-      location &&
-      !driver.location.toLowerCase().includes(location.toLowerCase())
-    ) {
-      return false;
-    }
-    // Lọc theo loại dịch vụ (nếu có chọn)
-    if (
-      selectedService &&
-      !driver.specialties.some((s) =>
-        s.toLowerCase().includes(selectedService.toLowerCase())
-      )
-    ) {
-      return false;
-    }
-    // Lọc theo khoảng giá
-    if (
-      driver.pricePerKm < priceRange[0] ||
-      driver.pricePerKm > priceRange[1]
-    ) {
-      return false;
-    }
-    return true;
-  });
+  const isFiltering =
+    location ||
+    selectedService ||
+    priceRange[0] > 2000 ||
+    priceRange[1] < 30000;
+
+  const filteredDrivers = isFiltering
+    ? drivers.filter((driver) => {
+        // Lọc theo địa điểm (nếu có nhập)
+        if (
+          location &&
+          !driver.location.toLowerCase().includes(location.toLowerCase())
+        ) {
+          return false;
+        }
+        // Lọc theo loại dịch vụ (nếu có chọn)
+        if (
+          selectedService &&
+          !driver.specialties.some((s) =>
+            s.toLowerCase().includes(selectedService.toLowerCase())
+          )
+        ) {
+          return false;
+        }
+        // Lọc theo khoảng giá
+        if (
+          driver.pricePerKm < priceRange[0] ||
+          driver.pricePerKm > priceRange[1]
+        ) {
+          return false;
+        }
+        return true;
+      })
+    : [];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -236,15 +248,15 @@ export default function SearchPage() {
           {/* Results */}
           <div className="lg:col-span-3">
             <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">Tìm thấy {drivers.length} tài xế</p>
+              <p className="text-gray-600">Tìm thấy {filteredDrivers.length} tài xế</p>
               <div className="flex items-center gap-2">
-                <button
+                {/* <button
                   onClick={() => navigate("/map")}
                   className="bg-blue-600 cursor-pointer text-white py-2 px-4 rounded font-semibold hover:bg-blue-700 transition flex items-center justify-center"
                 >
                   <MapPin className="h-4 w-4 mr-1" />
                   Xem trên bản đồ
-                </button>
+                </button> */}
                 <select className="w-48 px-3 py-2 border border-gray-200 bg-white text-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="rating">Đánh giá cao nhất</option>
                   <option value="price-low">Giá thấp nhất</option>
@@ -256,142 +268,146 @@ export default function SearchPage() {
 
             <div className="space-y-6">
               {filteredDrivers.map((driver) => (
-                <div
-                  key={driver.id}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
-                >
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-shrink-0">
-                      <img
-                        src={driver.avatar || "/placeholder.svg"}
-                        alt={driver.name}
-                        width={120}
-                        height={120}
-                        className="rounded-lg object-cover"
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900">
-                            {driver.name}
-                          </h3>
-                          <div className="flex items-center text-sm text-gray-600 mt-1">
-                            <MapPin className="h-4 w-4 mr-1" />
-                            {driver.location}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {(() => {
-                              if (selectedService === "hourly") {
-                                return `${driver.pricePerKm.toLocaleString()}đ/km`;
-                              } else if (
-                                selectedService === "vip" ||
-                                selectedService === "long-distance"
-                              ) {
-                                return `${driver.pricePerHour.toLocaleString()}đ/giờ`;
-                              } else if (selectedService === "airport") {
-                                return `${driver.pricePerTrip.toLocaleString()}đ/chuyến`;
-                              } else {
-                                return `${driver.pricePerKm.toLocaleString()}đ/km`;
-                              }
-                            })()}
-                          </div>
-                          <span
-                            className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                              driver.available
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-200 text-gray-500"
-                            }`}
-                          >
-                            {driver.available ? "Có sẵn" : "Bận"}
-                          </span>
-                        </div>
+                <>
+                  {" "}
+                  <div
+                    key={driver.id}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
+                  >
+                    <div className="flex flex-col md:flex-row gap-6">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={driver.avatar || "/placeholder.svg"}
+                          alt={driver.name}
+                          width={120}
+                          height={120}
+                          className="rounded-lg object-cover"
+                        />
                       </div>
 
-                      <div className="flex items-center mb-3">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < Math.floor(driver.rating)
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">
+                              {driver.name}
+                            </h3>
+                            <div className="flex items-center text-sm text-gray-600 mt-1">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {driver.location}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-blue-600">
+                              {(() => {
+                                if (selectedService === "hourly") {
+                                  return `${driver.pricePerKm.toLocaleString()}đ/km`;
+                                } else if (
+                                  selectedService === "vip" ||
+                                  selectedService === "long-distance"
+                                ) {
+                                  return `${driver.pricePerHour.toLocaleString()}đ/giờ`;
+                                } else if (selectedService === "airport") {
+                                  return `${driver.pricePerTrip.toLocaleString()}đ/chuyến`;
+                                } else {
+                                  return `${driver.pricePerKm.toLocaleString()}đ/km`;
+                                }
+                              })()}
+                            </div>
+                            <span
+                              className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                                driver.available
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-200 text-gray-500"
                               }`}
-                            />
+                            >
+                              {driver.available ? "Có sẵn" : "Bận"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center mb-3">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < Math.floor(driver.rating)
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">
+                              {driver.rating} ({driver.reviews} đánh giá)
+                            </span>
+                          </div>
+                          <div className="ml-4 flex items-center text-sm text-gray-600">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {driver.experience} kinh nghiệm
+                          </div>
+                        </div>
+
+                        <p className="text-gray-600 mb-4">
+                          {driver.description}
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {driver.specialties.map((specialty, index) => (
+                            <span
+                              key={index}
+                              className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                            >
+                              {specialty}
+                            </span>
                           ))}
-                          <span className="ml-2 text-sm text-gray-600">
-                            {driver.rating} ({driver.reviews} đánh giá)
-                          </span>
                         </div>
-                        <div className="ml-4 flex items-center text-sm text-gray-600">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {driver.experience} kinh nghiệm
-                        </div>
-                      </div>
 
-                      <p className="text-gray-600 mb-4">{driver.description}</p>
-
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {driver.specialties.map((specialty, index) => (
-                          <span
-                            key={index}
-                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Link to={`/booking/${driver.id}`} className="flex-1">
-                          <button
-                            className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
-                            disabled={!driver.available}
-                          >
-                            Đặt lịch ngay
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Link to={`/booking/${driver.id}`} className="flex-1">
+                            <button
+                              className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
+                              disabled={!driver.available}
+                            >
+                              Đặt lịch ngay
+                            </button>
+                          </Link>
+                          <button className="flex items-center bg-transparent border border-gray-200 border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50">
+                            <Phone className="h-4 w-4 mr-2" />
+                            Gọi điện
                           </button>
-                        </Link>
-                        <button className="flex items-center bg-transparent border border-gray-200 border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50">
-                          <Phone className="h-4 w-4 mr-2" />
-                          Gọi điện
-                        </button>
-                        <button className="flex items-center bg-transparent border border-gray-200 border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50">
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          Nhắn tin
-                        </button>
+                          <button className="flex items-center bg-transparent border border-gray-200 border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50">
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Nhắn tin
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                  {/* Pagination */}
+                  <div className="flex justify-center mt-8">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+                        disabled
+                      >
+                        Trước
+                      </button>
+                      <button className="px-4 py-2 rounded border border-blue-600 bg-blue-600 text-white font-semibold">
+                        1
+                      </button>
+                      <button className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100">
+                        2
+                      </button>
+                      <button className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100">
+                        3
+                      </button>
+                      <button className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100">
+                        Sau
+                      </button>
+                    </div>
+                  </div>
+                </>
               ))}
-            </div>
-
-            {/* Pagination */}
-            <div className="flex justify-center mt-8">
-              <div className="flex items-center space-x-2">
-                <button
-                  className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
-                  disabled
-                >
-                  Trước
-                </button>
-                <button className="px-4 py-2 rounded border border-blue-600 bg-blue-600 text-white font-semibold">
-                  1
-                </button>
-                <button className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100">
-                  2
-                </button>
-                <button className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100">
-                  3
-                </button>
-                <button className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100">
-                  Sau
-                </button>
-              </div>
             </div>
           </div>
         </div>

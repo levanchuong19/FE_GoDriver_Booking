@@ -3,6 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const navigate = useNavigate();
+
+  const handleNavigateAndScroll = (anchor: string) => {
+    navigate("/"); // Điều hướng về Home
+    setTimeout(() => {
+      const element = document.getElementById(anchor);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100); // Delay nhẹ để chắc chắn trang đã render xong
+  };
   return (
     <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -16,17 +26,30 @@ export default function Header() {
           </span>
         </div>
         <nav className="hidden md:flex items-center space-x-6">
-          <a href="#services" className="text-gray-600 hover:text-blue-600">
+          <button
+            onClick={() => handleNavigateAndScroll("services")}
+            className="text-gray-600 hover:text-blue-600"
+          >
             Dịch vụ
-          </a>
-          <a href="#how-it-works" className="text-gray-600 hover:text-blue-600">
+          </button>
+          <button
+            onClick={() => handleNavigateAndScroll("how-it-works")}
+            className="text-gray-600 hover:text-blue-600"
+          >
             Cách hoạt động
-          </a>
-          <a href="#pricing" className="text-gray-600 hover:text-blue-600">
+          </button>
+          <button
+            onClick={() => handleNavigateAndScroll("services")}
+            className="text-gray-600 hover:text-blue-600"
+          >
             Bảng giá
-          </a>
+          </button>
+
           <a href="/search" className="text-gray-600 hover:text-blue-600">
-            Tìm tài xế
+            Đặt lịch di chuyển
+          </a>
+          <a href="/map" className="text-gray-600 hover:text-blue-600">
+            Tìm tài xế gần đây
           </a>
         </nav>
         <div className="flex items-center space-x-3">
