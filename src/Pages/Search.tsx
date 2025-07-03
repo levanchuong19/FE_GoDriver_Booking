@@ -3,13 +3,11 @@ import {
   Star,
   MapPin,
   Clock,
-  Car,
   Filter,
-  CalendarIcon,
   Phone,
   MessageCircle,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const drivers = [
   {
@@ -90,7 +88,6 @@ const services = [
 ];
 
 export default function SearchPage() {
-  const navigate = useNavigate();
   const [date, setDate] = useState("");
   const [priceRange, setPriceRange] = useState([2000, 30000]);
   const [selectedService, setSelectedService] = useState("");
@@ -248,7 +245,9 @@ export default function SearchPage() {
           {/* Results */}
           <div className="lg:col-span-3">
             <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">Tìm thấy {filteredDrivers.length} tài xế</p>
+              <p className="text-gray-600">
+                Tìm thấy {filteredDrivers.length} tài xế
+              </p>
               <div className="flex items-center gap-2">
                 {/* <button
                   onClick={() => navigate("/map")}

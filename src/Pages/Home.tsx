@@ -1,13 +1,4 @@
-import {
-  Star,
-  Shield,
-  Clock,
-  Users,
-  Car,
-  MapPin,
-  Phone,
-  Mail,
-} from "lucide-react";
+import { Star, Shield, Clock, Users, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function HomePage() {
