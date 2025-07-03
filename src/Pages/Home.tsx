@@ -1,13 +1,4 @@
-import {
-  Star,
-  Shield,
-  Clock,
-  Users,
-  Car,
-  MapPin,
-  Phone,
-  Mail,
-} from "lucide-react";
+import { Star, Shield, Clock, Users, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function HomePage() {
@@ -24,7 +15,7 @@ export default function HomePage() {
             Kết nối bạn với những tài xế có kinh nghiệm, được xác minh và đánh
             giá cao. Dịch vụ lái xe hộ 24/7 trên toàn quốc.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="/map">
               <button className="text-lg px-6 py-3 rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center">
                 <MapPin className="mr-2 h-5 w-5" />

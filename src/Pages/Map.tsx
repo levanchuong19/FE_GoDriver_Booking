@@ -4,7 +4,6 @@ import {
   Star,
   Phone,
   MessageCircle,
-  Filter,
   Car,
   Locate,
   Search,
@@ -140,8 +139,8 @@ export default function MapPage() {
   const [destination, setDestination] = useState("");
   const [serviceType, setServiceType] = useState("all");
   const [priceRange, setPriceRange] = useState([100000, 200000]);
-  const [showFilters, setShowFilters] = useState(false);
-  const [mapCenter, setMapCenter] = useState({ lat: 10.7769, lng: 106.7009 });
+  const [showFilters] = useState(false);
+  const [, setMapCenter] = useState({ lat: 10.7769, lng: 106.7009 });
   const [zoom, setZoom] = useState(15);
   const mapRef = useRef(null);
 
