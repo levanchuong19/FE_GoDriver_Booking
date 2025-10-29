@@ -1,6 +1,7 @@
-import { Car, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import logo from "../assets/logo-no-br.png";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,12 +24,13 @@ export default function RegisterPage() {
             to="/"
             className="flex items-center justify-center space-x-2 mb-4"
           >
-            <Car className="h-10 w-10 text-blue-600" />
-            <span className="text-3xl font-bold text-gray-900">DriveHire</span>
+            <img
+              src={logo}
+              alt="SmartDrive"
+              className="w-10 h-10 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-full object-cover"
+            />
+            <span className="text-3xl font-bold text-gray-900">SmartDrive</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Đăng ký tài khoản
-          </h1>
           <p className="text-gray-600">
             Tạo tài khoản để bắt đầu sử dụng dịch vụ
           </p>

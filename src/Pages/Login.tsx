@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Car, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../redux/features/userSlice";
 import api from "../Config/api";
 import { useDispatch } from "react-redux";
+import logo from "../assets/logo-no-br.png";
 
 interface LoginProps {
   phone: string;
@@ -75,10 +76,13 @@ export default function LoginPage() {
             to="/"
             className="flex items-center justify-center space-x-2 mb-4"
           >
-            <Car className="h-10 w-10 text-blue-600" />
-            <span className="text-3xl font-bold text-gray-900">DriveHire</span>
+            <img
+              src={logo}
+              alt="SmartDrive"
+              className="w-10 h-10 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-full object-cover"
+            />
+            <span className="text-3xl font-bold text-gray-900">SmartDrive</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Đăng nhập</h1>
           <p className="text-gray-600">Chào mừng bạn quay trở lại</p>
         </div>
 
