@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { Car, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../redux/features/userSlice";
+import api from "../Config/api";
+import { useDispatch } from "react-redux";
+
+interface LoginProps {
+  phone: string;
+  password: string;
+}
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("customer");
   const [customerData, setCustomerData] = useState({
     email: "",
@@ -13,6 +20,52 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [formData, setFormData] = useState<LoginProps>({
+    phone: "",
+    password: "",
+  });
+  const navigate = useNavigate();
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const dispatch = useDispatch();
+
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  //   if (error) setError("");
+  // };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await api.post("auth/login", formData);
+      console.log("response", response.data.data.role);
+      if (response.data.success === true) {
+        localStorage.setItem("accessToken", response.data.data.accessToken);
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+        dispatch(login(response.data.data.user));
+        if (response.data.data.role === "admin") {
+          navigate("/dashboard", { replace: true });
+        } else {
+          // navigate("/", { replace: true });
+        }
+      } else {
+        throw new Error(response.data.data);
+      }
+    } catch (err: any) {
+      const message = "Đăng nhập thất bại. Vui lòng thử lại.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
@@ -32,7 +85,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-lg shadow-md">
           <div className="p-6">
             {/* Tabs */}
-            <div className="w-full grid grid-cols-2 border-b">
+            {/* <div className="w-full grid grid-cols-2 border-b">
               <button
                 className={`py-2 font-semibold ${
                   activeTab === "customer"
@@ -53,28 +106,28 @@ export default function LoginPage() {
               >
                 Tài xế
               </button>
-            </div>
+            </div> */}
 
             {/* Tab Content */}
             {activeTab === "customer" && (
-              <form className="space-y-4 mt-6">
+              <form className="space-y-4 mt-6" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <label
-                    htmlFor="customer-email"
+                    htmlFor="customer-phone"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email
+                    Phone
                   </label>
                   <input
-                    id="customer-email"
-                    type="email"
-                    placeholder="example@email.com"
+                    id="customer-phone"
+                    type="phone"
+                    placeholder="Số điện thoại của bạn."
                     className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={customerData.email}
+                    value={formData.phone}
                     onChange={(e) =>
-                      setCustomerData({
-                        ...customerData,
-                        email: e.target.value,
+                      setFormData({
+                        ...formData,
+                        phone: e.target.value,
                       })
                     }
                   />
@@ -92,10 +145,10 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Nhập mật khẩu"
                       className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={customerData.password}
+                      value={formData.password}
                       onChange={(e) =>
-                        setCustomerData({
-                          ...customerData,
+                        setFormData({
+                          ...formData,
                           password: e.target.value,
                         })
                       }
@@ -141,8 +194,8 @@ export default function LoginPage() {
               </form>
             )}
 
-            {activeTab === "driver" && (
-              <form className="space-y-4 mt-6">
+            {/* {activeTab === "driver" && (
+              <form className="space-y-4 mt-6" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <label
                     htmlFor="driver-email"
@@ -151,7 +204,7 @@ export default function LoginPage() {
                     Email
                   </label>
                   <input
-                    id="driver-email"
+                    id=""
                     type="email"
                     placeholder="example@email.com"
                     className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -221,7 +274,7 @@ export default function LoginPage() {
                   Đăng nhập
                 </button>
               </form>
-            )}
+            )} */}
 
             {/* Separator */}
             <div className="mt-6 relative flex items-center">
