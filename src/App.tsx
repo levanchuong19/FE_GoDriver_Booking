@@ -7,6 +7,9 @@ import AuthLayout from "./Components/AuthLayout";
 import SearchPage from "./Pages/Search";
 import MapPage from "./Pages/Map";
 import RegisterPartner from "./Pages/RegisterPartner";
+import DashboardGuard from "./Components/dashboardRouter";
+import Dashboard from "./Pages/Dashboard/dashboard";
+import DriverDashboard from "./Pages/Dashboard/driverApplication";
 
 function App() {
   const router = createBrowserRouter([
@@ -44,6 +47,14 @@ function App() {
           path: "/register",
           element: <RegisterPage />,
         },
+      ],
+    },
+    {
+      path: "dashboard",
+      element: <DashboardGuard />,
+      children: [
+        { path: "", element: <Dashboard /> },
+        { path: "/dashboard/driver-application", element: <DriverDashboard /> },
       ],
     },
   ]);

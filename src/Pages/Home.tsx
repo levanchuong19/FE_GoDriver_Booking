@@ -76,9 +76,9 @@ export default function HomePage() {
                 Thuê tài xế theo giờ cho các chuyến đi ngắn
               </div>
               <div className="text-2xl font-bold text-blue-600 mb-2">
-                150,000đ/giờ
+                ~ 150,000đ/giờ
               </div>
-              <p className="text-gray-600">Tối thiểu 2 giờ</p>
+              {/* <p className="text-gray-600">Tối thiểu 2 giờ</p> */}
             </div>
             {/* Card 2 */}
             <div className="bg-white rounded-lg shadow-md text-center hover:shadow-lg transition-shadow p-8">
@@ -88,7 +88,7 @@ export default function HomePage() {
                 Dịch vụ lái xe cho các chuyến đi xa
               </div>
               <div className="text-2xl font-bold text-blue-600 mb-2">
-                2,000đ/km
+                ~ 2,000đ/km
               </div>
               <p className="text-gray-600">Bao gồm phí nghỉ đêm</p>
             </div>
@@ -100,7 +100,7 @@ export default function HomePage() {
                 Tài xế chuyên nghiệp cho khách VIP
               </div>
               <div className="text-2xl font-bold text-blue-600 mb-2">
-                300,000đ/giờ
+                ~ 300,000đ/giờ
               </div>
               <p className="text-gray-600">Dịch vụ cao cấp</p>
             </div>
