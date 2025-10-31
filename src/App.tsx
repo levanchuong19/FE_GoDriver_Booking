@@ -5,7 +5,8 @@ import RegisterPage from "./Pages/Register";
 import AuthLayout from "./Components/AuthLayout";
 import DashboardGuard from "./Components/dashboardRouter";
 import Dashboard from "./Pages/Dashboard/dashboard";
-import DriverDashboard from "./Pages/Dashboard/driverApplication";
+import AdminDriverApplications from "./Pages/Dashboard/AdminDriverApplications";
+import AdminDriverApplicationDetail from "./Pages/Dashboard/AdminDriverApplicationDetail";
 import RegisterPartner from "./Pages/RegisterPartner";
 import Layout from "./Components/Layout";
 
@@ -52,7 +53,8 @@ function App() {
       element: <DashboardGuard />,
       children: [
         { path: "", element: <Dashboard /> },
-        { path: "/dashboard/driver-application", element: <DriverDashboard /> },
+        { path: "/dashboard/driver-application", element: <AdminDriverApplications /> },
+        { path: "/dashboard/driver-application/:id", element: <AdminDriverApplicationDetail /> },
       ],
     },
   ]);
