@@ -1,24 +1,24 @@
 import {
   Star,
-  Shield,
   Clock,
-  Users,
   MapPin,
   Wrench,
   Truck,
   Calendar,
   ChevronDown,
   ArrowRight,
-  TrendingUp,
-  Sun,
-  Moon,
   Car,
   Map,
+  Zap,
+  ShieldCheck,
+  CircleDollarSign,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import logo from "../assets/logo-no-br.png";
 import { Link, useNavigate } from "react-router-dom";
 import { FaApple, FaGooglePlay } from "react-icons/fa";
+import fast from "../assets/fast.png";
+import unnamed from "../assets/unnamed.jpg";
+import cheap from "../assets/cheap.png";
 // import { Link } from "react-router-dom";
 
 export default function HomePage() {
@@ -320,8 +320,8 @@ export default function HomePage() {
                 với SmartDrive
               </h1>
               <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
-                Ứng dụng cho thuê tài xế tự lái hàng đầu. Đặt xe chỉ trong vài
-                giây, an toàn 24/7, giá cạnh tranh.
+                Ứng dụng cho thuê tài xế lái xe hộ hàng đầu. Tìm kiếm tài xế chỉ
+                trong vài giây, an toàn 24/7, giá cạnh tranh.
               </p>
             </div>
 
@@ -538,7 +538,6 @@ export default function HomePage() {
           <ChevronDown className="w-8 h-8 text-cyan-500 dark:text-cyan-400" />
         </div>
       </section>
-
       {/* Services Section */}
       <section
         id="services"
@@ -577,7 +576,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Theo giờ</h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Thuê xe theo giờ, linh hoạt và tiện lợi
+                Thuê tài xế theo giờ, linh hoạt và tiện lợi
               </p>
             </div>
 
@@ -588,7 +587,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Theo ngày</h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Thuê xe cả ngày với giá ưu đãi đặc biệt
+                Thuê tài xế cả ngày với giá ưu đãi đặc biệt
               </p>
             </div>
 
@@ -633,11 +632,14 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <ArrowRight className="w-6 h-6 text-white" />
               </div>
-              <Link className="text-xl font-bold mb-2" to="/register-partner">
+              <Link
+                className="text-xl font-bold dark:text-slate-800 mb-2"
+                to="/register-partner"
+              >
                 Trở thành đối tác
               </Link>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Kiếm thu nhập thêm bằng cách làm tài xế
+                Kiếm thu nhập thêm bằng cách trở thành đối tác làm tài xế
               </p>
             </div>
 
@@ -654,9 +656,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -671,7 +672,6 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Feature 1 */}
             <div className="group p-6 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <MapPin className="w-6 h-6 text-white" />
@@ -682,8 +682,6 @@ export default function HomePage() {
                 bạn.
               </p>
             </div>
-
-            {/* Feature 2 */}
             <div className="group p-6 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <Shield className="w-6 h-6 text-white" />
@@ -693,8 +691,6 @@ export default function HomePage() {
                 Tài xế được tuyển chọn với số kinh nghiệm dài hạn.
               </p>
             </div>
-
-            {/* Feature 3 */}
             <div className="group p-6 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <TrendingUp className="w-6 h-6 text-white" />
@@ -704,8 +700,6 @@ export default function HomePage() {
                 GPS độ chính xác cm, hoạt động trong mọi điều kiện thời tiết.
               </p>
             </div>
-
-            {/* Feature 4 */}
             <div className="group p-6 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <Users className="w-6 h-6 text-white" />
@@ -715,8 +709,6 @@ export default function HomePage() {
                 Hơn 5k người dùng tin tưởng SmartDrive mỗi ngày.
               </p>
             </div>
-
-            {/* Feature 5 */}
             <div className="group p-6 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <Clock className="w-6 h-6 text-white" />
@@ -726,8 +718,6 @@ export default function HomePage() {
                 Giao diện trực quan, dễ sử dụng cho mọi lứa tuổi.
               </p>
             </div>
-
-            {/* Feature 6 */}
             <div className="group p-6 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer">
               <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition">
                 <TrendingUp className="w-6 h-6 text-white" />
@@ -739,9 +729,128 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Tính năng{" "}
+              <span className="bg-gradient-to-r from-cyan-500 to-blue-400 bg-clip-text text-transparent">
+                nổi bật
+              </span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Công nghệ tiên tiến, dễ sử dụng, an toàn tuyệt đối
+            </p>
+          </div>
 
-      {/* Testimonials Section */}
+          <div className="space-y-8">
+            {[
+              {
+                title: "Đặt xe siêu nhanh",
+                desc: "Chỉ cần 3 giây để đặt xe. Công nghệ AI tìm tài xế gần nhất cho bạn.",
+                features: [
+                  "Giao diện trực quan",
+                  "Tìm kiếm thông minh",
+                  "Xác nhận tức thì",
+                ],
+                emoji: <Zap />,
+                image: fast,
+              },
+              {
+                title: "An toàn tuyệt đối",
+                desc: "Tất cả tài xế được xác minh danh tính, có bằng lái hợp lệ, được đào tạo chuyên nghiệp.",
+                features: [
+                  "Xác minh danh tính",
+                  "Bảo hiểm toàn diện",
+                  "Theo dõi realtime",
+                ],
+                emoji: <ShieldCheck />,
+                image: unnamed,
+              },
+              {
+                title: "Giá cạnh tranh",
+                desc: "Giá rẻ nhất thị trường với chất lượng dịch vụ cao nhất, không phí ẩn.",
+                features: [
+                  "Giá minh bạch",
+                  "Không phí ẩn",
+                  "Ưu đãi hàng tháng",
+                ],
+                emoji: <CircleDollarSign />,
+                image: cheap,
+              },
+            ].map((feature, idx) => (
+              <div
+                key={idx}
+                className="grid md:grid-cols-2 gap-12 items-center"
+              >
+                {idx % 2 === 0 ? (
+                  <>
+                    {/* Nội dung bên trái */}
+                    <div className="space-y-4">
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-3xl">
+                        {feature.emoji}
+                      </div>
+                      <h3 className="text-3xl font-bold">{feature.title}</h3>
+                      <p className="text-lg text-muted-foreground">
+                        {feature.desc}
+                      </p>
+                      <ul className="space-y-2">
+                        {feature.features.map((f, i) => (
+                          <li key={i} className="flex items-center gap-3">
+                            <span className="text-accent">✓</span>
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Ảnh bên phải */}
+                    <div className=" rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={feature.image}
+                        alt={feature.title}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Ảnh bên trái */}
+                    <div className="rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center overflow-hidden order-2 md:order-1">
+                      <img
+                        src={feature.image}
+                        alt={feature.title}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* Nội dung bên phải */}
+                    <div className="space-y-4 order-1 md:order-2">
+                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-3xl">
+                        {feature.emoji}
+                      </div>
+                      <h3 className="text-3xl font-bold">{feature.title}</h3>
+                      <p className="text-lg text-muted-foreground">
+                        {feature.desc}
+                      </p>
+                      <ul className="space-y-2">
+                        {feature.features.map((f, i) => (
+                          <li key={i} className="flex items-center gap-3">
+                            <span className="text-accent">✓</span>
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      ;{/* Testimonials Section */}
       <section
         id="testimonials"
         className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900/50"
@@ -807,7 +916,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Pricing Section */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -914,7 +1022,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* How it works */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-900/50">
         <div className="max-w-7xl mx-auto">
@@ -968,7 +1075,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* FAQ Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
@@ -1015,7 +1121,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-500 to-blue-400">
         <div className="max-w-4xl mx-auto text-center space-y-8">
