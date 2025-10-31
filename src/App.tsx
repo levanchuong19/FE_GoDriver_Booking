@@ -9,10 +9,9 @@ import AdminDriverApplications from "./Pages/Dashboard/AdminDriverApplications";
 import AdminDriverApplicationDetail from "./Pages/Dashboard/AdminDriverApplicationDetail";
 import RegisterPartner from "./Pages/RegisterPartner";
 import Layout from "./Components/Layout";
-
-import AdminLayout from "./Components/Layout/AdminLayout";
-import UsersPage from "./Pages/Admin/Users";
-import PricingPage from "./Pages/Admin/Pricing";
+import UsersPage from "./Pages/Dashboard/Users";
+import BookingPage from "./Pages/Dashboard/Booking";
+import PricingPage from "./Pages/Dashboard/Pricing";
 
 function App() {
   const router = createBrowserRouter([
@@ -36,15 +35,6 @@ function App() {
           path: "/register-partner",
           element: <RegisterPartner />,
         },
-      ],
-    },
-
-    {
-      path: "/dashboard",
-      element: <AdminLayout />,
-      children: [
-        { path: "users", element: <UsersPage /> },
-        { path: "pricing", element: <PricingPage /> },
       ],
     },
 
@@ -73,6 +63,18 @@ function App() {
         {
           path: "/dashboard/driver-application/:id",
           element: <AdminDriverApplicationDetail />,
+        },
+        {
+          path: "/dashboard/user",
+          element: <UsersPage />,
+        },
+        {
+          path: "/dashboard/court",
+          element: <BookingPage />,
+        },
+        {
+          path: "/dashboard/pricing",
+          element: <PricingPage />,
         },
       ],
     },

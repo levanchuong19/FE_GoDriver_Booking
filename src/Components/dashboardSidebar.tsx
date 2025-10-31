@@ -6,6 +6,7 @@ import {
   MapPinHouse,
   MapPinned,
   Users,
+  CircleDollarSign,
 } from "lucide-react";
 
 function DashboardSidebar() {
@@ -86,6 +87,17 @@ function DashboardSidebar() {
               <Users />
             </span>{" "}
             Quản lý người dùng
+          </NavLink>
+          <NavLink
+            to="/dashboard/pricing"
+            className={({ isActive }) =>
+              `${linkClass} ${isActive ? activeClass : inactiveClass}`
+            }
+          >
+            <span className="text-xl">
+              <CircleDollarSign />
+            </span>{" "}
+            Quản lý bảng giá
           </NavLink>
           <NavLink
             to="/dashboard/supports"
