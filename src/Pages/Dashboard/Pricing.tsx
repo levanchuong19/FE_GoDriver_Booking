@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/pages/admin/PricingPage.tsx
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
+  Card,
   Descriptions,
   Divider,
   Drawer,
@@ -26,13 +27,13 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
-import api from "../../config/axios";
 import type {
   FareBracket,
   FarePolicy,
   FarePolicyInput,
 } from "../../models/Pricing";
 import type { ColumnsType } from "antd/es/table";
+import api from "../../Config/api";
 
 type PricingRow = FarePolicy & { key?: string };
 
@@ -109,11 +110,29 @@ export default function PricingPage() {
       const item: FarePolicy = res.data?.data ?? res.data;
 
       setEditing(item);
+      // Convert multipliers from decimal to percentage values for form display
+      const formattedMultipliers = item.multipliers
+        ? {
+            after21h: item.multipliers.after21h
+              ? (item.multipliers.after21h - 1) * 100
+              : 0,
+            after23h: item.multipliers.after23h
+              ? (item.multipliers.after23h - 1) * 100
+              : 0,
+            weekend: item.multipliers.weekend
+              ? (item.multipliers.weekend - 1) * 100
+              : 0,
+            holiday: item.multipliers.holiday
+              ? (item.multipliers.holiday - 1) * 100
+              : 0,
+          }
+        : undefined;
+
       form.setFieldsValue({
         serviceType: item.serviceType,
         baseFare: item.baseFare,
         fareBrackets: item.fareBrackets,
-        multipliers: item.multipliers,
+        multipliers: formattedMultipliers,
         waitingFeePerMin: item.waitingFeePerMin,
         platformFee: item.platformFee,
         effectiveRange:
@@ -130,11 +149,30 @@ export default function PricingPage() {
   // Lưu (create/update)
   const handleSave = async () => {
     const values = await form.validateFields();
+
+    // Convert percentage values back to multipliers
+    const convertedMultipliers = values.multipliers
+      ? {
+          after21h: values.multipliers.after21h
+            ? values.multipliers.after21h / 100 + 1
+            : 1,
+          after23h: values.multipliers.after23h
+            ? values.multipliers.after23h / 100 + 1
+            : 1,
+          weekend: values.multipliers.weekend
+            ? values.multipliers.weekend / 100 + 1
+            : 1,
+          holiday: values.multipliers.holiday
+            ? values.multipliers.holiday / 100 + 1
+            : 1,
+        }
+      : undefined;
+
     const payload: FarePolicyInput = {
       serviceType: values.serviceType,
       baseFare: values.baseFare,
       fareBrackets: values.fareBrackets,
-      multipliers: values.multipliers,
+      multipliers: convertedMultipliers,
       waitingFeePerMin: values.waitingFeePerMin,
       platformFee: values.platformFee,
       effectiveFrom: isoOrUndefined(values.effectiveRange?.[0]),
@@ -223,25 +261,30 @@ export default function PricingPage() {
   );
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Quản lý bảng giá</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleCreateOpen}
-        >
-          Tạo bảng giá
-        </Button>
-      </div>
-
-      <Table<PricingRow>
-        rowKey={(r) => String(r._id ?? r.key)}
-        dataSource={data}
-        columns={columns}
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-      />
+    <div style={{ padding: 24 }}>
+      <Card
+        title={<span className="font-semibold text-lg">Quản lý bảng giá</span>}
+        bordered={false}
+        style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)", borderRadius: 12 }}
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleCreateOpen}
+          >
+            Tạo bảng giá
+          </Button>
+        }
+      >
+        <Table<PricingRow>
+          rowKey={(r) => String(r._id ?? r.key)}
+          dataSource={data}
+          columns={columns}
+          loading={loading}
+          bordered
+          pagination={{ pageSize: 10 }}
+        />
+      </Card>
 
       {/* Drawer chi tiết */}
       <Drawer
@@ -299,19 +342,27 @@ export default function PricingPage() {
 
             <Divider />
 
-            <h3 className="font-semibold mb-2">Hệ số nhân</h3>
+            <h3 className="font-semibold mb-2">Bảng giá thuế</h3>
             <Descriptions bordered column={2} size="small">
-              <Descriptions.Item label="after21h">
-                {detail.multipliers?.after21h ?? "—"}
+              <Descriptions.Item label="Sau 21 giờ">
+                {detail.multipliers?.after21h
+                  ? `${((detail.multipliers.after21h - 1) * 100).toFixed(0)}%`
+                  : "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="after23h">
-                {detail.multipliers?.after23h ?? "—"}
+              <Descriptions.Item label="Sau 23 giờ">
+                {detail.multipliers?.after23h
+                  ? `${((detail.multipliers.after23h - 1) * 100).toFixed(0)}%`
+                  : "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="weekend">
-                {detail.multipliers?.weekend ?? "—"}
+              <Descriptions.Item label="Cuối tuần">
+                {detail.multipliers?.weekend
+                  ? `${((detail.multipliers.weekend - 1) * 100).toFixed(0)}%`
+                  : "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="holiday">
-                {detail.multipliers?.holiday ?? "—"}
+              <Descriptions.Item label="Ngày lễ">
+                {detail.multipliers?.holiday
+                  ? `${((detail.multipliers.holiday - 1) * 100).toFixed(0)}%`
+                  : "—"}
               </Descriptions.Item>
             </Descriptions>
           </>
@@ -366,7 +417,7 @@ export default function PricingPage() {
             <DatePicker.RangePicker showTime style={{ width: "100%" }} />
           </Form.Item>
 
-          <Divider>Fare Brackets</Divider>
+          <Divider>Bảng giá theo (km)</Divider>
           <Form.List
             name="fareBrackets"
             rules={[
@@ -425,28 +476,44 @@ export default function PricingPage() {
             )}
           </Form.List>
 
-          <Divider>Multipliers</Divider>
+          <Divider>Bảng giá thuế</Divider>
           <Space size="large" wrap>
-            <Form.Item label="after21h" name={["multipliers", "after21h"]}>
-              <InputNumber min={0} step={0.01} />
+            <Form.Item
+              label="Sau 21 giờ (%)"
+              name={["multipliers", "after21h"]}
+              tooltip="Nhập phần trăm tăng thêm (ví dụ: 8 cho 8%)"
+            >
+              <InputNumber min={0} max={100} step={1} />
             </Form.Item>
-            <Form.Item label="after23h" name={["multipliers", "after23h"]}>
-              <InputNumber min={0} step={0.01} />
+            <Form.Item
+              label="Sau 23 giờ (%)"
+              name={["multipliers", "after23h"]}
+              tooltip="Nhập phần trăm tăng thêm (ví dụ: 10 cho 10%)"
+            >
+              <InputNumber min={0} max={100} step={1} />
             </Form.Item>
-            <Form.Item label="weekend" name={["multipliers", "weekend"]}>
-              <InputNumber min={0} step={0.01} />
+            <Form.Item
+              label="Cuối tuần (%)"
+              name={["multipliers", "weekend"]}
+              tooltip="Nhập phần trăm tăng thêm (ví dụ: 15 cho 15%)"
+            >
+              <InputNumber min={0} max={100} step={1} />
             </Form.Item>
-            <Form.Item label="holiday" name={["multipliers", "holiday"]}>
-              <InputNumber min={0} step={0.01} />
+            <Form.Item
+              label="Ngày lễ (%)"
+              name={["multipliers", "holiday"]}
+              tooltip="Nhập phần trăm tăng thêm (ví dụ: 20 cho 20%)"
+            >
+              <InputNumber min={0} max={100} step={1} />
             </Form.Item>
           </Space>
 
           <Divider>Phí khác</Divider>
           <Space size="large" wrap>
-            <Form.Item label="waitingFeePerMin" name="waitingFeePerMin">
+            <Form.Item label="Phí chờ đợi" name="waitingFeePerMin">
               <InputNumber min={0} step={100} />
             </Form.Item>
-            <Form.Item label="platformFee" name="platformFee">
+            <Form.Item label="Phí dịch vụ" name="platformFee">
               <InputNumber min={0} step={100} />
             </Form.Item>
           </Space>
