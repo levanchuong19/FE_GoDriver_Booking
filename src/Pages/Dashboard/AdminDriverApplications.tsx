@@ -165,8 +165,8 @@ const AdminDriverApplications = () => {
                   <td className="p-3 border-b">{it.personal?.phone || "-"}</td>
                   <td className="p-3 border-b">{renderStatusBadge(it.status)}</td>
                   <td className="p-3 border-b">{typeof it.yearsExperience === "number" ? it.yearsExperience : "-"}</td>
-                  <td className="p-3 border-b">{it.services?.join(", ") || "-"}</td>
-                  <td className="p-3 border-b">{new Date(it.createdAt).toLocaleString()}</td>
+                  <td className="p-3 border-b">{Array.isArray(it.services) && it.services.length ? it.services.map(mapService).join(", ") : "-"}</td>
+                  <td className="p-3 border-b">{formatDateTime(it.createdAt)}</td>
                   <td className="p-3 border-b">
                     <div className="flex gap-2">
                       <button className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => navigate(`/dashboard/driver-application/${it._id}`)}>Xem</button>
@@ -221,6 +221,26 @@ function renderStatusBadge(status: Status) {
   };
   const m = map[status];
   return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${m.cls}`}>{m.text}</span>;
+}
+
+function formatDateTime(value: string) {
+  const d = new Date(value);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
+
+function mapService(code: string) {
+  const map: Record<string, string> = {
+    dich_vu_tai_xe_theo_gio: "Dịch vụ tài xế theo giờ",
+    dich_vu_tai_xe_theo_cay_so: "Dịch vụ tài xế theo cây số",
+    dich_vu_tai_xe_theo_ngay: "Dịch vụ tài xế theo ngày",
+    dich_vu_tai_xe_lien_tinh: "Dịch vụ tài xế liên tỉnh",
+  };
+  return map[code] || code;
 }
 
 

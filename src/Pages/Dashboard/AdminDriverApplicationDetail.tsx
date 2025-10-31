@@ -123,10 +123,10 @@ export default function AdminDriverApplicationDetail() {
           <>
             <Section title="Thông tin hồ sơ">
               <Field label="Mã người dùng" value={data.userId} />
-              <Field label="Ngày tạo" value={data.createdAt ? new Date(data.createdAt).toLocaleString() : ""} />
-              <Field label="Gửi duyệt" value={data.submittedAt ? new Date(data.submittedAt).toLocaleString() : ""} />
-              <Field label="Quyết định" value={data.decidedAt ? new Date(data.decidedAt).toLocaleString() : ""} />
-              <Field label="Cập nhật" value={data.updatedAt ? new Date(data.updatedAt).toLocaleString() : ""} />
+              <Field label="Ngày tạo" value={data.createdAt ? formatDateTime(data.createdAt) : ""} />
+              <Field label="Gửi duyệt" value={data.submittedAt ? formatDateTime(data.submittedAt) : ""} />
+              <Field label="Quyết định" value={data.decidedAt ? formatDateTime(data.decidedAt) : ""} />
+              <Field label="Cập nhật" value={data.updatedAt ? formatDateTime(data.updatedAt) : ""} />
               {data.status === "rejected" && (
                 <div className="col-span-2">
                   <div className="text-gray-500 text-sm">Lý do từ chối</div>
@@ -148,14 +148,14 @@ export default function AdminDriverApplicationDetail() {
             </Section>
             <Section title="Bằng lái & Kinh nghiệm">
               <Field label="Số bằng lái" value={data.licenseNumber} />
-              <Field label="Hết hạn" value={data.licenseExpiry ? new Date(data.licenseExpiry).toLocaleDateString() : ""} />
+              <Field label="Hết hạn" value={data.licenseExpiry ? formatDateOnly(data.licenseExpiry) : ""} />
               <Field label="Kinh nghiệm (năm)" value={typeof data.yearsExperience === "number" ? String(data.yearsExperience) : ""} />
               <div className="text-sm">
                 <div className="text-gray-500">Dịch vụ</div>
                 <div className="flex flex-wrap gap-1 pt-1">
                   {Array.isArray(data.services) && data.services.length > 0 ? (
                     data.services.map((s: string) => (
-                      <span key={s} className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">{s}</span>
+                      <span key={s} className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">{mapService(s)}</span>
                     ))
                   ) : (
                     <span className="text-gray-600">-</span>
@@ -216,6 +216,34 @@ function renderStatusBadge(status: Status) {
   };
   const m = map[status];
   return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${m.cls}`}>{m.text}</span>;
+}
+
+function formatDateTime(value: string) {
+  const d = new Date(value);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
+
+function formatDateOnly(value: string) {
+  const d = new Date(value);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function mapService(code: string) {
+  const map: Record<string, string> = {
+    dich_vu_tai_xe_theo_gio: "Dịch vụ tài xế theo giờ",
+    dich_vu_tai_xe_theo_cay_so: "Dịch vụ tài xế theo cây số",
+    dich_vu_tai_xe_theo_ngay: "Dịch vụ tài xế theo ngày",
+    dich_vu_tai_xe_lien_tinh: "Dịch vụ tài xế liên tỉnh",
+  };
+  return map[code] || code;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
