@@ -3,9 +3,7 @@ import {
   Star,
   MapPin,
   Clock,
-  Car,
   Filter,
-  CalendarIcon,
   Phone,
   MessageCircle,
 } from "lucide-react";

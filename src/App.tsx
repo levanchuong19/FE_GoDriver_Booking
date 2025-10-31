@@ -6,6 +6,9 @@ import Layout from "./Components/Layout";
 import AuthLayout from "./Components/AuthLayout";
 import SearchPage from "./Pages/Search";
 import MapPage from "./Pages/Map";
+import AdminLayout from "./Components/Layout/AdminLayout";
+import UsersPage from "./Pages/Admin/Users";
+import PricingPage from "./Pages/Admin/Pricing";
 
 function App() {
   const router = createBrowserRouter([
@@ -25,6 +28,15 @@ function App() {
           path: "/map",
           element: <MapPage />,
         },
+      ],
+    },
+
+    {
+      path: "/dashboard",
+      element: <AdminLayout />,
+      children: [
+        { path: "users", element: <UsersPage /> },
+        { path: "pricing", element: <PricingPage /> },
       ],
     },
 
