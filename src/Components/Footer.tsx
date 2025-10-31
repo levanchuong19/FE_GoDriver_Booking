@@ -1,4 +1,7 @@
 import logo from "../assets/logo-no-br.png";
+import facebook from "../assets/Facebook.svg.webp";
+import zalo from "../assets/Zalo.svg.webp";
+import tiktok from "../assets/tiktok.png";
 
 export default function Footer() {
   return (
@@ -91,6 +94,41 @@ export default function Footer() {
             <p className="text-2sm text-slate-600 dark:text-slate-400">
               Tương lai của giao thông bắt đầu từ đây.
             </p>
+            <div className="flex items-center gap-4 mt-5">
+              <a
+                href="https://www.facebook.com/profile.php?id=61582173127418"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={facebook}
+                  alt="Facebook"
+                  className="w-8 h-8 hover:scale-110 transition-transform duration-200"
+                />
+              </a>
+              <a
+                href="https://zalo.me"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={zalo}
+                  alt="Zalo"
+                  className="w-8 h-8 hover:scale-110 transition-transform duration-200"
+                />
+              </a>
+              <a
+                href="https://www.tiktok.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={tiktok}
+                  alt="Tiktok"
+                  className="w-8 h-8 hover:scale-110 transition-transform duration-200"
+                />
+              </a>
+            </div>
           </div>
           <div>
             <h4 className="font-bold mb-4 text-xl">Sản phẩm</h4>
