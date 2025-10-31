@@ -39,8 +39,11 @@ const DriverDashboard: React.FC = () => {
     {
       title: "Địa chỉ",
       key: "address",
-      render: (_, record) =>
-        `${record.address.specificAddress}, ${record.address.ward}, ${record.address.district}, ${record.address.province}`,
+      render: (_, record) => {
+        const a = (record as any).address || {};
+        const parts = [a.specificAddress, a.ward, a.district, a.province].filter(Boolean);
+        return parts.length ? parts.join(", ") : "-";
+      },
     },
     {
       title: "Hành động",
