@@ -19,12 +19,10 @@ import { FaApple, FaGooglePlay } from "react-icons/fa";
 import fast from "../assets/fast.png";
 import unnamed from "../assets/unnamed.jpg";
 import cheap from "../assets/cheap.png";
-// import { Link } from "react-router-dom";
 
 export default function HomePage() {
-  const [scrollY, setScrollY] = useState(0);
-  const [isDark, setIsDark] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const [, setScrollY] = useState(0);
+  const [isDark] = useState(false);
 
   const navigate = useNavigate();
 
