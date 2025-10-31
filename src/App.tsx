@@ -10,6 +10,10 @@ import AdminDriverApplicationDetail from "./Pages/Dashboard/AdminDriverApplicati
 import RegisterPartner from "./Pages/RegisterPartner";
 import Layout from "./Components/Layout";
 
+import AdminLayout from "./Components/Layout/AdminLayout";
+import UsersPage from "./Pages/Admin/Users";
+import PricingPage from "./Pages/Admin/Pricing";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -36,6 +40,15 @@ function App() {
     },
 
     {
+      path: "/dashboard",
+      element: <AdminLayout />,
+      children: [
+        { path: "users", element: <UsersPage /> },
+        { path: "pricing", element: <PricingPage /> },
+      ],
+    },
+
+    {
       element: <AuthLayout />,
       children: [
         {
@@ -53,8 +66,14 @@ function App() {
       element: <DashboardGuard />,
       children: [
         { path: "", element: <Dashboard /> },
-        { path: "/dashboard/driver-application", element: <AdminDriverApplications /> },
-        { path: "/dashboard/driver-application/:id", element: <AdminDriverApplicationDetail /> },
+        {
+          path: "/dashboard/driver-application",
+          element: <AdminDriverApplications />,
+        },
+        {
+          path: "/dashboard/driver-application/:id",
+          element: <AdminDriverApplicationDetail />,
+        },
       ],
     },
   ]);
