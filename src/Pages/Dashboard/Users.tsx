@@ -25,8 +25,8 @@ import {
   DeleteOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import api from "../../config/axios";
 import type { User } from "../../models/User";
+import api from "../../Config/api";
 
 type PaginationState = { current: number; pageSize: number; total: number };
 

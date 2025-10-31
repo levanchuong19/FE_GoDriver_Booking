@@ -14,9 +14,9 @@ import {
 } from "antd";
 import { EyeOutlined, CarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import api from "../../config/axios";
 import type { ColumnsType } from "antd/es/table";
 import type { Booking, PaginationMeta } from "../../models/Booking";
+import api from "../../Config/api";
 
 type Row = Booking & { key?: string };
 
