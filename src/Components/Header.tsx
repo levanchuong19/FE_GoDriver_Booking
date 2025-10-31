@@ -1,13 +1,12 @@
-import { Car, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo-no-br.png";
 
 export default function Header() {
   const navigate = useNavigate();
-  const [scrollY, setScrollY] = useState(0);
+  const [, setScrollY] = useState(0);
   const [isDark, setIsDark] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -23,15 +22,15 @@ export default function Header() {
     }
   }, [isDark]);
 
-  const handleNavigateAndScroll = (anchor: string) => {
-    navigate("/"); // Điều hướng về Home
-    setTimeout(() => {
-      const element = document.getElementById(anchor);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 100); // Delay nhẹ để chắc chắn trang đã render xong
-  };
+  // const handleNavigateAndScroll = (anchor: string) => {
+  //   navigate("/"); // Điều hướng về Home
+  //   setTimeout(() => {
+  //     const element = document.getElementById(anchor);
+  //     if (element) {
+  //       element.scrollIntoView({ behavior: "smooth" });
+  //     }
+  //   }, 100); // Delay nhẹ để chắc chắn trang đã render xong
+  // };
   return (
     // <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
     //   <div className="container mx-auto px-4 py-4 flex items-center justify-between">
