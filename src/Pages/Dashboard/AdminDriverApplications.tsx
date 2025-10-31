@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { listDriverApplications } from "../../Config/adminDriverApplications";
+import { listDriverApplications, approveDriverApplication } from "../../Config/adminDriverApplications";
 
 
 type Status = "draft" | "pending" | "approved" | "rejected";
@@ -33,6 +33,25 @@ const AdminDriverApplications = () => {
   const [total, setTotal] = useState(0);
   const navigate = useNavigate();
   // const [refreshKey, setRefreshKey] = useState(0);
+
+  async function approve(id: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await approveDriverApplication(id);
+      const updated = res?.data?.app || null;
+      setItems((prev) => prev.map((it) => (it._id === id ? { ...it, status: updated?.status || "approved" } : it)));
+    } catch (e: unknown) {
+      let message = "Duyệt hồ sơ thất bại";
+      if (typeof e === "object" && e) {
+        const err = e as { response?: { data?: { message?: string } }; message?: string };
+        message = err.response?.data?.message || err.message || message;
+      }
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
@@ -170,6 +189,7 @@ const AdminDriverApplications = () => {
                   <td className="p-3 border-b">
                     <div className="flex gap-2">
                       <button className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => navigate(`/dashboard/driver-application/${it._id}`)}>Xem</button>
+                      
                     </div>
                   </td>
                 </tr>
