@@ -4,20 +4,19 @@ import {
   Star,
   Phone,
   MessageCircle,
-  Filter,
   Car,
   Locate,
   Search,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 // Mock data cho tài xế trên bản đồ
 const driversOnMap = [
   {
     id: 1,
     name: "Nguyễn Văn Minh",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.9,
     reviews: 127,
     price: 150000,
@@ -26,13 +25,13 @@ const driversOnMap = [
     status: "available",
     distance: 0.5,
     eta: 3,
-    vehicle: "Honda City",
     specialties: ["Lái xe an toàn", "Đúng giờ"],
   },
   {
     id: 2,
     name: "Trần Thị Lan",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.8,
     reviews: 89,
     price: 140000,
@@ -41,13 +40,13 @@ const driversOnMap = [
     status: "available",
     distance: 1.2,
     eta: 5,
-    vehicle: "Toyota Vios",
     specialties: ["Lái xe nữ", "Cẩn thận"],
   },
   {
     id: 3,
     name: "Lê Hoàng Nam",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.7,
     reviews: 156,
     price: 180000,
@@ -56,13 +55,13 @@ const driversOnMap = [
     status: "busy",
     distance: 0.8,
     eta: 4,
-    vehicle: "Honda Accord",
     specialties: ["Đường dài", "VIP"],
   },
   {
     id: 4,
     name: "Phạm Minh Tuấn",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.6,
     reviews: 78,
     price: 135000,
@@ -71,27 +70,64 @@ const driversOnMap = [
     status: "available",
     distance: 0.3,
     eta: 2,
-    vehicle: "Mazda 3",
     specialties: ["Thân thiện", "Nhiệt tình"],
   },
   {
     id: 5,
     name: "Võ Thị Hương",
-    avatar: "/placeholder.svg",
+    avatar:
+      "https://thanhtra.com.vn/images/avatar-default.png?id=420048c5169f5847774bafb5e8b641b4",
     rating: 4.9,
     reviews: 203,
     price: 160000,
-    lat: 10.7812,
-    lng: 106.6956,
+    lat: 10.8188,
+    lng: 106.6518,
     status: "available",
     distance: 1.5,
     eta: 7,
-    vehicle: "Toyota Camry",
     specialties: ["Lái xe nữ", "VIP", "Kinh nghiệm"],
   },
 ];
 
 type Driver = (typeof driversOnMap)[number];
+
+// Hàm tính khoảng cách Haversine (km)
+function haversineDistance(
+  coord1: { lat: number; lng: number },
+  coord2: { lat: number; lng: number }
+) {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371; // Bán kính Trái Đất (km)
+  const dLat = toRad(coord2.lat - coord1.lat);
+  const dLng = toRad(coord2.lng - coord1.lng);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(coord1.lat)) *
+      Math.cos(toRad(coord2.lat)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Hàm demo: lấy lat/lng từ địa chỉ (hardcode một số địa chỉ phổ biến)
+function getLatLngFromAddress(
+  address: string
+): { lat: number; lng: number } | null {
+  const map: Record<string, { lat: number; lng: number }> = {
+    "Bến Thành": { lat: 10.7721, lng: 106.6983 },
+    "Quận 1": { lat: 10.7769, lng: 106.7009 },
+    "Quận 3": { lat: 10.7797, lng: 106.6867 },
+    "Quận 7": { lat: 10.7293, lng: 106.7217 },
+    "Sân bay Tân Sơn Nhất": { lat: 10.8188, lng: 106.6518 },
+  };
+  for (const key in map) {
+    if (address.toLowerCase().includes(key.toLowerCase())) {
+      return map[key];
+    }
+  }
+  return null;
+}
 
 export default function MapPage() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -103,8 +139,8 @@ export default function MapPage() {
   const [destination, setDestination] = useState("");
   const [serviceType, setServiceType] = useState("all");
   const [priceRange, setPriceRange] = useState([100000, 200000]);
-  const [showFilters, setShowFilters] = useState(false);
-  const [mapCenter, setMapCenter] = useState({ lat: 10.7769, lng: 106.7009 });
+  const [showFilters] = useState(false);
+  const [, setMapCenter] = useState({ lat: 10.7769, lng: 106.7009 });
   const [zoom, setZoom] = useState(15);
   const mapRef = useRef(null);
 
@@ -127,20 +163,20 @@ export default function MapPage() {
     }
   }, []);
 
+  // Lấy lat/lng điểm đón nếu có
+  const pickupLatLng = getLatLngFromAddress(pickupLocation);
+
   const filteredDrivers: Driver[] = driversOnMap.filter((driver: Driver) => {
-    if (serviceType !== "all") {
-      const serviceMap: Record<string, string[]> = {
-        hourly: ["Lái xe an toàn", "Đúng giờ", "Thân thiện"],
-        vip: ["VIP", "Kinh nghiệm"],
-        female: ["Lái xe nữ"],
-      };
-      if (
-        !driver.specialties.some((s) => serviceMap[serviceType]?.includes(s))
-      ) {
-        return false;
-      }
-    }
-    return driver.price >= priceRange[0] && driver.price <= priceRange[1];
+    // Nếu chưa nhập điểm đón hoặc điểm đến thì không hiển thị tài xế
+    if (!pickupLocation || !destination) return false;
+    // Nếu không tìm được lat/lng điểm đón thì không hiển thị
+    if (!pickupLatLng) return false;
+    // Chỉ hiển thị tài xế cách điểm đón < 10km
+    const distance = haversineDistance(
+      { lat: driver.lat, lng: driver.lng },
+      pickupLatLng
+    );
+    return distance <= 10;
   });
 
   const handleDriverSelect = (driver: Driver) => {
@@ -182,7 +218,7 @@ export default function MapPage() {
 
       <div className="flex-1 flex">
         {/* Sidebar */}
-        <div className="w-80 bg-white border-r flex flex-col">
+        <div className="w-80 h-[100vh] bg-white border-r flex flex-col">
           {/* Search Section */}
           <div className="p-4 border-b">
             <div className="space-y-3">
@@ -328,11 +364,8 @@ export default function MapPage() {
                           <span>{driver.eta} phút</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="text-xs text-gray-600">
-                            {driver.vehicle}
-                          </div>
                           <div className="text-sm font-semibold text-blue-600">
-                            {driver.price.toLocaleString()}đ/h
+                            {driver.price.toLocaleString()}đ/km
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -360,12 +393,36 @@ export default function MapPage() {
         <div className="flex-1 relative">
           <div
             ref={mapRef}
-            className="w-full h-full bg-gray-100 relative overflow-hidden"
+            className="w-full h-[100vh] bg-gray-100 relative overflow-hidden"
+            tabIndex={0}
+            onWheel={(e) => {
+              e.preventDefault();
+              if (e.deltaY < 0) setZoom((z) => Math.min(z + 1, 20));
+              else setZoom((z) => Math.max(z - 1, 10));
+            }}
           >
-            {/* Map Background with Streets */}
-            <div className="absolute inset-0">
+            <div
+              className="absolute inset-0 origin-center"
+              style={{
+                transform: `scale(${zoom / 15})`,
+                transition: "transform 0.2s",
+              }}
+            >
               {/* Base map color */}
               <div className="w-full h-full bg-gray-100">
+                {/* Marker vị trí của bạn */}
+                {pickupLocation && destination && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: `calc(50% - 16px)`,
+                      top: `calc(50% - 16px)`,
+                      zIndex: 10,
+                    }}
+                  >
+                    <Locate className="h-8 w-8 text-blue-600" />
+                  </div>
+                )}
                 {/* Street grid */}
                 <svg
                   className="w-full h-full absolute inset-0"
@@ -519,157 +576,252 @@ export default function MapPage() {
                   />
                 </svg>
               </div>
-            </div>
 
-            {/* User Location Marker */}
-            <div
-              className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
-              style={{
-                left: "50%",
-                top: "50%",
-              }}
-            >
-              <div className="relative">
-                <div className="w-6 h-6 bg-blue-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
-                <div className="absolute inset-0 bg-blue-600 rounded-full animate-ping opacity-30"></div>
-                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                  Vị trí của bạn
+              {/* User Location Marker */}
+              <div
+                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: "50%",
+                  top: "50%",
+                }}
+              >
+                <div className="relative">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  <div className="absolute inset-0 bg-blue-600 rounded-full animate-ping opacity-30"></div>
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    Vị trí của bạn
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Driver Markers */}
-            {filteredDrivers.map((driver, index) => {
-              // Calculate positions around the user location
-              const positions = [
-                { x: 45, y: 35 }, // Top-left
-                { x: 65, y: 25 }, // Top-right
-                { x: 35, y: 60 }, // Bottom-left
-                { x: 70, y: 70 }, // Bottom-right
-                { x: 25, y: 45 }, // Left
-                { x: 75, y: 40 }, // Right
-                { x: 50, y: 20 }, // Top
-                { x: 55, y: 80 }, // Bottom
-              ];
+              {/* Driver Markers */}
+              {filteredDrivers.map((driver, index) => {
+                // Calculate positions around the user location
+                const positions = [
+                  { x: 45, y: 35 }, // Top-left
+                  { x: 65, y: 25 }, // Top-right
+                  { x: 35, y: 60 }, // Bottom-left
+                  { x: 70, y: 70 }, // Bottom-right
+                  { x: 25, y: 45 }, // Left
+                  { x: 75, y: 40 }, // Right
+                  { x: 50, y: 20 }, // Top
+                  { x: 55, y: 80 }, // Bottom
+                ];
 
-              const position = positions[index % positions.length];
-              const isSelected = selectedDriver?.id === driver.id;
+                const position = positions[index % positions.length];
+                const isSelected = selectedDriver?.id === driver.id;
 
-              return (
-                <div
-                  key={driver.id}
-                  className={`absolute z-30 cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
-                    isSelected ? "scale-110 z-40" : "hover:scale-105"
-                  }`}
-                  style={{
-                    left: `${position.x}%`,
-                    top: `${position.y}%`,
-                  }}
-                  onClick={() => handleDriverSelect(driver)}
-                >
-                  <div className="relative">
-                    {/* Driver Car Icon */}
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-3 transition-all ${
-                        driver.status === "available"
-                          ? isSelected
-                            ? "bg-blue-600 border-blue-200"
-                            : "bg-white border-green-500 hover:border-green-600"
-                          : "bg-gray-100 border-gray-400"
-                      }`}
-                    >
-                      <Car
-                        className={`h-6 w-6 ${
+                return (
+                  <div
+                    key={driver.id}
+                    className={`absolute z-30 cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
+                      isSelected ? "scale-110 z-40" : "hover:scale-105"
+                    }`}
+                    style={{
+                      left: `${position.x}%`,
+                      top: `${position.y}%`,
+                    }}
+                    onClick={() => handleDriverSelect(driver)}
+                  >
+                    <div className="relative">
+                      {/* Driver Car Icon */}
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-3 transition-all ${
                           driver.status === "available"
                             ? isSelected
-                              ? "text-white"
-                              : "text-green-600"
-                            : "text-gray-400"
+                              ? "bg-blue-600 border-blue-200"
+                              : "bg-white border-green-500 hover:border-green-600"
+                            : "bg-gray-100 border-gray-400"
+                        }`}
+                      >
+                        <Car
+                          className={`h-6 w-6 ${
+                            driver.status === "available"
+                              ? isSelected
+                                ? "text-white"
+                                : "text-green-600"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Status Indicator */}
+                      <div
+                        className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                          driver.status === "available"
+                            ? "bg-green-500"
+                            : "bg-gray-400"
                         }`}
                       />
+
+                      {/* Price Tag */}
+                      <div
+                        className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-medium whitespace-nowrap shadow-md ${
+                          isSelected
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-gray-800 border border-gray-200"
+                        }`}
+                      >
+                        {driver.price.toLocaleString()}đ/km
+                      </div>
+
+                      {/* Distance Badge */}
+                      <div
+                        className={`absolute -top-6 left-1/2 transform -translate-x-1/2 px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
+                          isSelected
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {driver.distance}km
+                      </div>
+
+                      {/* Pulse animation for available drivers */}
+                      {driver.status === "available" && !isSelected && (
+                        <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
+                      )}
+
+                      {/* Driver Detail Card hiển thị phía trên marker nếu được chọn */}
+                      {isSelected && (
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64">
+                          <div className="bg-white rounded-lg shadow-xl p-2">
+                            <div className="flex items-center justify-between mb-4">
+                              <span className="text-sm font-semibold">
+                                Chi tiết tài xế
+                              </span>
+                              <button
+                                className="bg-transparent border-none p-1 rounded hover:bg-gray-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedDriver(null);
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <div className="flex items-center space-x-3 mb-4">
+                              <img
+                                src={driver.avatar || "/placeholder.svg"}
+                                alt={driver.name}
+                                className="h-10 w-10 rounded-full object-cover"
+                              />
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base">
+                                  {driver.name}
+                                </h3>
+                                <div className="flex items-center text-xs text-gray-600">
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                                  <span>
+                                    {driver.rating} ({driver.reviews} đánh giá)
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                              <div>
+                                <div className="text-base font-semibold text-blue-600">
+                                  {driver.distance}km
+                                </div>
+                                <div className="text-[11px] text-gray-600">
+                                  Khoảng cách
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-base font-semibold text-green-600">
+                                  {driver.eta} phút
+                                </div>
+                                <div className="text-[11px] text-gray-600">
+                                  Thời gian đến
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-base font-semibold text-purple-600">
+                                  {driver.price.toLocaleString()}đ
+                                </div>
+                                <div className="text-[11px] text-gray-600">
+                                  Giá/km
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {driver.specialties.map((specialty, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-block bg-blue-100 text-blue-800 text-[11px] px-1.5 py-0.5 rounded"
+                                >
+                                  {specialty}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="flex space-x-1">
+                              <button
+                                className="flex-1 bg-blue-600 text-white py-1.5 rounded font-semibold hover:bg-blue-700 transition flex items-center justify-center text-sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleBookDriver(driver.id);
+                                }}
+                                disabled={driver.status !== "available"}
+                              >
+                                <Car className="h-4 w-4 mr-2" />
+                                Đặt lịch
+                              </button>
+                              <button className="bg-transparent border border-gray-300 rounded px-2 py-1.5 text-gray-700 hover:bg-gray-100 text-sm">
+                                <Phone className="h-4 w-4" />
+                              </button>
+                              <button className="bg-transparent border border-gray-300 rounded px-2 py-1.5 text-gray-700 hover:bg-gray-100 text-sm">
+                                <MessageCircle className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  </div>
+                );
+              })}
 
-                    {/* Status Indicator */}
-                    <div
-                      className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                        driver.status === "available"
-                          ? "bg-green-500"
-                          : "bg-gray-400"
-                      }`}
-                    />
-
-                    {/* Price Tag */}
-                    <div
-                      className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded text-xs font-medium whitespace-nowrap shadow-md ${
-                        isSelected
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-800 border border-gray-200"
-                      }`}
-                    >
-                      {driver.price.toLocaleString()}đ/h
+              {/* Pickup Location (if set) */}
+              {pickupLocation && (
+                <div
+                  className="absolute z-25 transform -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    left: "30%",
+                    top: "30%",
+                  }}
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-green-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-white" />
                     </div>
-
-                    {/* Distance Badge */}
-                    <div
-                      className={`absolute -top-6 left-1/2 transform -translate-x-1/2 px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                        isSelected
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {driver.distance}km
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                      Điểm đón
                     </div>
-
-                    {/* Pulse animation for available drivers */}
-                    {driver.status === "available" && !isSelected && (
-                      <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
-                    )}
                   </div>
                 </div>
-              );
-            })}
+              )}
 
-            {/* Pickup Location (if set) */}
-            {pickupLocation && (
-              <div
-                className="absolute z-25 transform -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: "30%",
-                  top: "30%",
-                }}
-              >
-                <div className="relative">
-                  <div className="w-8 h-8 bg-green-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
-                    <MapPin className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                    Điểm đón
+              {/* Destination (if set) */}
+              {destination && (
+                <div
+                  className="absolute z-25 transform -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    left: "70%",
+                    top: "70%",
+                  }}
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-red-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                      Điểm đến
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Destination (if set) */}
-            {destination && (
-              <div
-                className="absolute z-25 transform -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: "70%",
-                  top: "70%",
-                }}
-              >
-                <div className="relative">
-                  <div className="w-8 h-8 bg-red-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
-                    <MapPin className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                    Điểm đến
-                  </div>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Map Controls */}
             <div className="absolute top-4 right-4 flex flex-col space-y-2 z-30">
@@ -744,91 +896,6 @@ export default function MapPage() {
               </div>
             </div>
           </div>
-
-          {/* Driver Detail Card */}
-          {selectedDriver && (
-            <div className="absolute bottom-4 right-4 w-80 z-40">
-              <div className="bg-white rounded-lg shadow-xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-lg font-semibold">Chi tiết tài xế</span>
-                  <button
-                    className="bg-transparent border-none p-1 rounded hover:bg-gray-100"
-                    onClick={() => setSelectedDriver(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <img
-                    src={selectedDriver.avatar || "/placeholder.svg"}
-                    alt={selectedDriver.name}
-                    className="h-16 w-16 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {selectedDriver.name}
-                    </h3>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                      <span>
-                        {selectedDriver.rating} ({selectedDriver.reviews} đánh
-                        giá)
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {selectedDriver.vehicle}
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-center mb-4">
-                  <div>
-                    <div className="text-lg font-semibold text-blue-600">
-                      {selectedDriver.distance}km
-                    </div>
-                    <div className="text-xs text-gray-600">Khoảng cách</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-green-600">
-                      {selectedDriver.eta} phút
-                    </div>
-                    <div className="text-xs text-gray-600">Thời gian đến</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-purple-600">
-                      {selectedDriver.price.toLocaleString()}đ
-                    </div>
-                    <div className="text-xs text-gray-600">Giá/giờ</div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {selectedDriver.specialties.map((specialty, index) => (
-                    <span
-                      key={index}
-                      className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                    >
-                      {specialty}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    className="flex-1 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition flex items-center justify-center"
-                    onClick={() => handleBookDriver(selectedDriver.id)}
-                    disabled={selectedDriver.status !== "available"}
-                  >
-                    <Car className="h-4 w-4 mr-2" />
-                    Đặt lịch
-                  </button>
-                  <button className="bg-transparent border border-gray-300 rounded px-3 py-2 text-gray-700 hover:bg-gray-100">
-                    <Phone className="h-4 w-4" />
-                  </button>
-                  <button className="bg-transparent border border-gray-300 rounded px-3 py-2 text-gray-700 hover:bg-gray-100">
-                    <MessageCircle className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

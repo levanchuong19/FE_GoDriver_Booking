@@ -1,6 +1,7 @@
-import { Car, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import logo from "../assets/logo-no-br.png";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,12 +24,13 @@ export default function RegisterPage() {
             to="/"
             className="flex items-center justify-center space-x-2 mb-4"
           >
-            <Car className="h-10 w-10 text-blue-600" />
-            <span className="text-3xl font-bold text-gray-900">DriveHire</span>
+            <img
+              src={logo}
+              alt="SmartDrive"
+              className="w-10 h-10 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-full object-cover"
+            />
+            <span className="text-3xl font-bold text-gray-900">SmartDrive</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Đăng ký tài khoản
-          </h1>
           <p className="text-gray-600">
             Tạo tài khoản để bắt đầu sử dụng dịch vụ
           </p>
@@ -240,7 +242,7 @@ export default function RegisterPage() {
                     đủ. Nhấn vào nút bên dưới để bắt đầu.
                   </p>
                 </div>
-                <Link to="/driver/register" className="block">
+                <Link to="/register-partner" className="block">
                   <button className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">
                     Bắt đầu đăng ký tài xế
                   </button>
@@ -294,7 +296,7 @@ export default function RegisterPage() {
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Đã có tài khoản? </span>
               <Link
-                to="/auth/login"
+                to="/login"
                 className="text-blue-600 hover:underline font-medium"
               >
                 Đăng nhập ngay
