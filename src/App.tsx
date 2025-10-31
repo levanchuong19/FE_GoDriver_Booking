@@ -9,8 +9,7 @@ import AdminDriverApplications from "./Pages/Dashboard/AdminDriverApplications";
 import AdminDriverApplicationDetail from "./Pages/Dashboard/AdminDriverApplicationDetail";
 import RegisterPartner from "./Pages/RegisterPartner";
 import Layout from "./Components/Layout";
-import SearchPage from "./Pages/Search";
-import MapPage from "./Pages/Map";
+
 import AdminLayout from "./Components/Layout/AdminLayout";
 import UsersPage from "./Pages/Admin/Users";
 import PricingPage from "./Pages/Admin/Pricing";
@@ -67,8 +66,14 @@ function App() {
       element: <DashboardGuard />,
       children: [
         { path: "", element: <Dashboard /> },
-        { path: "/dashboard/driver-application", element: <AdminDriverApplications /> },
-        { path: "/dashboard/driver-application/:id", element: <AdminDriverApplicationDetail /> },
+        {
+          path: "/dashboard/driver-application",
+          element: <AdminDriverApplications />,
+        },
+        {
+          path: "/dashboard/driver-application/:id",
+          element: <AdminDriverApplicationDetail />,
+        },
       ],
     },
   ]);
