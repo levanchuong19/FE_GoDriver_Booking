@@ -27,13 +27,13 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
-import api from "../../config/axios";
 import type {
   FareBracket,
   FarePolicy,
   FarePolicyInput,
 } from "../../models/Pricing";
 import type { ColumnsType } from "antd/es/table";
+import api from "../../Config/api";
 
 type PricingRow = FarePolicy & { key?: string };
 
