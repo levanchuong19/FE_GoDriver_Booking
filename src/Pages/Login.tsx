@@ -12,23 +12,14 @@ interface LoginProps {
 }
 
 export default function LoginPage() {
-  const [activeTab, setActiveTab] = useState("customer");
-  const [customerData, setCustomerData] = useState({
-    email: "",
-    password: "",
-  });
-  const [driverData, setDriverData] = useState({
-    email: "",
-    password: "",
-  });
+  const [activeTab] = useState("customer");
   const [formData, setFormData] = useState<LoginProps>({
     phone: "",
     password: "",
   });
   const navigate = useNavigate();
-  const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [, setError] = useState<string>("");
+  const [, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const dispatch = useDispatch();

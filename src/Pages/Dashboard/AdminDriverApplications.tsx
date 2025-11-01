@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { listDriverApplications, approveDriverApplication } from "../../Config/adminDriverApplications";
-
+import {
+  listDriverApplications,
+  // approveDriverApplication,
+} from "../../Config/adminDriverApplications";
 
 type Status = "draft" | "pending" | "approved" | "rejected";
 
@@ -19,10 +21,11 @@ interface ApplicationItem {
   services?: string[];
 }
 
-
 const AdminDriverApplications = () => {
   const [sp, setSp] = useSearchParams();
-  const [status, setStatus] = useState<Status | "">((sp.get("status") as Status) || "pending");
+  const [status, setStatus] = useState<Status | "">(
+    (sp.get("status") as Status) || "pending"
+  );
   const [search, setSearch] = useState(sp.get("search") || "");
   const [searchInput, setSearchInput] = useState(search);
   const [page, setPage] = useState(Number(sp.get("page") || 1));
@@ -34,31 +37,36 @@ const AdminDriverApplications = () => {
   const navigate = useNavigate();
   // const [refreshKey, setRefreshKey] = useState(0);
 
-  async function approve(id: string) {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await approveDriverApplication(id);
-      const updated = res?.data?.app || null;
-      setItems((prev) => prev.map((it) => (it._id === id ? { ...it, status: updated?.status || "approved" } : it)));
-    } catch (e: unknown) {
-      let message = "Duyệt hồ sơ thất bại";
-      if (typeof e === "object" && e) {
-        const err = e as { response?: { data?: { message?: string } }; message?: string };
-        message = err.response?.data?.message || err.message || message;
-      }
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // async function approve(id: string) {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const res = await approveDriverApplication(id);
+  //     const updated = res?.data?.app || null;
+  //     setItems((prev) => prev.map((it) => (it._id === id ? { ...it, status: updated?.status || "approved" } : it)));
+  //   } catch (e: unknown) {
+  //     let message = "Duyệt hồ sơ thất bại";
+  //     if (typeof e === "object" && e) {
+  //       const err = e as { response?: { data?: { message?: string } }; message?: string };
+  //       message = err.response?.data?.message || err.message || message;
+  //     }
+  //     setError(message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(total / limit)),
+    [total, limit]
+  );
 
   useEffect(() => {
     const next = new URLSearchParams(sp);
-    if (status) next.set("status", status); else next.delete("status");
-    if (search) next.set("search", search); else next.delete("search");
+    if (status) next.set("status", status);
+    else next.delete("status");
+    if (search) next.set("search", search);
+    else next.delete("search");
     next.set("page", String(page));
     next.set("limit", String(limit));
     setSp(next, { replace: true });
@@ -92,9 +100,11 @@ const AdminDriverApplications = () => {
       } catch (e: unknown) {
         if (!ignore) {
           let message = "Lỗi tải dữ liệu";
-          if (typeof e === "object" && e)
-          {
-            const err = e as { response?: { data?: { message?: string } }; message?: string };
+          if (typeof e === "object" && e) {
+            const err = e as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            };
             message = err.response?.data?.message || err.message || message;
           }
           setError(message);
@@ -113,8 +123,12 @@ const AdminDriverApplications = () => {
     <div className="p-4 md:p-6 space-y-4 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-semibold">Quản lý hồ sơ tài xế</h1>
-          <p className="text-sm text-gray-600">Danh sách, lọc, xem chi tiết, duyệt/từ chối</p>
+          <h1 className="text-xl md:text-2xl font-semibold">
+            Quản lý hồ sơ tài xế
+          </h1>
+          <p className="text-sm text-gray-600">
+            Danh sách, lọc, xem chi tiết, duyệt/từ chối
+          </p>
         </div>
       </div>
 
@@ -166,30 +180,59 @@ const AdminDriverApplications = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td className="p-6 text-center" colSpan={8}>Đang tải...</td>
+                <td className="p-6 text-center" colSpan={8}>
+                  Đang tải...
+                </td>
               </tr>
             ) : error ? (
               <tr>
-                <td className="p-6 text-red-600" colSpan={8}>{error}</td>
+                <td className="p-6 text-red-600" colSpan={8}>
+                  {error}
+                </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td className="p-6 text-center" colSpan={8}>Không có dữ liệu</td>
+                <td className="p-6 text-center" colSpan={8}>
+                  Không có dữ liệu
+                </td>
               </tr>
             ) : (
               items.map((it, idx) => (
-                <tr key={it._id} className={idx % 2 ? "bg-white" : "bg-gray-50"}>
-                  <td className="p-3 border-b">{it.personal?.fullName || "-"}</td>
+                <tr
+                  key={it._id}
+                  className={idx % 2 ? "bg-white" : "bg-gray-50"}
+                >
+                  <td className="p-3 border-b">
+                    {it.personal?.fullName || "-"}
+                  </td>
                   <td className="p-3 border-b">{it.personal?.email || "-"}</td>
                   <td className="p-3 border-b">{it.personal?.phone || "-"}</td>
-                  <td className="p-3 border-b">{renderStatusBadge(it.status)}</td>
-                  <td className="p-3 border-b">{typeof it.yearsExperience === "number" ? it.yearsExperience : "-"}</td>
-                  <td className="p-3 border-b">{Array.isArray(it.services) && it.services.length ? it.services.map(mapService).join(", ") : "-"}</td>
-                  <td className="p-3 border-b">{formatDateTime(it.createdAt)}</td>
+                  <td className="p-3 border-b">
+                    {renderStatusBadge(it.status)}
+                  </td>
+                  <td className="p-3 border-b">
+                    {typeof it.yearsExperience === "number"
+                      ? it.yearsExperience
+                      : "-"}
+                  </td>
+                  <td className="p-3 border-b">
+                    {Array.isArray(it.services) && it.services.length
+                      ? it.services.map(mapService).join(", ")
+                      : "-"}
+                  </td>
+                  <td className="p-3 border-b">
+                    {formatDateTime(it.createdAt)}
+                  </td>
                   <td className="p-3 border-b">
                     <div className="flex gap-2">
-                      <button className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={() => navigate(`/dashboard/driver-application/${it._id}`)}>Xem</button>
-                      
+                      <button
+                        className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() =>
+                          navigate(`/dashboard/driver-application/${it._id}`)
+                        }
+                      >
+                        Xem
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -207,7 +250,9 @@ const AdminDriverApplications = () => {
         >
           Trước
         </button>
-        <div className="text-sm">Trang {page}/{totalPages}</div>
+        <div className="text-sm">
+          Trang {page}/{totalPages}
+        </div>
         <button
           className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
           disabled={page >= totalPages || loading}
@@ -217,7 +262,14 @@ const AdminDriverApplications = () => {
         </button>
         <div className="flex items-center gap-1 ml-4 text-sm">
           <span>Hiển thị</span>
-          <select className="border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500" value={limit} onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}>
+          <select
+            className="border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={limit}
+            onChange={(e) => {
+              setPage(1);
+              setLimit(Number(e.target.value));
+            }}
+          >
             <option value={10}>10</option>
             <option value={20}>20</option>
             <option value={50}>50</option>
@@ -240,7 +292,13 @@ function renderStatusBadge(status: Status) {
     rejected: { text: "Từ chối", cls: "bg-red-100 text-red-700" },
   };
   const m = map[status];
-  return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${m.cls}`}>{m.text}</span>;
+  return (
+    <span
+      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${m.cls}`}
+    >
+      {m.text}
+    </span>
+  );
 }
 
 function formatDateTime(value: string) {
@@ -262,5 +320,3 @@ function mapService(code: string) {
   };
   return map[code] || code;
 }
-
-
