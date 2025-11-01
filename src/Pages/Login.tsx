@@ -45,8 +45,8 @@ export default function LoginPage() {
         dispatch(login(response.data.data.user));
         if (response.data.data.role === "admin") {
           navigate("/dashboard", { replace: true });
-        } else {
-          // navigate("/", { replace: true });
+        } else if (response.data.data.role === "renter") {
+          navigate("/", { replace: true });
         }
       } else {
         throw new Error(response.data.data);
