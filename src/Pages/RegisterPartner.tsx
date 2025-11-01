@@ -10,130 +10,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// Dữ liệu địa chỉ Việt Nam (mẫu)
-const provinces = [
-  { code: "79", name: "TP. Hồ Chí Minh" },
-  { code: "01", name: "Hà Nội" },
-  { code: "48", name: "Đà Nẵng" },
-  { code: "92", name: "Cần Thơ" },
-  { code: "31", name: "Hải Phòng" },
-];
-
-const districts: Record<string, { code: string; name: string }[]> = {
-  "79": [
-    { code: "760", name: "Quận 1" },
-    { code: "761", name: "Quận 3" }, // Mã code cho Quận 3 thường là 761 hoặc 762, tùy nguồn
-    { code: "762", name: "Quận 4" },
-    { code: "763", name: "Quận 5" },
-    { code: "764", name: "Quận 6" },
-    { code: "765", name: "Quận 7" },
-    { code: "766", name: "Quận 8" },
-    { code: "767", name: "Quận 10" },
-    { code: "768", name: "Quận 11" },
-    { code: "769", name: "Quận 12" },
-    { code: "770", name: "Quận Bình Thạnh" },
-    { code: "771", name: "Quận Gò Vấp" },
-    { code: "772", name: "Quận Phú Nhuận" },
-    { code: "773", name: "Quận Tân Bình" },
-    { code: "774", name: "Quận Tân Phú" },
-    { code: "775", name: "Thành phố Thủ Đức" },
-    { code: "776", name: "Huyện Bình Chánh" },
-    { code: "777", name: "Huyện Cần Giờ" },
-    { code: "778", name: "Huyện Củ Chi" },
-    { code: "786", name: "Huyện Hóc Môn" },
-    { code: "787", name: "Huyện Nhà Bè" },
-  ],
-  // Thêm dữ liệu cho các tỉnh thành khác ở đây nếu cần
-};
-
-// **ĐÃ CẬP NHẬT:** Mở rộng dữ liệu phường/xã cho TP.HCM
-const wards: Record<string, { code: string; name: string }[]> = {
-  "760": [
-    // Quận 1
-    { code: "26734", name: "Phường Bến Nghé" },
-    { code: "26737", name: "Phường Bến Thành" },
-    { code: "26740", name: "Phường Cầu Kho" },
-    { code: "26743", name: "Phường Cầu Ông Lãnh" },
-    { code: "26746", name: "Phường Cô Giang" },
-    { code: "26749", name: "Phường Đa Kao" },
-    { code: "26752", name: "Phường Nguyễn Cư Trinh" },
-    { code: "26755", name: "Phường Nguyễn Thái Bình" },
-    { code: "26758", name: "Phường Phạm Ngũ Lão" },
-    { code: "26761", name: "Phường Tân Định" },
-  ],
-  "761": [
-    // Quận 3
-    { code: "26764", name: "Phường 01" },
-    { code: "26767", name: "Phường 02" },
-    { code: "26770", name: "Phường 03" },
-    { code: "26773", name: "Phường 04" },
-    { code: "26776", name: "Phường 05" },
-    { code: "26779", name: "Phường Võ Thị Sáu" },
-    { code: "26782", name: "Phường 09" },
-    { code: "26785", name: "Phường 10" },
-    { code: "26788", name: "Phường 11" },
-    { code: "26791", name: "Phường 12" },
-    { code: "26794", name: "Phường 13" },
-    { code: "26797", name: "Phường 14" },
-  ],
-  "765": [
-    // Quận 7
-    { code: "27007", name: "Phường Bình Thuận" },
-    { code: "27004", name: "Phường Phú Mỹ" },
-    { code: "27010", name: "Phường Phú Thuận" },
-    { code: "26998", name: "Phường Tân Hưng" },
-    { code: "26995", name: "Phường Tân Kiểng" },
-    { code: "27016", name: "Phường Tân Phong" },
-    { code: "27013", name: "Phường Tân Phú" },
-    { code: "27001", name: "Phường Tân Quy" },
-    { code: "26992", name: "Phường Tân Thuận Đông" },
-    { code: "26989", name: "Phường Tân Thuận Tây" },
-  ],
-  "770": [
-    // Quận Bình Thạnh
-    { code: "27205", name: "Phường 01" },
-    { code: "27208", name: "Phường 02" },
-    { code: "27211", name: "Phường 03" },
-    { code: "27217", name: "Phường 05" },
-    { code: "27220", name: "Phường 06" },
-    { code: "27223", name: "Phường 07" },
-    { code: "27226", name: "Phường 11" },
-    { code: "27229", name: "Phường 12" },
-    { code: "27232", name: "Phường 13" },
-    { code: "27235", name: "Phường 14" },
-    { code: "27238", name: "Phường 15" },
-    { code: "27241", name: "Phường 17" },
-    { code: "27244", name: "Phường 19" },
-    { code: "27247", name: "Phường 21" },
-    { code: "27250", name: "Phường 22" },
-    { code: "27253", name: "Phường 24" },
-    { code: "27256", name: "Phường 25" },
-    { code: "27259", name: "Phường 26" },
-    { code: "27262", name: "Phường 27" },
-    { code: "27265", name: "Phường 28" },
-  ],
-  "776": [
-    // Huyện Bình Chánh
-    { code: "27496", name: "Thị trấn Tân Túc" },
-    { code: "27502", name: "Xã An Phú Tây" },
-    { code: "27520", name: "Xã Bình Chánh" },
-    { code: "27511", name: "Xã Bình Hưng" },
-    { code: "27508", name: "Xã Bình Lợi" },
-    { code: "27529", name: "Xã Đa Phước" },
-    { code: "27517", name: "Xã Hưng Long" },
-    { code: "27505", name: "Xã Lê Minh Xuân" },
-    { code: "27499", name: "Xã Phạm Văn Hai" },
-    { code: "27514", name: "Xã Phong Phú" },
-    { code: "27523", name: "Xã Quy Đức" },
-    { code: "27506", name: "Xã Tân Kiên" },
-    { code: "27518", name: "Xã Tân Nhựt" },
-    { code: "27526", name: "Xã Tân Quý Tây" },
-    { code: "27493", name: "Xã Vĩnh Lộc A" },
-    { code: "27494", name: "Xã Vĩnh Lộc B" },
-  ],
-  // Thêm dữ liệu cho các quận/huyện khác nếu cần
-};
-
 interface UploadedFile {
   file: File;
   preview: string;
@@ -177,6 +53,61 @@ export default function RegisterPartner() {
   const [servicePriceErrors, setServicePriceErrors] = useState<{
     [key: string]: string;
   }>({});
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
+
+  useEffect(() => {
+    fetch("https://esgoo.net/api-tinhthanh/1/0.htm")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error === 0) {
+          const formatted = data.data.map((p: any) => ({
+            idProvince: p.id,
+            name: p.name,
+          }));
+          setProvinces(formatted);
+        }
+      })
+      .catch((err) => console.error("Lỗi tải tỉnh/thành:", err));
+  }, []);
+
+  const handleProvinceChange = (provinceId: string) => {
+    setFormData({ ...formData, province: provinceId, district: "", ward: "" });
+    setDistricts([]);
+    setWards([]);
+
+    fetch(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error === 0) {
+          setAvailableDistricts(data.data);
+        } else {
+          console.error("Không thể tải quận/huyện:", data.error_text);
+        }
+      })
+      .catch((err) => console.error("Lỗi tải quận/huyện:", err));
+  };
+
+  const handleDistrictChange = (districtId: string) => {
+    setFormData({ ...formData, district: districtId, ward: "" });
+    setWards([]);
+
+    fetch(`https://esgoo.net/api-tinhthanh/3/${districtId}.htm`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error === 0) {
+          setAvailableWards(data.data);
+        } else {
+          console.error("Không thể tải phường/xã:", data.error_text);
+        }
+      })
+      .catch((err) => console.error("Lỗi tải phường/xã:", err));
+  };
 
   const steps = [
     { id: 1, title: "Thông tin cá nhân", icon: User },
@@ -194,36 +125,36 @@ export default function RegisterPartner() {
     },
     {
       id: "long-distance",
-      label: "Lái xe đường dài",
-      description: "Chuyến đi liên tỉnh, du lịch",
+      label: "Lái xe đường liên tỉnh",
+      description: "Dịch vụ lái xe quãng đường dài, trên 100km.",
     },
     {
-      id: "vip",
-      label: "Dịch vụ VIP",
-      description: "Phục vụ khách hàng cao cấp",
+      id: "per_km",
+      label: "Lái xe theo Km",
+      description: "Dịch vụ lái xe quãng đường ngắn, dưới 100km.",
     },
     {
-      id: "airport",
-      label: "Tài xế đưa đón sân bay",
-      description: "Chuyên đưa đón sân bay",
+      id: "daily",
+      label: "Lái xe theo ngày",
+      description: "Dịch vụ lái xe trong ngày, hoặc 2 ngày, 3 ngày.",
     },
   ];
 
-  const handleProvinceChange = (provinceCode: string) => {
-    setFormData({
-      ...formData,
-      province: provinceCode,
-      district: "",
-      ward: "",
-    });
-    setAvailableDistricts(districts[provinceCode] || []);
-    setAvailableWards([]);
-  };
+  // const handleProvinceChange = (provinceCode: string) => {
+  //   setFormData({
+  //     ...formData,
+  //     province: provinceCode,
+  //     district: "",
+  //     ward: "",
+  //   });
+  //   setAvailableDistricts(districts[provinceCode] || []);
+  //   setAvailableWards([]);
+  // };
 
-  const handleDistrictChange = (districtCode: string) => {
-    setFormData({ ...formData, district: districtCode, ward: "" });
-    setAvailableWards(wards[districtCode] || []);
-  };
+  // const handleDistrictChange = (districtCode: string) => {
+  //   setFormData({ ...formData, district: districtCode, ward: "" });
+  //   setAvailableWards(wards[districtCode] || []);
+  // };
 
   const handleServiceToggle = (serviceId: string) => {
     setFormData((prev) => {
@@ -247,42 +178,42 @@ export default function RegisterPartner() {
     });
   };
 
-  // Hàm validate giá theo từng dịch vụ
-  const validateServicePrice = (serviceId: string, value: string) => {
-    let num = Number(value);
-    let error = "";
-    switch (serviceId) {
-      case "hourly":
-        if (!value) error = "Vui lòng nhập giá";
-        else if (isNaN(num) || num < 100000 || num >= 200000)
-          error = "Giá phải từ 100.000 đến dưới 200.000";
-        break;
-      case "long-distance":
-        if (!value) error = "Vui lòng nhập giá";
-        else if (isNaN(num) || num < 2000 || num >= 10000)
-          error = "Giá phải từ 2.000 đến dưới 10.000";
-        break;
-      case "vip":
-        if (!value) error = "Vui lòng nhập giá";
-        else if (isNaN(num) || num < 1000000 || num >= 5000000)
-          error = "Giá phải từ 1.000.000 đến dưới 5.000.000";
-        break;
-      case "airport":
-        if (!value) error = "Vui lòng nhập giá";
-        else if (isNaN(num) || num < 5000 || num > 20000)
-          error = "Giá phải từ 5.000 đến 20.000";
-        break;
-      default:
-        break;
-    }
-    return error;
-  };
+  // // Hàm validate giá theo từng dịch vụ
+  // const validateServicePrice = (serviceId: string, value: string) => {
+  //   let num = Number(value);
+  //   let error = "";
+  //   switch (serviceId) {
+  //     case "hourly":
+  //       if (!value) error = "Vui lòng nhập giá";
+  //       else if (isNaN(num) || num < 100000 || num >= 200000)
+  //         error = "Giá phải từ 100.000 đến dưới 200.000";
+  //       break;
+  //     case "long-distance":
+  //       if (!value) error = "Vui lòng nhập giá";
+  //       else if (isNaN(num) || num < 2000 || num >= 10000)
+  //         error = "Giá phải từ 2.000 đến dưới 10.000";
+  //       break;
+  //     case "per_km":
+  //       if (!value) error = "Vui lòng nhập giá";
+  //       else if (isNaN(num) || num < 1000000 || num >= 5000000)
+  //         error = "Giá phải từ 1.000.000 đến dưới 5.000.000";
+  //       break;
+  //     case "daily":
+  //       if (!value) error = "Vui lòng nhập giá";
+  //       else if (isNaN(num) || num < 5000 || num > 20000)
+  //         error = "Giá phải từ 5.000 đến 20.000";
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   return error;
+  // };
 
-  const handleServicePriceChange = (serviceId: string, value: string) => {
-    setServicePrices((prev) => ({ ...prev, [serviceId]: value }));
-    const error = validateServicePrice(serviceId, value);
-    setServicePriceErrors((prev) => ({ ...prev, [serviceId]: error }));
-  };
+  // const handleServicePriceChange = (serviceId: string, value: string) => {
+  //   setServicePrices((prev) => ({ ...prev, [serviceId]: value }));
+  //   const error = validateServicePrice(serviceId, value);
+  //   setServicePriceErrors((prev) => ({ ...prev, [serviceId]: error }));
+  // };
 
   const handleFileUpload = (field: string, files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -349,13 +280,12 @@ export default function RegisterPartner() {
     setIsSubmitting(true);
 
     const provinceName =
-      provinces.find((p) => p.code === formData.province)?.name || "";
+      provinces.find((p) => p.idProvince === formData.province)?.name || "";
     const districtName =
-      districts[formData.province]?.find((d) => d.code === formData.district)
+      availableDistricts.find((d) => d.idDistrict === formData.district)
         ?.name || "";
     const wardName =
-      wards[formData.district]?.find((w) => w.code === formData.ward)?.name ||
-      "";
+      availableWards.find((w) => w.idCommune === formData.ward)?.name || "";
 
     const payload = {
       fullName: formData.fullName,
@@ -643,7 +573,10 @@ export default function RegisterPartner() {
                   >
                     <option value="">Chọn tỉnh/thành phố</option>
                     {provinces.map((province) => (
-                      <option key={province.code} value={province.code}>
+                      <option
+                        key={province.idProvince}
+                        value={province.idProvince}
+                      >
                         {province.name}
                       </option>
                     ))}
@@ -659,7 +592,7 @@ export default function RegisterPartner() {
                   >
                     <option value="">Chọn quận/huyện</option>
                     {availableDistricts.map((district) => (
-                      <option key={district.code} value={district.code}>
+                      <option key={district.id} value={district.id}>
                         {district.name}
                       </option>
                     ))}
@@ -677,7 +610,7 @@ export default function RegisterPartner() {
                   >
                     <option value="">Chọn phường/xã</option>
                     {availableWards.map((ward) => (
-                      <option key={ward.code} value={ward.code}>
+                      <option key={ward.id} value={ward.id}>
                         {ward.name}
                       </option>
                     ))}
@@ -769,7 +702,7 @@ export default function RegisterPartner() {
                         licenseNumber: e.target.value,
                       })
                     }
-                    placeholder="123456789"
+                    placeholder="0101457201280"
                   />
                 </div>
                 <div className="space-y-1 flex flex-col">
@@ -811,38 +744,6 @@ export default function RegisterPartner() {
                 <div className="grid md:grid-cols-2 gap-4 mt-2">
                   {services.map((service) => {
                     const isChecked = formData.services.includes(service.id);
-                    let placeholder = "";
-                    let unit = "";
-                    let min = undefined,
-                      max = undefined;
-                    switch (service.id) {
-                      case "hourly":
-                        placeholder = "Nhập giá/giờ (100.000 - 199.999)";
-                        unit = "VNĐ/giờ";
-                        min = 100000;
-                        max = 199999;
-                        break;
-                      case "long-distance":
-                        placeholder = "Nhập giá/km (2.000 - 9.999)";
-                        unit = "VNĐ/km";
-                        min = 2000;
-                        max = 9999;
-                        break;
-                      case "vip":
-                        placeholder = "Nhập giá/chuyến mong muốn";
-                        unit = "VNĐ/chuyến";
-                        min = 1000000;
-                        max = 5000000;
-                        break;
-                      case "airport":
-                        placeholder = "Nhập giá/km (5.000 - 20.000)";
-                        unit = "VNĐ/km";
-                        min = 5000;
-                        max = 20000;
-                        break;
-                      default:
-                        break;
-                    }
                     return (
                       <div
                         key={service.id}
@@ -865,7 +766,7 @@ export default function RegisterPartner() {
                             <div className="text-sm text-gray-600">
                               {service.description}
                             </div>
-                            {isChecked && (
+                            {/* {isChecked && (
                               <div className="mt-2">
                                 <input
                                   type="number"
@@ -876,10 +777,10 @@ export default function RegisterPartner() {
                                   max={max}
                                   onClick={(e) => e.stopPropagation()}
                                   onChange={(e) =>
-                                    handleServicePriceChange(
-                                      service.id,
-                                      e.target.value
-                                    )
+                                    setServicePrices({
+                                      ...servicePrices,
+                                      [service.id]: e.target.value,
+                                    })
                                   }
                                 />
                                 <span className="ml-2 text-xs text-gray-500">
@@ -891,7 +792,7 @@ export default function RegisterPartner() {
                                   </div>
                                 )}
                               </div>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       </div>
@@ -1000,15 +901,13 @@ export default function RegisterPartner() {
                   <span className="text-gray-600">Địa chỉ:</span>
                   <div className="font-medium">
                     {`${formData.specificAddress}, ${
-                      wards[formData.district]?.find(
-                        (w) => w.code === formData.ward
-                      )?.name || ""
+                      availableWards.find((w) => w.id === formData.ward)
+                        ?.name || ""
                     }, ${
-                      districts[formData.province]?.find(
-                        (d) => d.code === formData.district
-                      )?.name || ""
+                      availableDistricts.find((d) => d.id === formData.district)
+                        ?.name || ""
                     }, ${
-                      provinces.find((p) => p.code === formData.province)
+                      provinces.find((p) => p.idProvince === formData.province)
                         ?.name || ""
                     }`}
                   </div>
@@ -1037,9 +936,9 @@ export default function RegisterPartner() {
                               {serviceId === "hourly"
                                 ? "/giờ"
                                 : serviceId === "long-distance" ||
-                                  serviceId === "airport"
+                                  serviceId === "daily"
                                 ? "/km"
-                                : serviceId === "vip"
+                                : serviceId === "per_km"
                                 ? "/chuyến"
                                 : ""}
                             </span>
