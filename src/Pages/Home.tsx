@@ -19,6 +19,7 @@ import { FaApple, FaGooglePlay } from "react-icons/fa";
 import fast from "../assets/fast.png";
 import unnamed from "../assets/unnamed.jpg";
 import cheap from "../assets/cheap.png";
+import { toast } from "react-toastify";
 
 export default function HomePage() {
   const [, setScrollY] = useState(0);
@@ -39,6 +40,12 @@ export default function HomePage() {
       document.documentElement.classList.remove("dark");
     }
   }, [isDark]);
+
+  const handleDownloadApp = () => {
+    toast.warning(
+      "Phiên bản đang trong thời gian nâng cấp, vui lòng quay lại sau."
+    );
+  };
   return (
     // <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
     //   {/* Hero Section */}
@@ -327,8 +334,11 @@ export default function HomePage() {
               <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-400 text-white rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition transform hover:scale-105">
                 Bắt đầu ngay
               </button>
-              <button className="px-8 py-4 border-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 dark:border-cyan-400 rounded-lg font-bold text-lg hover:bg-cyan-50 dark:hover:bg-cyan-950/30 transition">
-                Xem demo
+              <button
+                onClick={() => navigate("/register-partner")}
+                className="px-8 py-4 border-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 dark:border-cyan-400 rounded-lg font-bold text-lg hover:bg-cyan-50 dark:hover:bg-cyan-950/30 transition"
+              >
+                Trở thành tài xế
               </button>
             </div>
 
@@ -1133,7 +1143,8 @@ export default function HomePage() {
             {/* App Store */}
             {/* <button className="flex items-center gap-3 px-8 py-4 bg-white text-cyan-600 rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-black/20 transition transform hover:scale-105"> */}
             <a
-              href="https://apps.apple.com/vn/app/"
+              onClick={handleDownloadApp}
+              // href="https://apps.apple.com/vn/app/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-6 py-3 bg-white text-cyan-700 rounded-xl font-semibold text-lg hover:shadow-lg hover:shadow-black/20 transition transform hover:scale-105"
@@ -1145,7 +1156,8 @@ export default function HomePage() {
 
             {/* Google Play */}
             <a
-              href="https://play.google.com/store/apps"
+              onClick={handleDownloadApp}
+              // href="https://play.google.com/store/apps"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-6 py-3 bg-black/20 border-2 border-white text-white rounded-xl font-semibold text-lg hover:bg-white/20 transition transform hover:scale-105"

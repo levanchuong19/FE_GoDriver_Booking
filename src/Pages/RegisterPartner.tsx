@@ -54,12 +54,8 @@ export default function RegisterPartner() {
     [key: string]: string;
   }>({});
   const [provinces, setProvinces] = useState<any[]>([]);
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [wards, setWards] = useState<any[]>([]);
-
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWard, setSelectedWard] = useState("");
+  const [, setDistricts] = useState<any[]>([]);
+  const [, setWards] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("https://esgoo.net/api-tinhthanh/1/0.htm")
