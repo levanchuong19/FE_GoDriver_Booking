@@ -8,6 +8,12 @@ export default function Header() {
   const navigate = useNavigate();
   const [, setScrollY] = useState(0);
   const [isDark, setIsDark] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("accessToken");
+    setToken(storedToken);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -27,6 +33,14 @@ export default function Header() {
     toast.warning(
       "Phiên bản đang trong thời gian nâng cấp, vui lòng quay lại sau."
     );
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    toast.success("Đăng xuất thành công!");
+    setToken(null);
+    navigate("/login");
   };
   return (
     <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
@@ -92,12 +106,21 @@ export default function Header() {
           >
             Tải ứng dụng
           </button>
-          <button
-            onClick={() => navigate("/login")}
-            className="px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-lg font-semibold text-sm"
-          >
-            Đăng nhập
-          </button>
+          {token ? (
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg font-semibold text-sm"
+            >
+              Đăng xuất
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-lg font-semibold text-sm"
+            >
+              Đăng nhập
+            </button>
+          )}
         </div>
 
         {/* Menu mobile */}
@@ -112,12 +135,27 @@ export default function Header() {
               <Moon className="w-5 h-5" />
             )}
           </button>
-          <button
+          {token ? (
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg font-semibold text-sm"
+            >
+              Đăng xuất
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-lg font-semibold text-sm"
+            >
+              Đăng nhập
+            </button>
+          )}
+          {/* <button
             onClick={() => navigate("/login")}
             className="p-2 rounded-md bg-gradient-to-r from-cyan-500 to-blue-400 text-white font-medium"
           >
             Đăng nhập
-          </button>
+          </button> */}
         </div>
       </div>
     </header>
