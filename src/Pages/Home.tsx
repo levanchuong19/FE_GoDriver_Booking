@@ -21,7 +21,6 @@ import unnamed from "../assets/unnamed.jpg";
 import cheap from "../assets/cheap.png";
 import chPlay from "../assets/chPlay.png";
 import appStore from "../assets/appStore.png";
-import banner from "../assets/banner.jpg";
 import banner2 from "../assets/banner2.png";
 import { toast } from "react-toastify";
 
