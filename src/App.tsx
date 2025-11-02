@@ -8,6 +8,7 @@ import Dashboard from "./Pages/Dashboard/dashboard";
 import AdminDriverApplications from "./Pages/Dashboard/AdminDriverApplications";
 import AdminDriverApplicationDetail from "./Pages/Dashboard/AdminDriverApplicationDetail";
 import RegisterPartner from "./Pages/RegisterPartner";
+import RegisterPartnerStatus from "./Pages/RegisterPartner/Status";
 import Layout from "./Components/Layout";
 import UsersPage from "./Pages/Dashboard/Users";
 import BookingPage from "./Pages/Dashboard/Booking";
@@ -34,6 +35,10 @@ function App() {
         {
           path: "/register-partner",
           element: <RegisterPartner />,
+        },
+        {
+          path: "/register-partner/status",
+          element: <RegisterPartnerStatus />,
         },
       ],
     },
