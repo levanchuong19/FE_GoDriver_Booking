@@ -5,6 +5,7 @@ import { login } from "../redux/features/userSlice";
 import api from "../Config/api";
 import { useDispatch } from "react-redux";
 import logo from "../assets/logo-no-br.png";
+import { toast } from "react-toastify";
 
 interface LoginProps {
   phone: string;
@@ -48,6 +49,7 @@ export default function LoginPage() {
         } else if (response.data.data.role === "renter") {
           navigate("/", { replace: true });
         }
+        toast.success("Đăng nhập thành công!");
       } else {
         throw new Error(response.data.data);
       }

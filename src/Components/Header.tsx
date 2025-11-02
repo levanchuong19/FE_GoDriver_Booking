@@ -40,7 +40,6 @@ export default function Header() {
     localStorage.removeItem("user");
     toast.success("Đăng xuất thành công!");
     setToken(null);
-    navigate("/login");
   };
   return (
     <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">

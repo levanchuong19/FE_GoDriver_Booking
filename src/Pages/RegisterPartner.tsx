@@ -42,6 +42,7 @@ import {
   uploadDocuments,
   type DriverApplicationData,
 } from "../Config/driverApi";
+import { toast } from "react-toastify";
 
 const steps = [
   { id: 1, title: "Thông tin cá nhân", icon: User },
@@ -212,10 +213,9 @@ export default function RegisterPartner() {
                 phone: draftApplication.personal.phone || "",
                 email: draftApplication.personal.email || "",
                 idNumber: draftApplication.personal.idNumber || "",
-                gender:
-                  (draftApplication.personal.gender === "Nữ"
-                    ? "Nữ"
-                    : "Nam") as "Nam" | "Nữ",
+                gender: (draftApplication.personal.gender === "Nữ"
+                  ? "Nữ"
+                  : "Nam") as "Nam" | "Nữ",
               };
               dispatch(updatePersonal(personal));
               personalForm.reset(personal);
@@ -238,7 +238,8 @@ export default function RegisterPartner() {
                       setAvailableDistricts(data.data);
                       const districtId =
                         data.data.find(
-                          (d: any) => d.name === draftApplication.address.district
+                          (d: any) =>
+                            d.name === draftApplication.address.district
                         )?.id || "";
 
                       // If we have a district ID, load wards
@@ -261,7 +262,8 @@ export default function RegisterPartner() {
                                 district: districtId,
                                 ward: wardId,
                                 streetAddress:
-                                  draftApplication.address.specificAddress || "",
+                                  draftApplication.address.specificAddress ||
+                                  "",
                               };
                               dispatch(updateAddress(address));
                               addressForm.reset({
@@ -300,8 +302,7 @@ export default function RegisterPartner() {
                   province: "",
                   district: "",
                   ward: "",
-                  streetAddress:
-                    draftApplication.address.specificAddress || "",
+                  streetAddress: draftApplication.address.specificAddress || "",
                 };
                 dispatch(updateAddress(address));
                 addressForm.reset({
@@ -335,7 +336,8 @@ export default function RegisterPartner() {
               const driver = {
                 licenseNumber: draftApplication.licenseNumber || "",
                 licenseExpiryDate: expiryDate,
-                yearsExperience: draftApplication.yearsExperience?.toString() || "",
+                yearsExperience:
+                  draftApplication.yearsExperience?.toString() || "",
                 services: frontendServices as any,
               };
               dispatch(updateDriver(driver));
@@ -474,7 +476,10 @@ export default function RegisterPartner() {
         driverData.services.length > 0
       ) {
         const [day, month, year] = driverData.licenseExpiryDate.split("/");
-        const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+        const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+          2,
+          "0"
+        )}`;
 
         draftData.licenseNumber = driverData.licenseNumber;
         draftData.licenseExpiry = formattedDate;
@@ -513,9 +518,15 @@ export default function RegisterPartner() {
 
       if (draftApplicationId) {
         try {
-          response = await updateDriverApplication(draftApplicationId, draftData);
+          response = await updateDriverApplication(
+            draftApplicationId,
+            draftData
+          );
         } catch (updateError: any) {
-          console.warn("Failed to update draft, creating new one:", updateError.message);
+          console.warn(
+            "Failed to update draft, creating new one:",
+            updateError.message
+          );
           dispatch(setDraftApplicationId(undefined));
           response = await saveDraftApplication(draftData);
           if (response.success && response.data) {
@@ -543,9 +554,7 @@ export default function RegisterPartner() {
       }
     } catch (error: any) {
       console.error("Error saving draft:", error);
-      alert(
-        error.message || "Không thể lưu bản nháp. Vui lòng thử lại."
-      );
+      alert(error.message || "Không thể lưu bản nháp. Vui lòng thử lại.");
     } finally {
       setIsSavingDraft(false);
     }
@@ -599,7 +608,7 @@ export default function RegisterPartner() {
           error: error.message || "Lỗi tải lên",
         })
       );
-      alert(error.message || "Lỗi tải lên. Vui lòng thử lại.");
+      toast.error("Lỗi tải lên. Vui lòng thử lại.");
     } finally {
       dispatch(setUploading({ field, uploading: false }));
     }
@@ -643,7 +652,11 @@ export default function RegisterPartner() {
       };
       return fieldNames[field] || field;
     });
-    alert(`Vui lòng điền đầy đủ thông tin bắt buộc:\n- ${missingFields.join("\n- ")}`);
+    toast.warning(
+      `Vui lòng điền đầy đủ thông tin bắt buộc:\n- ${missingFields.join(
+        "\n- "
+      )}`
+    );
   };
 
   const onAddressSubmit = (data: AddressFormData) => {
@@ -669,7 +682,9 @@ export default function RegisterPartner() {
       };
       return fieldNames[field] || field;
     });
-    alert(`Vui lòng điền đầy đủ thông tin địa chỉ:\n- ${missingFields.join("\n- ")}`);
+    toast.warning(
+      `Vui lòng điền đầy đủ thông tin địa chỉ:\n- ${missingFields.join("\n- ")}`
+    );
   };
 
   const onDriverSubmit = (data: DriverFormData) => {
@@ -687,7 +702,9 @@ export default function RegisterPartner() {
       };
       return fieldNames[field] || field;
     });
-    alert(`Vui lòng điền đầy đủ thông tin tài xế:\n- ${missingFields.join("\n- ")}`);
+    toast.warning(
+      `Vui lòng điền đầy đủ thông tin tài xế:\n- ${missingFields.join("\n- ")}`
+    );
   };
 
   const nextStep = () => {
@@ -716,13 +733,19 @@ export default function RegisterPartner() {
         if (!documentsData.driverLicenseBackUrl?.startsWith("https://"))
           missingDocs.push("Bằng lái xe mặt sau");
 
-        alert(`Vui lòng tải lên đầy đủ các tài liệu bắt buộc:\n- ${missingDocs.join("\n- ")}`);
+        toast.warning(
+          `Vui lòng tải lên đầy đủ các tài liệu bắt buộc:\n- ${missingDocs.join(
+            "\n- "
+          )}`
+        );
         return;
       }
 
       const isAnyUploading = Object.values(uploadingState).some((u) => u);
       if (isAnyUploading) {
-        alert("Vui lòng đợi quá trình tải lên hoàn tất trước khi tiếp tục");
+        toast.warning(
+          "Vui lòng đợi quá trình tải lên hoàn tất trước khi tiếp tục"
+        );
         return;
       }
 
@@ -730,7 +753,7 @@ export default function RegisterPartner() {
         (e) => e !== null
       );
       if (hasUploadErrors) {
-        alert("Vui lòng sửa lỗi tải lên tài liệu trước khi tiếp tục");
+        toast.warning("Vui lòng sửa lỗi tải lên tài liệu trước khi tiếp tục");
         return;
       }
 
@@ -745,14 +768,18 @@ export default function RegisterPartner() {
   };
 
   const handleSubmit = async () => {
-    if (!personalData.fullName || !addressData.streetAddress || !driverData.licenseNumber) {
-      alert("Vui lòng điền đầy đủ thông tin");
+    if (
+      !personalData.fullName ||
+      !addressData.streetAddress ||
+      !driverData.licenseNumber
+    ) {
+      toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     const isAnyUploading = Object.values(uploadingState).some((u) => u);
     if (isAnyUploading) {
-      alert("Vui lòng đợi quá trình tải lên hoàn tất");
+      toast.warning("Vui lòng đợi quá trình tải lên hoàn tất");
       return;
     }
 
@@ -763,7 +790,7 @@ export default function RegisterPartner() {
       documentsData.driverLicenseBackUrl?.startsWith("https://");
 
     if (!allDocsUploaded) {
-      alert("Vui lòng tải lên tất cả các tài liệu bắt buộc");
+      toast.error("Vui lòng tải lên tất cả các tài liệu bắt buộc");
       return;
     }
 
@@ -782,7 +809,10 @@ export default function RegisterPartner() {
         addressData.ward;
 
       const [day, month, year] = driverData.licenseExpiryDate.split("/");
-      const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+        2,
+        "0"
+      )}`;
 
       const applicationData: DriverApplicationData = {
         personal: {
@@ -846,7 +876,7 @@ export default function RegisterPartner() {
       );
       dispatch(setStatus("submitted"));
 
-      alert(
+      toast.success(
         "Đăng ký thành công! Hồ sơ của bạn đã được gửi và đang trong quá trình kiểm duyệt."
       );
 
@@ -1377,10 +1407,7 @@ export default function RegisterPartner() {
                         />
                         {driverForm.formState.errors.licenseNumber && (
                           <p className="text-red-500 text-xs">
-                            {
-                              driverForm.formState.errors.licenseNumber
-                                .message
-                            }
+                            {driverForm.formState.errors.licenseNumber.message}
                           </p>
                         )}
                       </>
@@ -1454,18 +1481,14 @@ export default function RegisterPartner() {
                   />
                   {driverForm.formState.errors.licenseExpiryDate && (
                     <p className="text-red-500 text-xs">
-                      {
-                        driverForm.formState.errors.licenseExpiryDate.message
-                      }
+                      {driverForm.formState.errors.licenseExpiryDate.message}
                     </p>
                   )}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1 flex flex-col">
-                  <label htmlFor="yearsExperience">
-                    Số năm kinh nghiệm *
-                  </label>
+                  <label htmlFor="yearsExperience">Số năm kinh nghiệm *</label>
                   <Controller
                     name="yearsExperience"
                     control={driverForm.control}
@@ -1599,17 +1622,13 @@ export default function RegisterPartner() {
                   📋 Yêu cầu về hình ảnh:
                 </h4>
                 <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
-                  <li>
-                    Hình ảnh phải rõ nét, đầy đủ thông tin, không bị mờ
-                  </li>
+                  <li>Hình ảnh phải rõ nét, đầy đủ thông tin, không bị mờ</li>
                   <li>Định dạng: JPG, PNG (tối đa 5MB mỗi file)</li>
                   <li>Chụp thẳng, không bị nghiêng hoặc cắt góc</li>
                   <li>
                     Thông tin trên giấy tờ phải khớp với thông tin đã khai báo
                   </li>
-                  <li>
-                    Không chấp nhận ảnh photocopy hoặc ảnh chụp màn hình
-                  </li>
+                  <li>Không chấp nhận ảnh photocopy hoặc ảnh chụp màn hình</li>
                 </ul>
               </div>
             </div>

@@ -16,15 +16,16 @@ import { getDriverApplicationById } from "../../Config/driverApi";
 export default function RegisterPartnerStatus() {
   const navigate = useNavigate();
   const { status, application } = useSelector(
-    (state: RootState) => state.driverRegistration || {
-      status: "draft" as const,
-      application: {},
-    }
+    (state: RootState) =>
+      state.driverRegistration || {
+        status: "draft" as const,
+        application: {},
+      }
   );
 
   useEffect(() => {
     // Fetch latest application status if we have an ID
-    if (application && 'id' in application && application.id) {
+    if (application && "id" in application && application.id) {
       const fetchStatus = async () => {
         try {
           const response = await getDriverApplicationById(application.id!);
@@ -47,8 +48,7 @@ export default function RegisterPartnerStatus() {
         iconColor: "#6c757d",
         title: "Bản nháp",
         subtitle: "Hồ sơ chưa được gửi",
-        description:
-          "Bạn có thể tiếp tục chỉnh sửa và gửi hồ sơ.",
+        description: "Bạn có thể tiếp tục chỉnh sửa và gửi hồ sơ.",
         bgColor: "#e9ecef",
         textColor: "#495057",
       };
@@ -72,8 +72,7 @@ export default function RegisterPartnerStatus() {
           iconColor: "#27ae60",
           title: "Đăng ký thành công",
           subtitle: "Chúc mừng! Bạn đã trở thành đối tác của SmartDrive",
-          description:
-            "Bạn có thể bắt đầu nhận đơn hàng ngay bây giờ.",
+          description: "Bạn có thể bắt đầu nhận đơn hàng ngay bây giờ.",
           bgColor: "#d4edda",
           textColor: "#155724",
         };
@@ -142,13 +141,15 @@ export default function RegisterPartnerStatus() {
         </div>
 
         {/* Application Details */}
-        {application && 'id' in application && application.id && (
+        {application && "id" in application && application.id && (
           <div className="bg-white rounded-lg p-6 mb-6 shadow-md">
             <h3 className="text-xl font-bold mb-4">Chi tiết hồ sơ</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Mã hồ sơ:</span>
-                <span className="font-semibold">{'id' in application ? application.id : 'N/A'}</span>
+                <span className="font-semibold">
+                  {"id" in application ? application.id : "N/A"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Thời gian nộp:</span>
@@ -191,8 +192,8 @@ export default function RegisterPartnerStatus() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 text-sm">
                   🎉 Chúc mừng! Bạn đã được chấp nhận làm đối tác tài xế của
-                  chúng tôi. Vui lòng đăng nhập vào hệ thống để bắt đầu nhận
-                  đơn hàng.
+                  chúng tôi. Vui lòng đăng nhập vào hệ thống để bắt đầu nhận đơn
+                  hàng.
                 </p>
               </div>
             </>
@@ -211,8 +212,8 @@ export default function RegisterPartnerStatus() {
         <div className="bg-white rounded-lg p-6 mt-6 shadow-md">
           <h3 className="text-xl font-bold mb-4">Cần hỗ trợ?</h3>
           <p className="text-gray-600 mb-4">
-            Nếu bạn có bất kỳ câu hỏi nào về hồ sơ đăng ký, vui lòng liên hệ
-            với chúng tôi:
+            Nếu bạn có bất kỳ câu hỏi nào về hồ sơ đăng ký, vui lòng liên hệ với
+            chúng tôi:
           </p>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -221,7 +222,7 @@ export default function RegisterPartnerStatus() {
             </div>
             <div className="flex items-center gap-3">
               <span className="font-semibold text-gray-700">Hotline:</span>
-              <span className="text-blue-600">1900-XXXX</span>
+              <span className="text-blue-600">0772578556</span>
             </div>
           </div>
         </div>
@@ -229,4 +230,3 @@ export default function RegisterPartnerStatus() {
     </div>
   );
 }
-
