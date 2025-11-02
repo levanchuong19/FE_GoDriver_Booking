@@ -1,7 +1,10 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo-no-br.png";
+import { toast } from "react-toastify";
+import api from "../Config/api";
+import { Modal, Input } from "antd";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +18,104 @@ export default function RegisterPage() {
     confirmPassword: "",
     agreeTerms: false,
   });
+  const [isOtpModalVisible, setIsOtpModalVisible] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const navigate = useNavigate();
+
+  const handleRegister = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (
+      !customerData.fullName ||
+      !customerData.email ||
+      !customerData.phone ||
+      !customerData.password ||
+      !customerData.confirmPassword
+    ) {
+      toast.error("Vui lòng điền đầy đủ tất cả các thông tin bắt buộc.");
+    }
+
+    if (!customerData.agreeTerms) {
+      toast.error("Bạn cần đồng ý với điều khoản dịch vụ để tiếp tục.");
+    }
+
+    if (customerData.fullName.length < 2) {
+      toast.error("Họ và tên phải có ít nhất 2 ký tự.");
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerData.email)) {
+      toast.error("Email không hợp lệ.");
+    }
+
+    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+    if (!phoneRegex.test(customerData.phone)) {
+      toast.error(
+        "Số điện thoại không hợp lệ (phải là số điện thoại Việt Nam)."
+      );
+    }
+
+    if (customerData.password.length < 6) {
+      toast.error("Mật khẩu phải có ít nhất 6 ký tự.");
+    }
+
+    if (customerData.password !== customerData.confirmPassword) {
+      toast.error("Mật khẩu xác nhận không khớp.");
+    }
+
+    try {
+      const response = await api.post("auth/register", {
+        fullName: customerData.fullName,
+        email: customerData.email,
+        phone: customerData.phone,
+        password: customerData.password,
+      });
+
+      if (response.data?.success) {
+        toast.success(
+          "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."
+        );
+        setRegisteredEmail(customerData.email); // lưu lại email người dùng
+        setIsOtpModalVisible(true);
+      } else {
+        toast.error(
+          response.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
+        );
+      }
+    } catch (error: any) {
+      const errMsg =
+        error.response?.data?.message ||
+        "Không thể kết nối máy chủ. Vui lòng thử lại sau.";
+      toast.error(errMsg);
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      toast.error("Vui lòng nhập đầy đủ 6 chữ số của mã OTP.");
+      return;
+    }
+
+    try {
+      const response = await api.post("auth/verify-email", {
+        email: registeredEmail,
+        code: otpCode,
+      });
+
+      if (response.data?.success) {
+        toast.success("Xác thực email thành công! Bạn có thể đăng nhập ngay.");
+        setIsOtpModalVisible(false);
+        navigate("/login");
+      } else {
+        toast.error(response.data?.message || "Mã OTP không chính xác.");
+      }
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Xác thực thất bại. Vui lòng thử lại."
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
@@ -222,8 +323,9 @@ export default function RegisterPage() {
                   </label>
                 </div>
                 <button
+                  onClick={handleRegister}
                   className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
-                  type="submit"
+                  type="button"
                   disabled={!customerData.agreeTerms}
                 >
                   Đăng ký tài khoản
@@ -261,37 +363,6 @@ export default function RegisterPage() {
               <div className="flex-grow border-t border-gray-200"></div>
             </div>
 
-            {/* Social login */}
-            <div className="mt-6 space-y-3">
-              <button className="w-full flex items-center justify-center border border-gray-200 bg-transparent py-2 rounded hover:bg-gray-50 transition">
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                Đăng ký với Google
-              </button>
-              <button className="w-full flex items-center justify-center border border-gray-200 bg-transparent py-2 rounded hover:bg-gray-50 transition">
-                <svg className="mr-2 h-4 w-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Đăng ký với Facebook
-              </button>
-            </div>
-
             {/* Register link */}
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Đã có tài khoản? </span>
@@ -305,6 +376,32 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      <Modal
+        title="Xác thực Email"
+        open={isOtpModalVisible}
+        onCancel={() => setIsOtpModalVisible(false)}
+        footer={null}
+        centered
+      >
+        <p className="text-gray-600 mb-4">
+          Nhập mã gồm 6 chữ số đã được gửi đến{" "}
+          <strong>{registeredEmail}</strong>
+        </p>
+
+        <Input.OTP
+          length={6}
+          onChange={(value) => setOtpCode(value)}
+          value={otpCode}
+          size="large"
+        />
+
+        <button
+          onClick={handleVerifyEmail}
+          className="w-full bg-blue-600 text-white py-2 mt-4 rounded font-semibold hover:bg-blue-700 transition"
+        >
+          Xác nhận
+        </button>
+      </Modal>
     </div>
   );
 }

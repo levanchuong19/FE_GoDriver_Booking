@@ -19,6 +19,9 @@ import { FaApple, FaGooglePlay } from "react-icons/fa";
 import fast from "../assets/fast.png";
 import unnamed from "../assets/unnamed.jpg";
 import cheap from "../assets/cheap.png";
+import chPlay from "../assets/chPlay.png";
+import appStore from "../assets/appStore.png";
+import banner2 from "../assets/banner2.png";
 import { toast } from "react-toastify";
 
 export default function HomePage() {
@@ -47,262 +50,27 @@ export default function HomePage() {
     );
   };
   return (
-    // <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-    //   {/* Hero Section */}
-    //   <section className="py-20 px-4">
-    //     <div className="container mx-auto text-center">
-    //       <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-    //         Thuê tài xế chuyên nghiệp
-    //         <span className="text-blue-600 block">an toàn & tiện lợi</span>
-    //       </h1>
-    //       <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-    //         Kết nối bạn với những tài xế có kinh nghiệm, được xác minh và đánh
-    //         giá cao. Dịch vụ lái xe hộ 24/7 trên toàn quốc.
-    //       </p>
-    //       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-    //         <Link to="/map">
-    //           <button className="text-lg px-6 py-3 rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center">
-    //             <MapPin className="mr-2 h-5 w-5" />
-    //             Tìm tài xế ngay
-    //           </button>
-    //         </Link>
-    //         <Link to="/register-partner">
-    //           <button className="text-lg px-6 py-3 rounded border border-blue-600 text-blue-600 bg-transparent hover:bg-blue-50 flex items-center justify-center">
-    //             <Users className="mr-2 h-5 w-5" />
-    //             Trở thành tài xế
-    //           </button>
-    //         </Link>
-    //       </div>
-    //     </div>
-    //   </section>
-
-    //   {/* Stats Section */}
-    //   <section className="py-16 bg-blue-600 text-white">
-    //     <div className="container mx-auto px-4">
-    //       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-    //         <div>
-    //           <div className="text-4xl font-bold mb-2">10,000+</div>
-    //           <div className="text-blue-100">Tài xế đã đăng ký</div>
-    //         </div>
-    //         <div>
-    //           <div className="text-4xl font-bold mb-2">50,000+</div>
-    //           <div className="text-blue-100">Chuyến đi hoàn thành</div>
-    //         </div>
-    //         <div>
-    //           <div className="text-4xl font-bold mb-2">4.9/5</div>
-    //           <div className="text-blue-100">Đánh giá trung bình</div>
-    //         </div>
-    //         <div>
-    //           <div className="text-4xl font-bold mb-2">24/7</div>
-    //           <div className="text-blue-100">Hỗ trợ khách hàng</div>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </section>
-
-    //   {/* Services Section */}
-    //   <section id="services" className="py-20 px-4">
-    //     <div className="container mx-auto">
-    //       <div className="text-center mb-16">
-    //         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-    //           Dịch vụ của chúng tôi
-    //         </h2>
-    //         <p className="text-xl text-gray-600">
-    //           Đa dạng dịch vụ phù hợp với mọi nhu cầu
-    //         </p>
-    //       </div>
-    //       <div className="grid md:grid-cols-3 gap-8">
-    //         {/* Card 1 */}
-    //         <div className="bg-white rounded-lg shadow-md text-center hover:shadow-lg transition-shadow p-8">
-    //           <Clock className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-    //           <div className="text-2xl font-bold mb-2">Lái xe theo giờ</div>
-    //           <div className="text-gray-600 mb-2">
-    //             Thuê tài xế theo giờ cho các chuyến đi ngắn
-    //           </div>
-    //           <div className="text-2xl font-bold text-blue-600 mb-2">
-    //             ~ 150,000đ/giờ
-    //           </div>
-    //           {/* <p className="text-gray-600">Tối thiểu 2 giờ</p> */}
-    //         </div>
-    //         {/* Card 2 */}
-    //         <div className="bg-white rounded-lg shadow-md text-center hover:shadow-lg transition-shadow p-8">
-    //           <MapPin className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-    //           <div className="text-2xl font-bold mb-2">Lái xe đường dài</div>
-    //           <div className="text-gray-600 mb-2">
-    //             Dịch vụ lái xe cho các chuyến đi xa
-    //           </div>
-    //           <div className="text-2xl font-bold text-blue-600 mb-2">
-    //             ~ 2,000đ/km
-    //           </div>
-    //           <p className="text-gray-600">Bao gồm phí nghỉ đêm</p>
-    //         </div>
-    //         {/* Card 3 */}
-    //         <div className="bg-white rounded-lg shadow-md text-center hover:shadow-lg transition-shadow p-8">
-    //           <Shield className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-    //           <div className="text-2xl font-bold mb-2">Lái xe VIP</div>
-    //           <div className="text-gray-600 mb-2">
-    //             Tài xế chuyên nghiệp cho khách VIP
-    //           </div>
-    //           <div className="text-2xl font-bold text-blue-600 mb-2">
-    //             ~ 300,000đ/giờ
-    //           </div>
-    //           <p className="text-gray-600">Dịch vụ cao cấp</p>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </section>
-
-    //   {/* How it works */}
-    //   <section id="how-it-works" className="py-20 px-4 bg-gray-50">
-    //     <div className="container mx-auto">
-    //       <div className="text-center mb-16">
-    //         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-    //           Cách thức hoạt động
-    //         </h2>
-    //         <p className="text-xl text-gray-600">Đơn giản chỉ với 3 bước</p>
-    //       </div>
-    //       <div className="grid md:grid-cols-3 gap-8">
-    //         <div className="text-center">
-    //           <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-    //             1
-    //           </div>
-    //           <h3 className="text-xl font-semibold mb-2">Tìm kiếm tài xế</h3>
-    //           <p className="text-gray-600">
-    //             Nhập địa điểm và thời gian cần thuê tài xế
-    //           </p>
-    //         </div>
-    //         <div className="text-center">
-    //           <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-    //             2
-    //           </div>
-    //           <h3 className="text-xl font-semibold mb-2">Chọn tài xế</h3>
-    //           <p className="text-gray-600">
-    //             Xem hồ sơ, đánh giá và chọn tài xế phù hợp
-    //           </p>
-    //         </div>
-    //         <div className="text-center">
-    //           <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-    //             3
-    //           </div>
-    //           <h3 className="text-xl font-semibold mb-2">Đặt lịch</h3>
-    //           <p className="text-gray-600">
-    //             Xác nhận đặt lịch và thanh toán an toàn
-    //           </p>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </section>
-
-    //   {/* Featured Drivers */}
-    //   <section className="py-20 px-4">
-    //     <div className="container mx-auto">
-    //       <div className="text-center mb-16">
-    //         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-    //           Tài xế nổi bật
-    //         </h2>
-    //         <p className="text-xl text-gray-600">
-    //           Những tài xế được đánh giá cao nhất
-    //         </p>
-    //       </div>
-    //       <div className="grid md:grid-cols-3 gap-8">
-    //         {[1, 2, 3].map((i) => (
-    //           <div
-    //             key={i}
-    //             className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-8 text-center"
-    //           >
-    //             <img
-    //               src="https://cdn.santino.com.vn/storage/upload/news/2023/10/trang-phuc-lich-su-cho-nam-anh10.jpg"
-    //               alt="Driver"
-    //               width={80}
-    //               height={80}
-    //               className=" w-20 h-20 rounded-full object-cover mx-auto mb-4 "
-    //             />
-    //             <div className="text-2xl font-bold mb-2">Nguyễn Văn A</div>
-    //             <div className="text-gray-600 mb-2">
-    //               Tài xế chuyên nghiệp • 5 năm kinh nghiệm
-    //             </div>
-    //             <div className="flex items-center justify-center mb-2">
-    //               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-    //               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-    //               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-    //               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-    //               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-    //               <span className="ml-2 text-sm text-gray-600">
-    //                 4.9 (127 đánh giá)
-    //               </span>
-    //             </div>
-    //             <div className="flex flex-wrap gap-1 justify-center mb-4">
-    //               <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-    //                 Lái xe an toàn
-    //               </span>
-    //               <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-    //                 Đúng giờ
-    //               </span>
-    //             </div>
-    //             {/* <p className="text-2xl font-bold text-blue-600">15,000đ/km</p> */}
-    //           </div>
-    //         ))}
-    //       </div>
-    //     </div>
-    //   </section>
-
-    //   {/* CTA Section */}
-    //   <section className="py-20 px-4 bg-blue-600 text-white">
-    //     <div className="container mx-auto text-center">
-    //       <h2 className="text-4xl font-bold mb-4">Sẵn sàng bắt đầu?</h2>
-    //       <p className="text-xl mb-8 text-blue-100">
-    //         Tìm tài xế phù hợp ngay hôm nay
-    //       </p>
-    //       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-    //         <Link to="/map">
-    //           <button className="text-lg px-6 py-3 rounded bg-white text-blue-600 hover:bg-blue-100 font-semibold">
-    //             Tìm tài xế ngay
-    //           </button>
-    //         </Link>
-    //         <Link to="/register-partner">
-    //           <button className="text-lg px-6 py-3 rounded border border-white text-white hover:bg-white hover:text-blue-600 bg-transparent font-semibold">
-    //             Đăng ký làm tài xế
-    //           </button>
-    //         </Link>
-    //       </div>
-    //     </div>
-    //   </section>
-    // </div>
     <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden transition-colors duration-300">
-      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          {/* Animated gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 animate-pulse"></div>
-
-          {/* Floating blob 1 - Top left */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#f0f8ff] via-[#e2f3ff] to-[#f0f8ff] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"></div>
           <div className="absolute -top-40 -left-40 w-96 h-96 bg-gradient-to-br from-cyan-200 to-blue-200 dark:from-cyan-900/40 dark:to-blue-900/40 rounded-full blur-3xl opacity-40 animate-blob"></div>
-
-          {/* Floating blob 2 - Bottom right */}
           <div
             className="absolute -bottom-40 -right-40 w-96 h-96 bg-gradient-to-tl from-cyan-200 to-blue-200 dark:from-cyan-900/40 dark:to-blue-900/40 rounded-full blur-3xl opacity-40 animate-blob"
             style={{ animationDelay: "2s" }}
           ></div>
-
-          {/* Floating blob 3 - Top right */}
           <div
             className="absolute -top-20 -right-20 w-80 h-80 bg-gradient-to-bl from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-full blur-3xl opacity-30 animate-blob"
             style={{ animationDelay: "4s" }}
           ></div>
-
-          {/* Floating blob 4 - Bottom left */}
           <div
             className="absolute -bottom-20 -left-20 w-80 h-80 bg-gradient-to-tr from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-full blur-3xl opacity-30 animate-blob"
             style={{ animationDelay: "6s" }}
           ></div>
-
-          {/* Center glow effect */}
           <div
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-radial from-cyan-300/20 to-transparent dark:from-cyan-500/10 dark:to-transparent rounded-full blur-3xl animate-pulse"
             style={{ animationDuration: "4s" }}
           ></div>
-
-          {/* Animated grid pattern */}
           <div
             className="absolute inset-0 opacity-5 dark:opacity-10"
             style={{
@@ -313,7 +81,7 @@ export default function HomePage() {
           ></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center ">
           {/* Left content */}
           <div className="space-y-8">
             <div className="space-y-4">
@@ -325,21 +93,24 @@ export default function HomePage() {
                 với SmartDrive
               </h1>
               <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed">
-                Ứng dụng cho thuê tài xế lái xe hộ hàng đầu. Tìm kiếm tài xế chỉ
-                trong vài giây, an toàn 24/7, giá cạnh tranh.
+                Ứng dụng cho thuê tài xế lái xe hộ hàng đầu Việt Nam.
+              </p>
+              <p className="text-3sm text-slate-600 dark:text-slate-400">
+                Tìm kiếm tài xế chỉ trong vài giây, an toàn 24/7, giá cạnh
+                tranh.
               </p>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-400 text-white rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition transform hover:scale-105">
-                Bắt đầu ngay
-              </button>
-              <button
-                onClick={() => navigate("/register-partner")}
-                className="px-8 py-4 border-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 dark:border-cyan-400 rounded-lg font-bold text-lg hover:bg-cyan-50 dark:hover:bg-cyan-950/30 transition"
-              >
-                Trở thành tài xế
-              </button>
+            <div className="flex flex-col sm:flex-row gap-4 -ml-6">
+              <img
+                src={chPlay}
+                alt="Tải trên CH Play"
+                className="h-24 sm:h-24 mb-2 object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
+              />
+              <img
+                src={appStore}
+                alt="Tải trên App Store"
+                className="h-16 sm:h-16 object-contain mt-4 rounded-lg cursor-pointer hover:scale-105 transition-transform duration-300"
+              />
             </div>
 
             {/* Stats */}
@@ -372,178 +143,18 @@ export default function HomePage() {
           </div>
 
           {/* Right - Car visualization */}
-          <div className="relative h-96 md:h-full flex items-center justify-center">
-            <div className="relative w-full h-full flex items-center justify-center">
-              <div className="relative w-80 h-64 animate-float">
-                <svg
-                  viewBox="0 0 400 300"
-                  className="w-full h-full filter drop-shadow-2xl"
-                  style={{
-                    filter: "drop-shadow(0 0 30px rgba(110, 193, 228, 0.4))",
-                  }}
-                >
-                  {/* Car body */}
-                  <rect
-                    x="80"
-                    y="120"
-                    width="240"
-                    height="100"
-                    rx="20"
-                    fill="url(#carGradientSmart)"
-                    stroke="#6EC1E4"
-                    strokeWidth="3"
-                  />
-
-                  {/* Windows */}
-                  <rect
-                    x="100"
-                    y="100"
-                    width="60"
-                    height="50"
-                    rx="8"
-                    fill="#4a9eff"
-                    opacity="0.6"
-                    stroke="#6EC1E4"
-                    strokeWidth="2"
-                  />
-                  <rect
-                    x="240"
-                    y="100"
-                    width="60"
-                    height="50"
-                    rx="8"
-                    fill="#4a9eff"
-                    opacity="0.6"
-                    stroke="#6EC1E4"
-                    strokeWidth="2"
-                  />
-
-                  {/* Wheels */}
-                  <circle
-                    cx="130"
-                    cy="230"
-                    r="25"
-                    fill="#1a1a2e"
-                    stroke="#6EC1E4"
-                    strokeWidth="3"
-                  />
-                  <circle
-                    cx="270"
-                    cy="230"
-                    r="25"
-                    fill="#1a1a2e"
-                    stroke="#6EC1E4"
-                    strokeWidth="3"
-                  />
-
-                  {/* Wheel details */}
-                  <circle
-                    cx="130"
-                    cy="230"
-                    r="15"
-                    fill="none"
-                    stroke="#6EC1E4"
-                    strokeWidth="2"
-                    opacity="0.7"
-                  />
-                  <circle
-                    cx="270"
-                    cy="230"
-                    r="15"
-                    fill="none"
-                    stroke="#6EC1E4"
-                    strokeWidth="2"
-                    opacity="0.7"
-                  />
-
-                  {/* Headlights */}
-                  <circle
-                    cx="85"
-                    cy="145"
-                    r="12"
-                    fill="#6EC1E4"
-                    opacity="0.8"
-                  />
-                  <circle
-                    cx="85"
-                    cy="175"
-                    r="12"
-                    fill="#6EC1E4"
-                    opacity="0.8"
-                  />
-
-                  {/* Autonomous indicator */}
-                  <circle
-                    cx="200"
-                    cy="80"
-                    r="20"
-                    fill="none"
-                    stroke="#6EC1E4"
-                    strokeWidth="2"
-                    opacity="0.5"
-                  />
-                  <circle
-                    cx="200"
-                    cy="80"
-                    r="15"
-                    fill="none"
-                    stroke="#6EC1E4"
-                    strokeWidth="1"
-                    opacity="0.3"
-                  />
-                  <text
-                    x="200"
-                    y="85"
-                    textAnchor="middle"
-                    fill="#6EC1E4"
-                    fontSize="12"
-                    fontWeight="bold"
-                  >
-                    SmartDrive
-                  </text>
-
-                  <defs>
-                    <linearGradient
-                      id="carGradientSmart"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#6EC1E4" />
-                      <stop offset="50%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#6EC1E4" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-
-                {/* Glow effect */}
-                <div
-                  className="absolute inset-0 animate-glow rounded-full"
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgba(110, 193, 228, 0.2) 0%, transparent 70%)",
-                  }}
-                ></div>
-              </div>
-
-              {/* Floating elements */}
-              <div className="absolute top-10 right-10 w-20 h-20 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg backdrop-blur-md border border-cyan-300 dark:border-cyan-700 flex items-center justify-center animate-pulse">
-                <MapPin className="w-10 h-10 text-cyan-500 dark:text-cyan-400" />
-              </div>
-              <div
-                className="absolute bottom-10 left-10 w-20 h-20 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg backdrop-blur-md border border-cyan-300 dark:border-cyan-700 flex items-center justify-center animate-pulse"
-                style={{ animationDelay: "0.5s" }}
-              >
-                <Clock className="w-10 h-10 text-cyan-500 dark:text-cyan-400" />
-              </div>
-            </div>
+          <div className="flex justify-center md:justify-end">
+            <img
+              src={banner2}
+              alt="SmartDrive Banner"
+              className="object-contain max-h-[600px]"
+            />
           </div>
         </div>
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-8 h-8 text-cyan-500 dark:text-cyan-400" />
+          <ChevronDown className="w-10 h-10 text-cyan-500 dark:text-cyan-400" />
         </div>
       </section>
       {/* Services Section */}
