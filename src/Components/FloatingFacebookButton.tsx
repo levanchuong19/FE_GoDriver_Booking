@@ -18,14 +18,14 @@ export default function FloatingSocialButtons() {
       ),
       bg: "bg-cyan-500",
       hover: "hover:bg-cyan-600",
-      link: "https://zalo.me/0772578556",
+      link: "https://zalo.me/0776192138",
     },
     {
       id: "phone",
       icon: <FaPhoneAlt size={22} />,
       bg: "bg-green-500",
       hover: "hover:bg-green-600",
-      link: "tel:0772578556",
+      link: "tel:0776192138",
     },
   ];
 
