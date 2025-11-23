@@ -218,11 +218,11 @@ export default function RegisterPartnerStatus() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="font-semibold text-gray-700">Email:</span>
-              <span className="text-blue-600">support@smartdrive.vn</span>
+              <span className="text-blue-600">smartdrive.vn@gmail.com</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="font-semibold text-gray-700">Hotline:</span>
-              <span className="text-blue-600">0772578556</span>
+              <span className="text-blue-600">0776192138</span>
             </div>
           </div>
         </div>
