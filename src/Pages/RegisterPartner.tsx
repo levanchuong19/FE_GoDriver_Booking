@@ -92,6 +92,8 @@ export default function RegisterPartner() {
   const [availableDistricts, setAvailableDistricts] = useState<any[]>([]);
   const [availableWards, setAvailableWards] = useState<any[]>([]);
   const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
   const [documentFiles, setDocumentFiles] = useState<{
     idFront?: File;
     idBack?: File;
@@ -272,6 +274,15 @@ export default function RegisterPartner() {
                                 ward: wardId,
                                 streetAddress: address.streetAddress,
                               });
+                              if (wardData.error === 0) {
+                                const formatted = wardData.data.map(
+                                  (w: any) => ({
+                                    idWard: w.id,
+                                    name: w.name,
+                                  })
+                                );
+                                setWards(formatted);
+                              }
                             }
                           })
                           .catch((err) =>
@@ -292,6 +303,13 @@ export default function RegisterPartner() {
                           ward: "",
                           streetAddress: address.streetAddress,
                         });
+                        if (data.error === 0) {
+                          const formatted = data.data.map((d: any) => ({
+                            idDistrict: d.id,
+                            name: d.name,
+                          }));
+                          setDistricts(formatted);
+                        }
                       }
                     }
                   })
@@ -394,6 +412,11 @@ export default function RegisterPartner() {
       .then((data) => {
         if (data.error === 0) {
           setAvailableDistricts(data.data);
+          const formatted = data.data.map((d: any) => ({
+            idDistrict: d.id,
+            name: d.name,
+          }));
+          setDistricts(formatted);
         } else {
           console.error("Không thể tải quận/huyện:", data.error_text);
         }
@@ -421,6 +444,11 @@ export default function RegisterPartner() {
       .then((data) => {
         if (data.error === 0) {
           setAvailableWards(data.data);
+          const formatted = data.data.map((w: any) => ({
+            idWard: w.id,
+            name: w.name,
+          }));
+          setWards(formatted);
         } else {
           console.error("Không thể tải phường/xã:", data.error_text);
         }
@@ -1703,12 +1731,21 @@ export default function RegisterPartner() {
                 <div className="space-y-1 flex flex-col">
                   <span className="text-gray-600">Địa chỉ:</span>
                   <div className="font-medium">
-                    {addressData.streetAddress && addressData.province
-                      ? `${addressData.streetAddress}, ${
+                    {addressData.streetAddress &&
+                    addressData.ward &&
+                    addressData.district &&
+                    addressData.province
+                      ? [
+                          addressData.streetAddress,
+                          wards.find((w) => w.idWard === addressData.ward)
+                            ?.name || "",
+                          districts.find(
+                            (d) => d.idDistrict === addressData.district
+                          )?.name || "",
                           provinces.find(
                             (p) => p.idProvince === addressData.province
-                          )?.name || ""
-                        }`
+                          )?.name || "",
+                        ].join(", ")
                       : "Chưa nhập"}
                   </div>
                 </div>
