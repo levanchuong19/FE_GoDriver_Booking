@@ -13,6 +13,7 @@ import Layout from "./Components/Layout";
 import UsersPage from "./Pages/Dashboard/Users";
 import BookingPage from "./Pages/Dashboard/Booking";
 import PricingPage from "./Pages/Dashboard/Pricing";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
 
 function App() {
   const router = createBrowserRouter([
@@ -39,6 +40,10 @@ function App() {
         {
           path: "/register-partner/status",
           element: <RegisterPartnerStatus />,
+        },
+        {
+          path: "/privacy-policy",
+          element: <PrivacyPolicy />,
         },
       ],
     },
