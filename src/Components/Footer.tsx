@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logo from "../assets/logo-no-br.png";
 import facebook from "../assets/Facebook.svg.webp";
 import zalo from "../assets/Zalo.svg.webp";
@@ -200,12 +201,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/privacy-policy"
                   className="hover:text-cyan-500 dark:hover:text-cyan-400 transition"
                 >
                   Quyền riêng tư
-                </a>
+                </Link>
               </li>
               <li>
                 <a
