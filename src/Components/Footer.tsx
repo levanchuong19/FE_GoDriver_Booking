@@ -209,6 +209,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link
+                  to="/delete-account"
+                  className="hover:text-red-500 dark:hover:text-red-400 transition"
+                >
+                  Xóa tài khoản
+                </Link>
+              </li>
+              <li>
                 <a
                   href="#"
                   className="hover:text-cyan-500 dark:hover:text-cyan-400 transition"
