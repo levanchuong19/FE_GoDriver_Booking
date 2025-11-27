@@ -14,6 +14,7 @@ import UsersPage from "./Pages/Dashboard/Users";
 import BookingPage from "./Pages/Dashboard/Booking";
 import PricingPage from "./Pages/Dashboard/Pricing";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
+import DeleteAccount from "./Pages/DeleteAccount";
 
 function App() {
   const router = createBrowserRouter([
@@ -44,6 +45,10 @@ function App() {
         {
           path: "/privacy-policy",
           element: <PrivacyPolicy />,
+        },
+        {
+          path: "/delete-account",
+          element: <DeleteAccount />,
         },
       ],
     },
