@@ -15,6 +15,7 @@ import BookingPage from "./Pages/Dashboard/Booking";
 import PricingPage from "./Pages/Dashboard/Pricing";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import DeleteAccount from "./Pages/DeleteAccount";
+import TransactionsPage from "./Pages/Dashboard/Transactions";
 
 function App() {
   const router = createBrowserRouter([
@@ -90,6 +91,10 @@ function App() {
         {
           path: "/dashboard/pricing",
           element: <PricingPage />,
+        },
+        {
+          path: "/dashboard/transactions",
+          element: <TransactionsPage />,
         },
       ],
     },
