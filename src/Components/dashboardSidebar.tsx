@@ -99,6 +99,18 @@ function DashboardSidebar() {
             </span>{" "}
             Quản lý bảng giá
           </NavLink>
+
+          <NavLink
+            to="/dashboard/transactions"
+            className={({ isActive }) =>
+              `${linkClass} ${isActive ? activeClass : inactiveClass}`
+            }
+          >
+            <span className="text-xl">
+              <CircleDollarSign />
+            </span>{" "}
+            Quản lý giao dịch
+          </NavLink>
           <NavLink
             to="/dashboard/supports"
             className={({ isActive }) =>
