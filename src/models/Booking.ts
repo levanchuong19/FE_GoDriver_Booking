@@ -2,7 +2,12 @@
 export type PaymentStatus = "Pending" | "Paid" | "Failed" | "Refunded";
 
 /** Trạng thái chuyến/đơn */
-export type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed";
+export type BookingStatus =
+  | "Pending"
+  | "Confirmed"
+  | "Ongoing"
+  | "Cancelled"
+  | "Completed";
 
 /** Thông tin thanh toán gắn với đơn */
 export interface Payment {
