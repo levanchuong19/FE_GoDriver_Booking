@@ -1,91 +1,160 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useState } from "react";
-import { Card, Table, Tag, message } from "antd";
+import { useSearchParams } from "react-router-dom";
+import {
+  Button,
+  Card,
+  Input,
+  Modal,
+  Popconfirm,
+  Select,
+  Space,
+  Table,
+  Tag,
+  message,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import api from "../../Config/api";
-import type { Transaction } from "../../models/Transaction";
+import {
+  approveWithdrawRequest,
+  rejectWithdrawRequest,
+} from "../../Config/adminApi";
+import {
+  getWithdrawRequestId,
+  isWithdrawActionable,
+  type Transaction,
+} from "../../models/Transaction";
 import formatVND from "../../Utils/currency";
+import { getErrorMessage, unwrapList } from "../../Utils/apiData";
 
 type PaginationState = { current: number; pageSize: number; total: number };
 
 const typeLabels: Record<string, string> = {
   booking_income: "Thu từ chuyến",
+  commission_deduct: "Hoa hồng",
   withdraw: "Rút tiền",
+  adjustment: "Điều chỉnh",
 };
 
 const statusColors: Record<string, string> = {
   Paid: "green",
   Pending: "gold",
   Failed: "red",
+  approved: "green",
+  rejected: "red",
+  pending: "gold",
 };
 
 export default function TransactionsPage() {
+  const [sp, setSp] = useSearchParams();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
-    current: 1,
-    pageSize: 20,
+    current: Number(sp.get("page") || 1),
+    pageSize: Number(sp.get("limit") || 20),
     total: 0,
   });
+  const [type, setType] = useState(sp.get("type") || "");
   const [loading, setLoading] = useState(false);
+  const [workingId, setWorkingId] = useState<string | null>(null);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectMessage, setRejectMessage] = useState("");
+  const [rejectTarget, setRejectTarget] = useState<Transaction | null>(null);
 
   const fetchTransactions = useCallback(
-    async (page = 1, limit = pagination.pageSize) => {
+    async (page = 1, limit = pagination.pageSize, nextType = type) => {
       setLoading(true);
       try {
         const res = await api.get("/admin/transactions", {
-          params: { page, limit },
+          params: {
+            page,
+            limit,
+            type: nextType || undefined,
+          },
         });
-
-        const raw = res.data;
-        const dataBlock = raw?.data ?? raw;
-        const list: Transaction[] =
-          dataBlock?.transactions ??
-          dataBlock?.data ??
-          (Array.isArray(raw) ? raw : []);
-        const paginationMeta =
-          dataBlock?.pagination ?? raw?.pagination ?? raw?.data?.pagination;
-
-        setTransactions(list);
+        const parsed = unwrapList<Transaction>(res.data);
+        setTransactions(parsed.items);
         setPagination({
-          current: paginationMeta?.page ?? page,
-          pageSize: paginationMeta?.limit ?? limit,
-          total: paginationMeta?.total ?? list.length,
+          current: parsed.page ?? page,
+          pageSize: parsed.limit ?? limit,
+          total: parsed.total,
         });
       } catch (error: any) {
-        const msg =
-          error?.response?.data?.message ?? "Không thể tải danh sách giao dịch";
-        message.error(msg);
+        message.error(
+          getErrorMessage(error, "Không thể tải danh sách giao dịch")
+        );
       } finally {
         setLoading(false);
       }
     },
-    [pagination.pageSize]
+    [pagination.pageSize, type]
   );
 
   useEffect(() => {
-    fetchTransactions(1, pagination.pageSize);
-  }, [fetchTransactions, pagination.pageSize]);
+    const next = new URLSearchParams(sp);
+    if (type) next.set("type", type);
+    else next.delete("type");
+    next.set("page", String(pagination.current));
+    next.set("limit", String(pagination.pageSize));
+    setSp(next, { replace: true });
+  }, [type, pagination.current, pagination.pageSize, sp, setSp]);
+
+  useEffect(() => {
+    fetchTransactions(pagination.current, pagination.pageSize, type);
+  }, [fetchTransactions, pagination.current, pagination.pageSize, type]);
+
+  const handleApprove = async (tx: Transaction) => {
+    const requestId = getWithdrawRequestId(tx);
+    if (!requestId) {
+      message.error("Không tìm thấy mã yêu cầu rút tiền");
+      return;
+    }
+    setWorkingId(requestId);
+    try {
+      await approveWithdrawRequest(requestId);
+      message.success("Đã duyệt yêu cầu rút tiền");
+      await fetchTransactions(pagination.current, pagination.pageSize, type);
+    } catch (error) {
+      message.error(getErrorMessage(error, "Duyệt rút tiền thất bại"));
+    } finally {
+      setWorkingId(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectTarget || !rejectMessage.trim()) return;
+    const requestId = getWithdrawRequestId(rejectTarget);
+    if (!requestId) {
+      message.error("Không tìm thấy mã yêu cầu rút tiền");
+      return;
+    }
+    setWorkingId(requestId);
+    try {
+      await rejectWithdrawRequest(requestId, rejectMessage.trim());
+      message.success("Đã từ chối và hoàn tiền");
+      setRejectOpen(false);
+      setRejectMessage("");
+      setRejectTarget(null);
+      await fetchTransactions(pagination.current, pagination.pageSize, type);
+    } catch (error) {
+      message.error(getErrorMessage(error, "Từ chối rút tiền thất bại"));
+    } finally {
+      setWorkingId(null);
+    }
+  };
 
   const columns: ColumnsType<Transaction> = [
-    // {
-    //   title: "Mã giao dịch",
-    //   dataIndex: "id",
-    //   render: (_, r) => r.id || (r as any)._id || "—",
-    //   width: 200,
-    //   ellipsis: true,
-    // },
-    // {
-    //   title: "Tài xế",
-    //   dataIndex: "driverName",
-    //   render: (_, r) => r.driverName || r.driverId || "—",
-    //   width: 180,
-    // },
     {
       title: "Mã booking",
       dataIndex: "bookingCode",
       width: 140,
       ellipsis: true,
+    },
+    {
+      title: "Tài xế",
+      dataIndex: "driverName",
+      width: 160,
+      render: (_, r) => r.driverName || r.driverId || "—",
     },
     {
       title: "Loại",
@@ -134,12 +203,47 @@ export default function TransactionsPage() {
       title: "Rút tiền",
       dataIndex: "withdrawStatus",
       width: 120,
-      render: (v) => v ?? "—",
+      render: (v, row) => v || row.withdrawRequest?.status || "—",
     },
     {
       title: "Ghi chú",
       dataIndex: "note",
       ellipsis: true,
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 180,
+      fixed: "right",
+      render: (_, row) =>
+        isWithdrawActionable(row) ? (
+          <Space>
+            <Popconfirm
+              title="Duyệt yêu cầu rút tiền?"
+              onConfirm={() => handleApprove(row)}
+            >
+              <Button
+                type="primary"
+                size="small"
+                loading={workingId === getWithdrawRequestId(row)}
+              >
+                Duyệt
+              </Button>
+            </Popconfirm>
+            <Button
+              danger
+              size="small"
+              onClick={() => {
+                setRejectTarget(row);
+                setRejectOpen(true);
+              }}
+            >
+              Từ chối
+            </Button>
+          </Space>
+        ) : (
+          "—"
+        ),
     },
   ];
 
@@ -150,25 +254,68 @@ export default function TransactionsPage() {
         bordered={false}
         style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)", borderRadius: 12 }}
       >
+        <div className="mb-4">
+          <Select
+            value={type}
+            style={{ width: 220 }}
+            onChange={(value) => {
+              setType(value);
+              setPagination((p) => ({ ...p, current: 1 }));
+            }}
+            options={[
+              { value: "", label: "Tất cả loại" },
+              { value: "booking_income", label: "Thu từ chuyến" },
+              { value: "commission_deduct", label: "Hoa hồng" },
+              { value: "withdraw", label: "Rút tiền" },
+              { value: "adjustment", label: "Điều chỉnh" },
+            ]}
+          />
+        </div>
         <Table<Transaction>
-          rowKey={(r) => r.id || (r as any)._id}
+          rowKey={(r) => r.id || r._id || `${r.type}-${r.createdAt}`}
           dataSource={transactions}
           columns={columns}
           loading={loading}
           bordered
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1400 }}
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
             total: pagination.total,
             showSizeChanger: true,
             onChange: (page, pageSize) => {
-              setPagination((p) => ({ ...p, pageSize }));
-              fetchTransactions(page, pageSize);
+              setPagination((p) => ({ ...p, pageSize, current: page }));
             },
           }}
         />
       </Card>
+
+      <Modal
+        title="Từ chối yêu cầu rút tiền"
+        open={rejectOpen}
+        onCancel={() => {
+          setRejectOpen(false);
+          setRejectTarget(null);
+          setRejectMessage("");
+        }}
+        onOk={handleReject}
+        okText="Từ chối và hoàn tiền"
+        okButtonProps={{
+          danger: true,
+          disabled: !rejectMessage.trim(),
+          loading: Boolean(workingId),
+        }}
+      >
+        <p className="text-sm text-gray-500 mb-2">
+          Lý do từ chối sẽ được lưu lại và tiền được hoàn vào ví tài xế.
+        </p>
+        <Input.TextArea
+          rows={4}
+          value={rejectMessage}
+          onChange={(e) => setRejectMessage(e.target.value)}
+          placeholder="Nhập lý do từ chối"
+        />
+      </Modal>
     </div>
   );
 }
