@@ -79,42 +79,7 @@ function ensureOption(
   return [{ value, label: name || value }, ...options];
 }
 
-/** Chỉ gửi mã features API đã xác nhận chấp nhận (probe thật). */
-const FEATURE_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "ABS", label: "ABS" },
-  { value: "SUNROOF", label: "Cửa sổ trời" },
-  { value: "LEATHER", label: "Ghế da" },
-  { value: "CRUISE", label: "Cruise control" },
-];
-
-const ALLOWED_FEATURES = new Set(
-  FEATURE_OPTIONS.map((item) => item.value.toUpperCase()),
-);
-
-function normalizeFeatures(value: unknown): string[] {
-  const raw = Array.isArray(value)
-    ? value.map((item) => String(item || "").trim()).filter(Boolean)
-    : typeof value === "string"
-      ? value
-          .split(/[,;\n]+/)
-          .map((item) => item.trim())
-          .filter(Boolean)
-      : [];
-
-  // Loại tag hãng/dòng từng nhét nhầm + chỉ giữ mã API hỗ trợ
-  return Array.from(
-    new Set(
-      raw
-        .map((item) => item.trim())
-        .filter((item) => item && !/^(hãng|dòng|phiên bản)\s*:/i.test(item))
-        .map((item) => item.toUpperCase().replace(/\s+/g, "_"))
-        .filter((item) => ALLOWED_FEATURES.has(item)),
-    ),
-  );
-}
-
 function cleanPayload(values: Record<string, unknown>) {
-  const features = normalizeFeatures(values.features);
   const payload: Record<string, unknown> = {
     vehicleType: values.vehicleType,
     title: String(values.title || "").trim(),
@@ -166,8 +131,8 @@ function cleanPayload(values: Record<string, unknown>) {
     payload.variantName = catalog.variantName;
   }
 
-  // Luôn ghi đè features bằng list đã lọc (xóa tag Hãng:... gây INVALID_FEATURE)
-  payload.features = features;
+  // Bỏ tiện ích/điểm nổi bật — xóa features cũ để tránh INVALID_FEATURE
+  payload.features = [];
 
   // Giữ tên xe đã chọn trong title nếu title chưa có
   if (
@@ -305,7 +270,6 @@ export default function UsedCarFormPage() {
     try {
       const detail = (await getUsedCar(carId)) as UsedCarListing;
       const values = usedCarToFormValues(detail);
-      values.features = normalizeFeatures(values.features);
       form.setFieldsValue(values);
       setMedia(
         (detail.media || [])
@@ -352,7 +316,6 @@ export default function UsedCarFormPage() {
         fuelType: "GASOLINE",
         condition: "EXCELLENT",
         bodyType: "SEDAN",
-        features: [],
         provinceCode: "79",
         districtCode: "760",
         brandId: undefined,
@@ -381,7 +344,6 @@ export default function UsedCarFormPage() {
       fuelType: MERCEDES_S450_SEED.fuelType,
       condition: MERCEDES_S450_SEED.condition,
       bodyType: MERCEDES_S450_SEED.bodyType,
-      features: ["ABS", "SUNROOF", "LEATHER", "CRUISE"],
       exteriorColor: MERCEDES_S450_SEED.exteriorColor,
       interiorColor: MERCEDES_S450_SEED.interiorColor,
       provinceCode: "79",
@@ -935,32 +897,6 @@ export default function UsedCarFormPage() {
                         )}
                     </>
                   )}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item
-                name="features"
-                label="Tiện ích / điểm nổi bật"
-                extra="Chỉ chọn tiện nghi API hỗ trợ. Để trống cũng được."
-                getValueFromEvent={(value) =>
-                  Array.isArray(value)
-                    ? value
-                        .map((item) =>
-                          String(item)
-                            .trim()
-                            .toUpperCase()
-                            .replace(/\s+/g, "_"),
-                        )
-                        .filter((item) => ALLOWED_FEATURES.has(item))
-                    : []
-                }
-              >
-                <Select
-                  mode="multiple"
-                  allowClear
-                  placeholder="Chọn tiện nghi"
-                  options={FEATURE_OPTIONS}
                 />
               </Form.Item>
             </Col>

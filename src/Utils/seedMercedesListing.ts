@@ -29,7 +29,6 @@ export async function seedMercedesS450Listing(options?: {
     vehicleType: MERCEDES_S450_SEED.vehicleType,
   });
 
-  // Không gửi free-text features — API chỉ nhận mã enum
   const payload: Record<string, unknown> = {
     vehicleType: MERCEDES_S450_SEED.vehicleType,
     title: MERCEDES_S450_SEED.title,
@@ -54,7 +53,7 @@ export async function seedMercedesS450Listing(options?: {
     brandName: catalog.brandName,
     modelName: catalog.modelName,
     variantName: catalog.variantName,
-    features: ["ABS", "SUNROOF", "LEATHER", "CRUISE"],
+    features: [],
   };
 
   const created = (await createUsedCar(payload)) as {
