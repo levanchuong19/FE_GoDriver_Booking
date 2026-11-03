@@ -259,6 +259,5 @@ export function usedCarToFormValues(detail: UsedCarListing) {
     brandId: detail.brandId || "",
     modelId: detail.modelId || "",
     variantId: detail.variantId || "",
-    features: detail.features || [],
   };
 }

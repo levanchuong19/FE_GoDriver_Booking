@@ -347,17 +347,6 @@ export default function UsedCarDetailPage() {
                     {display(data.description)}
                   </div>
                 </Descriptions.Item>
-                <Descriptions.Item label="Điểm nổi bật" span={2}>
-                  {data.features?.length ? (
-                    <Space wrap>
-                      {data.features.map((item) => (
-                        <Tag key={item}>{item}</Tag>
-                      ))}
-                    </Space>
-                  ) : (
-                    "—"
-                  )}
-                </Descriptions.Item>
                 {data.rejectionReason && (
                   <Descriptions.Item label="Lý do từ chối" span={2}>
                     {data.rejectionReason}
