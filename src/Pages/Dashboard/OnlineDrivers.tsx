@@ -8,7 +8,6 @@ import {
   Statistic,
   Table,
   Tag,
-  message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -17,12 +16,9 @@ import {
   getOnlineDriverCount,
   getOnlineDrivers,
 } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
-import type {
-  DriverWalletInfo,
-  OnlineDriver,
-} from "../../models/OnlineDriver";
+import type { DriverWalletInfo, OnlineDriver } from "../../models/OnlineDriver";
 
 function normalizeDrivers(raw: unknown[]): OnlineDriver[] {
   return raw.map((item) => {
@@ -35,8 +31,8 @@ function normalizeDrivers(raw: unknown[]): OnlineDriver[] {
       fullName:
         typeof row.fullName === "string"
           ? row.fullName
-          : typeof (row.driver as { fullName?: string } | undefined)?.fullName ===
-              "string"
+          : typeof (row.driver as { fullName?: string } | undefined)
+                ?.fullName === "string"
             ? (row.driver as { fullName?: string }).fullName
             : undefined,
       phone:
@@ -71,7 +67,7 @@ export default function OnlineDriversPage() {
       setCount(onlineCount);
       setItems(normalizeDrivers(drivers as unknown[]));
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải tài xế online"));
+      notifyError(error, "Không thể tải tài xế online");
     } finally {
       setLoading(false);
     }
@@ -93,7 +89,7 @@ export default function OnlineDriversPage() {
       setWallet(data);
     } catch (error) {
       setWallet(null);
-      message.error(getErrorMessage(error, "Không thể tải ví tài xế"));
+      notifyError(error, "Không thể tải ví tài xế");
     } finally {
       setWalletLoading(false);
     }

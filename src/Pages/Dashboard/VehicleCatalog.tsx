@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Card, Col, Input, Row, Select, Table, message } from "antd";
+import { Card, Col, Input, Row, Select, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
   listVehicleBrands,
   listVehicleModels,
   listVehicleVariants,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 
 type Row = Record<string, unknown> & { id?: string; _id?: string };
 
@@ -39,7 +39,7 @@ export default function VehicleCatalogPage() {
       setModels([]);
       setVariants([]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được brands"));
+      notifyError(error, "Không tải được brands");
     } finally {
       setLoadingBrands(false);
     }
@@ -74,7 +74,7 @@ export default function VehicleCatalogPage() {
       });
       setModels(data.items as Row[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được models"));
+      notifyError(error, "Không tải được models");
     } finally {
       setLoadingModels(false);
     }
@@ -91,7 +91,7 @@ export default function VehicleCatalogPage() {
       const data = await listVehicleVariants({ modelId: nextModelId });
       setVariants(data.items as Row[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được variants"));
+      notifyError(error, "Không tải được variants");
     } finally {
       setLoadingVariants(false);
     }
@@ -149,7 +149,9 @@ export default function VehicleCatalogPage() {
                 onRow={(row) => ({
                   onClick: () => loadModels(getId(row)),
                   className:
-                    brandId === getId(row) ? "bg-green-50 cursor-pointer" : "cursor-pointer",
+                    brandId === getId(row)
+                      ? "bg-green-50 cursor-pointer"
+                      : "cursor-pointer",
                 })}
               />
             </Card>
@@ -165,7 +167,9 @@ export default function VehicleCatalogPage() {
                 onRow={(row) => ({
                   onClick: () => loadVariants(getId(row)),
                   className:
-                    modelId === getId(row) ? "bg-green-50 cursor-pointer" : "cursor-pointer",
+                    modelId === getId(row)
+                      ? "bg-green-50 cursor-pointer"
+                      : "cursor-pointer",
                 })}
               />
             </Card>

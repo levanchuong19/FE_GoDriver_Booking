@@ -9,13 +9,12 @@ import {
   Space,
   Table,
   Tag,
-  message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { getDriverWallet } from "../../Config/adminApi";
 import { listDriverWalletTransactions } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type { DriverWalletInfo } from "../../models/OnlineDriver";
 
@@ -34,7 +33,7 @@ export default function DriverWalletsPage() {
   const [transactions, setTransactions] = useState<Tx[]>([]);
   const [driverId, setDriverId] = useState("");
   const [type, setType] = useState<"booking_income" | "withdraw">(
-    "booking_income"
+    "booking_income",
   );
 
   const handleLookup = async () => {
@@ -53,7 +52,7 @@ export default function DriverWalletsPage() {
     } catch (error) {
       setWallet(null);
       setTransactions([]);
-      message.error(getErrorMessage(error, "Không tải được ví / giao dịch"));
+      notifyError(error, "Không tải được ví / giao dịch");
     } finally {
       setLoading(false);
     }
@@ -70,7 +69,7 @@ export default function DriverWalletsPage() {
       });
       setTransactions(txData.items as Tx[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được giao dịch"));
+      notifyError(error, "Không tải được giao dịch");
     } finally {
       setLoading(false);
     }
@@ -123,11 +122,7 @@ export default function DriverWalletsPage() {
             name="driverId"
             rules={[{ required: true, message: "Nhập driverId" }]}
           >
-            <Input
-              placeholder="Driver ID"
-              style={{ width: 320 }}
-              allowClear
-            />
+            <Input placeholder="Driver ID" style={{ width: 320 }} allowClear />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>

@@ -18,7 +18,7 @@ import {
   getRideDriverRegistration,
   rejectRideDriverRegistration,
 } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import type { RideDriverRegistration } from "../../models/RideDriver";
 
 const statusColor: Record<string, string> = {
@@ -44,7 +44,7 @@ export default function RideDriverRegistrationDetail() {
       const detail = await getRideDriverRegistration(userId);
       setData(detail);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải chi tiết đăng ký"));
+      notifyError(error, "Không thể tải chi tiết đăng ký");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function RideDriverRegistrationDetail() {
 
   const mediaEntries = useMemo(() => {
     const fromDocs = Object.entries({ ...documents, ...vehicleDocs }).filter(
-      ([, url]) => Boolean(url)
+      ([, url]) => Boolean(url),
     );
     const fromPhotos = photos.map((url, index) => [`Ảnh xe ${index + 1}`, url]);
     return [...fromDocs, ...fromPhotos] as [string, string][];
@@ -80,7 +80,7 @@ export default function RideDriverRegistrationDetail() {
       message.success("Đã duyệt tài xế Đặt xe");
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Duyệt thất bại"));
+      notifyError(error, "Duyệt thất bại");
     } finally {
       setWorking(false);
     }
@@ -96,7 +96,7 @@ export default function RideDriverRegistrationDetail() {
       setReason("");
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Từ chối thất bại"));
+      notifyError(error, "Từ chối thất bại");
     } finally {
       setWorking(false);
     }
@@ -182,9 +182,7 @@ export default function RideDriverRegistrationDetail() {
                   {String(vehicle.categoryCode || "—")}
                 </Descriptions.Item>
                 <Descriptions.Item label="Biển số">
-                  {String(
-                    vehicle.plateNumber || vehicle.licensePlate || "—"
-                  )}
+                  {String(vehicle.plateNumber || vehicle.licensePlate || "—")}
                 </Descriptions.Item>
                 <Descriptions.Item label="Hãng">
                   {String(vehicle.brand || "—")}

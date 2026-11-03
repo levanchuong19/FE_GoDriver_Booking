@@ -22,7 +22,7 @@ import {
   listSharedVehiclesMine,
   searchSharedTrips,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type AnyRow = Record<string, unknown> & { id?: string; _id?: string };
@@ -56,7 +56,7 @@ export default function SharedRidesPage() {
       setTrips(data.items as AnyRow[]);
       message.success(`Tìm thấy ${data.total} chuyến`);
     } catch (error) {
-      message.error(getErrorMessage(error, "Tìm chuyến thất bại"));
+      notifyError(error, "Tìm chuyến thất bại");
     } finally {
       setSearchLoading(false);
     }
@@ -74,7 +74,7 @@ export default function SharedRidesPage() {
       setVehicles(vehicleData.items as AnyRow[]);
       setTemplates(templateData.items as AnyRow[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được dữ liệu xe ghép"));
+      notifyError(error, "Không tải được dữ liệu xe ghép");
     } finally {
       setMineLoading(false);
     }
@@ -93,7 +93,7 @@ export default function SharedRidesPage() {
         String(
           (row.origin as { address?: string } | undefined)?.address ||
             row.originAddress ||
-            "—"
+            "—",
         ),
       ellipsis: true,
     },
@@ -103,7 +103,7 @@ export default function SharedRidesPage() {
         String(
           (row.destination as { address?: string } | undefined)?.address ||
             row.destinationAddress ||
-            "—"
+            "—",
         ),
       ellipsis: true,
     },
@@ -252,7 +252,11 @@ export default function SharedRidesPage() {
               label: "Chuyến / xe của tài khoản",
               children: (
                 <div className="space-y-4">
-                  <Button type="primary" onClick={loadMine} loading={mineLoading}>
+                  <Button
+                    type="primary"
+                    onClick={loadMine}
+                    loading={mineLoading}
+                  >
                     Tải dữ liệu
                   </Button>
                   <Card type="inner" title="Chuyến của tôi" size="small">
@@ -306,7 +310,9 @@ export default function SharedRidesPage() {
                         {
                           title: "Loại xe",
                           render: (_, row) =>
-                            String(row.vehicleType || row.type || row.code || "—"),
+                            String(
+                              row.vehicleType || row.type || row.code || "—",
+                            ),
                         },
                         {
                           title: "Số ghế",
@@ -315,7 +321,7 @@ export default function SharedRidesPage() {
                               row.seatCount ||
                                 (Array.isArray(row.seats)
                                   ? row.seats.length
-                                  : "—")
+                                  : "—"),
                             ),
                         },
                       ]}

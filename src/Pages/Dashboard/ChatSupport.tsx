@@ -10,7 +10,6 @@ import {
   Space,
   Spin,
   Typography,
-  message,
 } from "antd";
 import dayjs from "dayjs";
 import {
@@ -20,7 +19,7 @@ import {
   markChatRead,
   sendChatMessage,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 
 type ChatBooking = Record<string, unknown> & {
   bookingId?: string;
@@ -58,7 +57,7 @@ export default function ChatSupportPage() {
       setBookings(list.items as ChatBooking[]);
       setUnread(count);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được danh sách chat"));
+      notifyError(error, "Không tải được danh sách chat");
     } finally {
       setLoading(false);
     }
@@ -77,7 +76,7 @@ export default function ChatSupportPage() {
       await markChatRead(id).catch(() => undefined);
       await loadBookings();
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được tin nhắn"));
+      notifyError(error, "Không tải được tin nhắn");
     } finally {
       setMsgLoading(false);
     }
@@ -91,7 +90,7 @@ export default function ChatSupportPage() {
       setText("");
       await openChat(selectedId);
     } catch (error) {
-      message.error(getErrorMessage(error, "Gửi tin nhắn thất bại"));
+      notifyError(error, "Gửi tin nhắn thất bại");
     } finally {
       setSending(false);
     }
@@ -134,15 +133,16 @@ export default function ChatSupportPage() {
                             />
                           </Space>
                         }
-                        description={
-                          String(
-                            item.lastMessage ||
-                              (item.lastMessageObj as { message?: string } | undefined)
-                                ?.message ||
-                              item.status ||
-                              "—"
-                          )
-                        }
+                        description={String(
+                          item.lastMessage ||
+                            (
+                              item.lastMessageObj as
+                                | { message?: string }
+                                | undefined
+                            )?.message ||
+                            item.status ||
+                            "—",
+                        )}
                       />
                     </List.Item>
                   );

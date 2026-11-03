@@ -1,18 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Input,
-  Space,
-  Typography,
-  message,
-} from "antd";
+import { Button, Card, Input, Space, Typography, message } from "antd";
 import {
   clearChatbotHistory,
   getChatbotHistory,
   sendChatbotMessage,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 
 type HistoryItem = { role?: string; content?: string };
 
@@ -30,7 +23,7 @@ export default function ChatbotAdminPage() {
       };
       setHistory(Array.isArray(data?.history) ? data.history : []);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được lịch sử chatbot"));
+      notifyError(error, "Không tải được lịch sử chatbot");
     }
   };
 
@@ -45,7 +38,7 @@ export default function ChatbotAdminPage() {
     try {
       const data = (await sendChatbotMessage(
         text.trim(),
-        sessionId.trim()
+        sessionId.trim(),
       )) as { response?: string };
       setText("");
       if (data?.response) {
@@ -58,7 +51,7 @@ export default function ChatbotAdminPage() {
         await loadHistory();
       }
     } catch (error) {
-      message.error(getErrorMessage(error, "Gửi chatbot thất bại"));
+      notifyError(error, "Gửi chatbot thất bại");
     } finally {
       setLoading(false);
     }
@@ -72,7 +65,7 @@ export default function ChatbotAdminPage() {
       setHistory([]);
       message.success("Đã xóa lịch sử session");
     } catch (error) {
-      message.error(getErrorMessage(error, "Xóa lịch sử thất bại"));
+      notifyError(error, "Xóa lịch sử thất bại");
     } finally {
       setLoading(false);
     }

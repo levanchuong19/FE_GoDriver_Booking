@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-  message,
-} from "antd";
+import { Button, Card, Popconfirm, Space, Table, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
@@ -16,7 +8,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 
 type NotificationRow = {
   _id?: string;
@@ -51,7 +43,7 @@ export default function NotificationsPage() {
       setPage(nextPage);
       setPageSize(nextSize);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được thông báo"));
+      notifyError(error, "Không tải được thông báo");
     } finally {
       setLoading(false);
     }
@@ -106,7 +98,7 @@ export default function NotificationsPage() {
                   await markNotificationRead(getId(row));
                   await load(page, pageSize);
                 } catch (error) {
-                  message.error(getErrorMessage(error, "Đánh dấu đọc thất bại"));
+                  notifyError(error, "Đánh dấu đọc thất bại");
                 }
               }}
             >
@@ -121,7 +113,7 @@ export default function NotificationsPage() {
                 message.success("Đã xóa");
                 await load(page, pageSize);
               } catch (error) {
-                message.error(getErrorMessage(error, "Xóa thất bại"));
+                notifyError(error, "Xóa thất bại");
               }
             }}
           >
@@ -147,7 +139,7 @@ export default function NotificationsPage() {
                   message.success("Đã đánh dấu tất cả đã đọc");
                   await load(page, pageSize);
                 } catch (error) {
-                  message.error(getErrorMessage(error, "Thao tác thất bại"));
+                  notifyError(error, "Thao tác thất bại");
                 }
               }}
             >

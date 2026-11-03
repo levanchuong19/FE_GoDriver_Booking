@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Card, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { listAdminRides } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import { getRideId, type RideRecord } from "../../models/Ride";
 
@@ -23,7 +23,11 @@ const statusColor: Record<string, string> = {
 };
 
 function personName(
-  value: RideRecord["customer"] | RideRecord["customerId"] | RideRecord["driver"] | RideRecord["driverId"]
+  value:
+    | RideRecord["customer"]
+    | RideRecord["customerId"]
+    | RideRecord["driver"]
+    | RideRecord["driverId"],
 ) {
   if (!value) return "—";
   if (typeof value === "string") return value;
@@ -32,10 +36,7 @@ function personName(
 
 function pickup(row: RideRecord) {
   return (
-    row.pickupAddress ||
-    row.pickupLocation ||
-    String(row.pickup || "") ||
-    "—"
+    row.pickupAddress || row.pickupLocation || String(row.pickup || "") || "—"
   );
 }
 
@@ -83,7 +84,7 @@ export default function AdminRidesPage() {
         }
       } catch (error) {
         if (!ignore) {
-          message.error(getErrorMessage(error, "Không thể tải danh sách chuyến"));
+          notifyError(error, "Không thể tải danh sách chuyến");
         }
       } finally {
         if (!ignore) setLoading(false);

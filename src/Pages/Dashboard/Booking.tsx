@@ -13,13 +13,18 @@ import {
 import { EyeOutlined, CarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { ColumnsType } from "antd/es/table";
-import type { Booking, BookingStatus, PaymentStatus } from "../../models/Booking";
+import type {
+  Booking,
+  BookingStatus,
+  PaymentStatus,
+} from "../../models/Booking";
 import api from "../../Config/api";
 import {
   updateBookingPaymentStatus,
   updateBookingStatus,
 } from "../../Config/adminApi";
-import { getErrorMessage, unwrapList } from "../../Utils/apiData";
+import { unwrapList } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type Row = Booking & { key?: string };
@@ -73,12 +78,12 @@ export default function BookingPage() {
         setPage(parsed.page ?? p);
         setPageSize(parsed.limit ?? ps);
       } catch (error) {
-        message.error(getErrorMessage(error, "Không thể tải danh sách bookings"));
+        notifyError(error, "Không thể tải danh sách bookings");
       } finally {
         setLoading(false);
       }
     },
-    [pageSize, status]
+    [pageSize, status],
   );
 
   useEffect(() => {
@@ -91,7 +96,7 @@ export default function BookingPage() {
       const detail = (res.data?.data ?? res.data) as Booking;
       setCurrent(detail);
       setData((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, ...detail } : item))
+        prev.map((item) => (item._id === id ? { ...item, ...detail } : item)),
       );
     } catch {
       await fetchAll(page, pageSize, status);
@@ -105,7 +110,7 @@ export default function BookingPage() {
       message.success("Đã cập nhật trạng thái booking");
       await refreshCurrent(id);
     } catch (error) {
-      message.error(getErrorMessage(error, "Cập nhật trạng thái thất bại"));
+      notifyError(error, "Cập nhật trạng thái thất bại");
     } finally {
       setWorking(false);
     }
@@ -118,7 +123,7 @@ export default function BookingPage() {
       message.success("Đã cập nhật trạng thái thanh toán");
       await refreshCurrent(id);
     } catch (error) {
-      message.error(getErrorMessage(error, "Cập nhật thanh toán thất bại"));
+      notifyError(error, "Cập nhật thanh toán thất bại");
     } finally {
       setWorking(false);
     }
@@ -183,7 +188,9 @@ export default function BookingPage() {
   return (
     <div style={{ padding: 24 }}>
       <Card
-        title={<span className="font-semibold text-lg">Booking thuê tài xế</span>}
+        title={
+          <span className="font-semibold text-lg">Booking thuê tài xế</span>
+        }
         bordered={false}
         style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)", borderRadius: 12 }}
       >

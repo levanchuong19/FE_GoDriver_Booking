@@ -21,7 +21,7 @@ import {
   quoteSelfDriveVehicle,
   searchSelfDriveVehicles,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type AnyRow = Record<string, unknown> & { id?: string; _id?: string };
@@ -39,9 +39,10 @@ export default function SelfDrivePage() {
   const [mineVehicles, setMineVehicles] = useState<AnyRow[]>([]);
   const [selected, setSelected] = useState<AnyRow | null>(null);
   const [quoteOpen, setQuoteOpen] = useState(false);
-  const [quoteResult, setQuoteResult] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [quoteResult, setQuoteResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [working, setWorking] = useState(false);
 
   const handleSearch = async () => {
@@ -60,7 +61,7 @@ export default function SelfDrivePage() {
       setVehicles(data.items as AnyRow[]);
       message.success(`Tìm thấy ${data.total} xe`);
     } catch (error) {
-      message.error(getErrorMessage(error, "Tìm xe thất bại"));
+      notifyError(error, "Tìm xe thất bại");
     } finally {
       setLoading(false);
     }
@@ -72,7 +73,7 @@ export default function SelfDrivePage() {
       const data = await listSelfDriveVehiclesMine();
       setMineVehicles(data.items as AnyRow[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được xe của tôi"));
+      notifyError(error, "Không tải được xe của tôi");
     } finally {
       setMineLoading(false);
     }
@@ -102,7 +103,7 @@ export default function SelfDrivePage() {
       setQuoteResult(data);
       message.success("Đã lấy báo giá");
     } catch (error) {
-      message.error(getErrorMessage(error, "Báo giá thất bại"));
+      notifyError(error, "Báo giá thất bại");
     } finally {
       setWorking(false);
     }
@@ -121,7 +122,7 @@ export default function SelfDrivePage() {
       message.success("Đã tạo booking thuê xe tự lái");
       setQuoteOpen(false);
     } catch (error) {
-      message.error(getErrorMessage(error, "Tạo booking thất bại"));
+      notifyError(error, "Tạo booking thất bại");
     } finally {
       setWorking(false);
     }
@@ -243,7 +244,11 @@ export default function SelfDrivePage() {
               label: "Xe của tài khoản",
               children: (
                 <div className="space-y-4">
-                  <Button type="primary" loading={mineLoading} onClick={loadMine}>
+                  <Button
+                    type="primary"
+                    loading={mineLoading}
+                    onClick={loadMine}
+                  >
                     Tải danh sách xe
                   </Button>
                   <Table<AnyRow>

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { approveDriverApplication, getDriverApplicationById, rejectDriverApplication } from "../../Config/adminDriverApplications";
 import { jwtDecode } from "jwt-decode";
 import type { JwtPayload } from "../../Model/User";
+import { notifyError, notifySuccess } from "../../Utils/notify";
 
 type Status = "draft" | "pending" | "approved" | "rejected";
 
@@ -62,6 +63,7 @@ export default function AdminDriverApplicationDetail() {
             message = err.response?.data?.message || err.message || message;
           }
           setError(message);
+          notifyError(e, message);
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -99,7 +101,10 @@ export default function AdminDriverApplicationDetail() {
                 setWorking(true);
                 try {
                   await approveDriverApplication(id);
+                  notifySuccess("Đã duyệt hồ sơ tài xế");
                   await refresh();
+                } catch (e) {
+                  notifyError(e, "Duyệt hồ sơ thất bại");
                 } finally {
                   setWorking(false);
                 }
@@ -189,9 +194,12 @@ export default function AdminDriverApplicationDetail() {
                   setWorking(true);
                   try {
                     await rejectDriverApplication(id, reason.trim());
+                    notifySuccess("Đã từ chối hồ sơ");
                     setOpenReject(false);
                     setReason("");
                     await refresh();
+                  } catch (e) {
+                    notifyError(e, "Từ chối hồ sơ thất bại");
                   } finally {
                     setWorking(false);
                   }

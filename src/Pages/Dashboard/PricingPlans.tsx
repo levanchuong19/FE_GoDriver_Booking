@@ -18,7 +18,7 @@ import {
   createPricingQuote,
   listPricingPlans,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type Plan = Record<string, unknown> & { id?: string; _id?: string };
@@ -38,9 +38,10 @@ export default function PricingPlansPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [working, setWorking] = useState(false);
-  const [quoteResult, setQuoteResult] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [quoteResult, setQuoteResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [createForm] = Form.useForm();
   const [quoteForm] = Form.useForm();
 
@@ -50,7 +51,7 @@ export default function PricingPlansPage() {
       const data = await listPricingPlans();
       setPlans(data.items as Plan[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được pricing plans"));
+      notifyError(error, "Không tải được pricing plans");
     } finally {
       setLoading(false);
     }
@@ -85,9 +86,7 @@ export default function PricingPlansPage() {
       createForm.resetFields();
       await load();
     } catch (error) {
-      message.error(
-        getErrorMessage(error, "Tạo plan thất bại (kiểm tra JSON rules nếu có)")
-      );
+      notifyError(error, "Tạo plan thất bại (kiểm tra JSON rules nếu có)");
     } finally {
       setWorking(false);
     }
@@ -108,7 +107,7 @@ export default function PricingPlansPage() {
       setQuoteResult(data);
       message.success("Đã tạo quote");
     } catch (error) {
-      message.error(getErrorMessage(error, "Tạo quote thất bại"));
+      notifyError(error, "Tạo quote thất bại");
     } finally {
       setWorking(false);
     }
@@ -181,7 +180,11 @@ export default function PricingPlansPage() {
           layout="vertical"
           initialValues={{ service: "DRIVER_BOOKING", version: 1 }}
         >
-          <Form.Item name="service" label="Service" rules={[{ required: true }]}>
+          <Form.Item
+            name="service"
+            label="Service"
+            rules={[{ required: true }]}
+          >
             <Select options={SERVICES.map((s) => ({ value: s, label: s }))} />
           </Form.Item>
           <Form.Item name="name" label="Tên plan">
@@ -234,7 +237,11 @@ export default function PricingPlansPage() {
             contextJson: '{\n  "distanceKm": 10\n}',
           }}
         >
-          <Form.Item name="service" label="Service" rules={[{ required: true }]}>
+          <Form.Item
+            name="service"
+            label="Service"
+            rules={[{ required: true }]}
+          >
             <Select options={SERVICES.map((s) => ({ value: s, label: s }))} />
           </Form.Item>
           <Form.Item name="contextJson" label="Context JSON">

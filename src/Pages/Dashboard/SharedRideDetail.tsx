@@ -20,7 +20,7 @@ import {
   publishSharedTrip,
   startSharedTrip,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type AnyObj = Record<string, unknown>;
@@ -54,7 +54,7 @@ export default function SharedRideDetailPage() {
             : [];
       setManifest(list);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được chi tiết chuyến"));
+      notifyError(error, "Không tải được chi tiết chuyến");
     } finally {
       setLoading(false);
     }
@@ -65,17 +65,14 @@ export default function SharedRideDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tripId]);
 
-  const runAction = async (
-    action: () => Promise<unknown>,
-    success: string
-  ) => {
+  const runAction = async (action: () => Promise<unknown>, success: string) => {
     setWorking(true);
     try {
       await action();
       message.success(success);
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Thao tác thất bại"));
+      notifyError(error, "Thao tác thất bại");
     } finally {
       setWorking(false);
     }
@@ -104,7 +101,7 @@ export default function SharedRideDetailPage() {
                     onClick={() =>
                       runAction(
                         () => publishSharedTrip(tripId!),
-                        "Đã đăng chuyến"
+                        "Đã đăng chuyến",
                       )
                     }
                   >
@@ -115,7 +112,7 @@ export default function SharedRideDetailPage() {
                     onClick={() =>
                       runAction(
                         () => startSharedTrip(tripId!),
-                        "Đã bắt đầu chuyến"
+                        "Đã bắt đầu chuyến",
                       )
                     }
                   >
@@ -127,7 +124,7 @@ export default function SharedRideDetailPage() {
                     onClick={() =>
                       runAction(
                         () => completeSharedTrip(tripId!),
-                        "Đã hoàn thành chuyến"
+                        "Đã hoàn thành chuyến",
                       )
                     }
                   >
@@ -139,7 +136,7 @@ export default function SharedRideDetailPage() {
                     onClick={() =>
                       runAction(
                         () => cancelSharedTrip(tripId!),
-                        "Đã hủy chuyến"
+                        "Đã hủy chuyến",
                       )
                     }
                   >
@@ -149,9 +146,7 @@ export default function SharedRideDetailPage() {
               }
             >
               <Descriptions bordered column={2} size="middle">
-                <Descriptions.Item label="Trip ID">
-                  {tripId}
-                </Descriptions.Item>
+                <Descriptions.Item label="Trip ID">{tripId}</Descriptions.Item>
                 <Descriptions.Item label="Trạng thái">
                   {String(trip.status || "—")}
                 </Descriptions.Item>
@@ -164,15 +159,11 @@ export default function SharedRideDetailPage() {
                 </Descriptions.Item>
                 <Descriptions.Item label="Khởi hành">
                   {trip.departureAt
-                    ? dayjs(String(trip.departureAt)).format(
-                        "DD/MM/YYYY HH:mm"
-                      )
+                    ? dayjs(String(trip.departureAt)).format("DD/MM/YYYY HH:mm")
                     : "—"}
                 </Descriptions.Item>
                 <Descriptions.Item label="Giá ghế">
-                  {formatVND(
-                    Number(trip.baseSeatPrice ?? trip.seatPrice ?? 0)
-                  )}
+                  {formatVND(Number(trip.baseSeatPrice ?? trip.seatPrice ?? 0))}
                 </Descriptions.Item>
                 <Descriptions.Item label="Giá bao xe">
                   {formatVND(Number(trip.charterPrice ?? 0))}
@@ -209,10 +200,7 @@ export default function SharedRideDetailPage() {
                     title: "Khách",
                     render: (_, row) =>
                       String(
-                        row.fullName ||
-                          row.passengerName ||
-                          row.name ||
-                          "—"
+                        row.fullName || row.passengerName || row.name || "—",
                       ),
                   },
                   {
@@ -226,7 +214,7 @@ export default function SharedRideDetailPage() {
                         (row.pickup as { address?: string } | undefined)
                           ?.address ||
                           row.pickupAddress ||
-                          "—"
+                          "—",
                       ),
                   },
                   {
@@ -236,13 +224,12 @@ export default function SharedRideDetailPage() {
                         (row.dropoff as { address?: string } | undefined)
                           ?.address ||
                           row.dropoffAddress ||
-                          "—"
+                          "—",
                       ),
                   },
                   {
                     title: "Ghế",
-                    render: (_, row) =>
-                      String(row.seatCode || row.seat || "—"),
+                    render: (_, row) => String(row.seatCode || row.seat || "—"),
                   },
                 ]}
               />

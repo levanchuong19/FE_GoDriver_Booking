@@ -158,8 +158,45 @@ export async function listVehicleBrands(params?: {
   keyword?: string;
   vehicleType?: string;
 }) {
-  const res = await api.get("/vehicle-catalog/brands", { params });
-  return asList(res.data);
+  const {
+    getCatalogBrands,
+    mergeCatalogRows,
+  } = await import("../data/vehicleCatalog");
+  const local = getCatalogBrands(params?.vehicleType).map((brand) => ({
+    id: brand.id,
+    _id: brand.id,
+    code: brand.code,
+    name: brand.name,
+    vehicleTypes: brand.vehicleTypes,
+  }));
+
+  try {
+    const res = await api.get("/vehicle-catalog/brands", {
+      params,
+      skipErrorToast: true,
+    });
+    let items = mergeCatalogRows(asList(res.data).items, local);
+    if (params?.keyword?.trim()) {
+      const kw = params.keyword.trim().toLowerCase();
+      items = items.filter((row) =>
+        String(row.name || row.code || "")
+          .toLowerCase()
+          .includes(kw)
+      );
+    }
+    return { items, total: items.length };
+  } catch {
+    let items = local as unknown[];
+    if (params?.keyword?.trim()) {
+      const kw = params.keyword.trim().toLowerCase();
+      items = local.filter((row) =>
+        String(row.name || row.code || "")
+          .toLowerCase()
+          .includes(kw)
+      );
+    }
+    return { items, total: items.length };
+  }
 }
 
 export async function listVehicleModels(params: {
@@ -167,16 +204,94 @@ export async function listVehicleModels(params: {
   keyword?: string;
   vehicleType?: string;
 }) {
-  const res = await api.get("/vehicle-catalog/models", { params });
-  return asList(res.data);
+  const {
+    getCatalogModels,
+    mergeCatalogRows,
+    isLocalCatalogId,
+  } = await import("../data/vehicleCatalog");
+  const local = getCatalogModels(params.brandId, params.vehicleType).map(
+    (model) => ({
+      id: model.id,
+      _id: model.id,
+      code: model.code,
+      name: model.name,
+      vehicleType: model.vehicleType,
+      brandId: params.brandId,
+    })
+  );
+
+  if (isLocalCatalogId(params.brandId)) {
+    let items = local as unknown[];
+    if (params.keyword?.trim()) {
+      const kw = params.keyword.trim().toLowerCase();
+      items = local.filter((row) =>
+        String(row.name || row.code || "")
+          .toLowerCase()
+          .includes(kw)
+      );
+    }
+    return { items, total: items.length };
+  }
+
+  try {
+    const res = await api.get("/vehicle-catalog/models", {
+      params,
+      skipErrorToast: true,
+    });
+    let items = mergeCatalogRows(asList(res.data).items, local);
+    if (params.keyword?.trim()) {
+      const kw = params.keyword.trim().toLowerCase();
+      items = items.filter((row) =>
+        String(row.name || row.code || "")
+          .toLowerCase()
+          .includes(kw)
+      );
+    }
+    return { items, total: items.length };
+  } catch {
+    return { items: local, total: local.length };
+  }
 }
 
 export async function listVehicleVariants(params: {
   modelId: string;
   keyword?: string;
 }) {
-  const res = await api.get("/vehicle-catalog/variants", { params });
-  return asList(res.data);
+  const {
+    getCatalogVariants,
+    mergeCatalogRows,
+    isLocalCatalogId,
+  } = await import("../data/vehicleCatalog");
+  const local = getCatalogVariants(params.modelId).map((variant) => ({
+    id: variant.id,
+    _id: variant.id,
+    code: variant.code,
+    name: variant.name,
+    modelId: params.modelId,
+  }));
+
+  if (isLocalCatalogId(params.modelId)) {
+    return { items: local, total: local.length };
+  }
+
+  try {
+    const res = await api.get("/vehicle-catalog/variants", {
+      params,
+      skipErrorToast: true,
+    });
+    let items = mergeCatalogRows(asList(res.data).items, local);
+    if (params.keyword?.trim()) {
+      const kw = params.keyword.trim().toLowerCase();
+      items = items.filter((row) =>
+        String(row.name || row.code || "")
+          .toLowerCase()
+          .includes(kw)
+      );
+    }
+    return { items, total: items.length };
+  } catch {
+    return { items: local, total: local.length };
+  }
 }
 
 /** Chat */

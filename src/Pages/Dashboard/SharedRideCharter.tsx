@@ -17,7 +17,7 @@ import {
   createSharedCharter,
   quoteSharedCharter,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 export default function SharedRideCharterPage() {
@@ -53,7 +53,7 @@ export default function SharedRideCharterPage() {
       setQuote(data);
       message.success("Đã lấy báo giá bao xe");
     } catch (error) {
-      message.error(getErrorMessage(error, "Báo giá thất bại"));
+      notifyError(error, "Báo giá thất bại");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function SharedRideCharterPage() {
       await createSharedCharter(buildPayload(values));
       message.success("Đã tạo yêu cầu bao xe");
     } catch (error) {
-      message.error(getErrorMessage(error, "Tạo bao xe thất bại"));
+      notifyError(error, "Tạo bao xe thất bại");
     } finally {
       setLoading(false);
     }
@@ -114,12 +114,20 @@ export default function SharedRideCharterPage() {
               </Form.Item>
             </Col>
             <Col xs={12} md={6}>
-              <Form.Item name="originLat" label="Origin lat" rules={[{ required: true }]}>
+              <Form.Item
+                name="originLat"
+                label="Origin lat"
+                rules={[{ required: true }]}
+              >
                 <InputNumber style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col xs={12} md={6}>
-              <Form.Item name="originLng" label="Origin lng" rules={[{ required: true }]}>
+              <Form.Item
+                name="originLng"
+                label="Origin lng"
+                rules={[{ required: true }]}
+              >
                 <InputNumber style={{ width: "100%" }} />
               </Form.Item>
             </Col>
@@ -184,12 +192,12 @@ export default function SharedRideCharterPage() {
                       quote.total ??
                       quote.charterPrice ??
                       quote.amount ??
-                      0
-                  )
+                      0,
+                  ),
                 ),
               },
               null,
-              2
+              2,
             )}
           </pre>
         </Card>
