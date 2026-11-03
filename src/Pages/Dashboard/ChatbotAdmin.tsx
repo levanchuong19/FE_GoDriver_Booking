@@ -1,18 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Input,
-  Space,
-  Typography,
-  message,
-} from "antd";
+import { Button, Card, Input, Space, Typography, message } from "antd";
 import {
   clearChatbotHistory,
   getChatbotHistory,
   sendChatbotMessage,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 
 type HistoryItem = { role?: string; content?: string };
@@ -46,7 +38,7 @@ export default function ChatbotAdminPage() {
     try {
       const data = (await sendChatbotMessage(
         text.trim(),
-        sessionId.trim()
+        sessionId.trim(),
       )) as { response?: string };
       setText("");
       if (data?.response) {

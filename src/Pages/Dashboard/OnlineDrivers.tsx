@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Descriptions, Drawer, Space, Statistic, Table, Tag } from "antd";
+import {
+  Button,
+  Card,
+  Descriptions,
+  Drawer,
+  Space,
+  Statistic,
+  Table,
+  Tag,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
@@ -7,13 +16,9 @@ import {
   getOnlineDriverCount,
   getOnlineDrivers,
 } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
-import type {
-  DriverWalletInfo,
-  OnlineDriver,
-} from "../../models/OnlineDriver";
+import type { DriverWalletInfo, OnlineDriver } from "../../models/OnlineDriver";
 
 function normalizeDrivers(raw: unknown[]): OnlineDriver[] {
   return raw.map((item) => {
@@ -26,8 +31,8 @@ function normalizeDrivers(raw: unknown[]): OnlineDriver[] {
       fullName:
         typeof row.fullName === "string"
           ? row.fullName
-          : typeof (row.driver as { fullName?: string } | undefined)?.fullName ===
-              "string"
+          : typeof (row.driver as { fullName?: string } | undefined)
+                ?.fullName === "string"
             ? (row.driver as { fullName?: string }).fullName
             : undefined,
       phone:

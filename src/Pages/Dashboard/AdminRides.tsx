@@ -4,7 +4,6 @@ import { Button, Card, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { listAdminRides } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import { getRideId, type RideRecord } from "../../models/Ride";
@@ -24,7 +23,11 @@ const statusColor: Record<string, string> = {
 };
 
 function personName(
-  value: RideRecord["customer"] | RideRecord["customerId"] | RideRecord["driver"] | RideRecord["driverId"]
+  value:
+    | RideRecord["customer"]
+    | RideRecord["customerId"]
+    | RideRecord["driver"]
+    | RideRecord["driverId"],
 ) {
   if (!value) return "—";
   if (typeof value === "string") return value;
@@ -33,10 +36,7 @@ function personName(
 
 function pickup(row: RideRecord) {
   return (
-    row.pickupAddress ||
-    row.pickupLocation ||
-    String(row.pickup || "") ||
-    "—"
+    row.pickupAddress || row.pickupLocation || String(row.pickup || "") || "—"
   );
 }
 

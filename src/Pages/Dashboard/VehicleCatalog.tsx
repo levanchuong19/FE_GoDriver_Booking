@@ -6,7 +6,6 @@ import {
   listVehicleModels,
   listVehicleVariants,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 
 type Row = Record<string, unknown> & { id?: string; _id?: string };
@@ -150,7 +149,9 @@ export default function VehicleCatalogPage() {
                 onRow={(row) => ({
                   onClick: () => loadModels(getId(row)),
                   className:
-                    brandId === getId(row) ? "bg-green-50 cursor-pointer" : "cursor-pointer",
+                    brandId === getId(row)
+                      ? "bg-green-50 cursor-pointer"
+                      : "cursor-pointer",
                 })}
               />
             </Card>
@@ -166,7 +167,9 @@ export default function VehicleCatalogPage() {
                 onRow={(row) => ({
                   onClick: () => loadVariants(getId(row)),
                   className:
-                    modelId === getId(row) ? "bg-green-50 cursor-pointer" : "cursor-pointer",
+                    modelId === getId(row)
+                      ? "bg-green-50 cursor-pointer"
+                      : "cursor-pointer",
                 })}
               />
             </Card>

@@ -26,7 +26,7 @@ import {
   type Transaction,
 } from "../../models/Transaction";
 import formatVND from "../../Utils/currency";
-import { getErrorMessage, unwrapList } from "../../Utils/apiData";
+import { unwrapList } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 
 type PaginationState = { current: number; pageSize: number; total: number };
@@ -86,7 +86,7 @@ export default function TransactionsPage() {
         setLoading(false);
       }
     },
-    [pagination.pageSize, type]
+    [pagination.pageSize, type],
   );
 
   useEffect(() => {

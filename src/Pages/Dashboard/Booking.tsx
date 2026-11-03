@@ -13,13 +13,17 @@ import {
 import { EyeOutlined, CarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { ColumnsType } from "antd/es/table";
-import type { Booking, BookingStatus, PaymentStatus } from "../../models/Booking";
+import type {
+  Booking,
+  BookingStatus,
+  PaymentStatus,
+} from "../../models/Booking";
 import api from "../../Config/api";
 import {
   updateBookingPaymentStatus,
   updateBookingStatus,
 } from "../../Config/adminApi";
-import { getErrorMessage, unwrapList } from "../../Utils/apiData";
+import { unwrapList } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
@@ -79,7 +83,7 @@ export default function BookingPage() {
         setLoading(false);
       }
     },
-    [pageSize, status]
+    [pageSize, status],
   );
 
   useEffect(() => {
@@ -92,7 +96,7 @@ export default function BookingPage() {
       const detail = (res.data?.data ?? res.data) as Booking;
       setCurrent(detail);
       setData((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, ...detail } : item))
+        prev.map((item) => (item._id === id ? { ...item, ...detail } : item)),
       );
     } catch {
       await fetchAll(page, pageSize, status);
@@ -184,7 +188,9 @@ export default function BookingPage() {
   return (
     <div style={{ padding: 24 }}>
       <Card
-        title={<span className="font-semibold text-lg">Booking thuê tài xế</span>}
+        title={
+          <span className="font-semibold text-lg">Booking thuê tài xế</span>
+        }
         bordered={false}
         style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)", borderRadius: 12 }}
       >

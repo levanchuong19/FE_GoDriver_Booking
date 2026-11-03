@@ -18,7 +18,6 @@ import {
   createPricingQuote,
   listPricingPlans,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
@@ -39,9 +38,10 @@ export default function PricingPlansPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [working, setWorking] = useState(false);
-  const [quoteResult, setQuoteResult] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [quoteResult, setQuoteResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [createForm] = Form.useForm();
   const [quoteForm] = Form.useForm();
 
@@ -180,7 +180,11 @@ export default function PricingPlansPage() {
           layout="vertical"
           initialValues={{ service: "DRIVER_BOOKING", version: 1 }}
         >
-          <Form.Item name="service" label="Service" rules={[{ required: true }]}>
+          <Form.Item
+            name="service"
+            label="Service"
+            rules={[{ required: true }]}
+          >
             <Select options={SERVICES.map((s) => ({ value: s, label: s }))} />
           </Form.Item>
           <Form.Item name="name" label="Tên plan">
@@ -233,7 +237,11 @@ export default function PricingPlansPage() {
             contextJson: '{\n  "distanceKm": 10\n}',
           }}
         >
-          <Form.Item name="service" label="Service" rules={[{ required: true }]}>
+          <Form.Item
+            name="service"
+            label="Service"
+            rules={[{ required: true }]}
+          >
             <Select options={SERVICES.map((s) => ({ value: s, label: s }))} />
           </Form.Item>
           <Form.Item name="contextJson" label="Context JSON">

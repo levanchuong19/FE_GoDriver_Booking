@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
-import { Badge, Button, Card, Col, Input, List, Row, Space, Spin, Typography } from "antd";
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Input,
+  List,
+  Row,
+  Space,
+  Spin,
+  Typography,
+} from "antd";
 import dayjs from "dayjs";
 import {
   getChatMessages,
@@ -8,7 +19,6 @@ import {
   markChatRead,
   sendChatMessage,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 
 type ChatBooking = Record<string, unknown> & {
@@ -123,15 +133,16 @@ export default function ChatSupportPage() {
                             />
                           </Space>
                         }
-                        description={
-                          String(
-                            item.lastMessage ||
-                              (item.lastMessageObj as { message?: string } | undefined)
-                                ?.message ||
-                              item.status ||
-                              "—"
-                          )
-                        }
+                        description={String(
+                          item.lastMessage ||
+                            (
+                              item.lastMessageObj as
+                                | { message?: string }
+                                | undefined
+                            )?.message ||
+                            item.status ||
+                            "—",
+                        )}
                       />
                     </List.Item>
                   );

@@ -4,7 +4,6 @@ import { Button, Card, Input, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { listRideDriverRegistrations } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import type { RideDriverRegistration } from "../../models/RideDriver";
 
@@ -130,7 +129,7 @@ export default function RideDriverRegistrations() {
         ),
       },
     ],
-    [navigate]
+    [navigate],
   );
 
   return (

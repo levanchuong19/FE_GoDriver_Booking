@@ -17,7 +17,6 @@ import {
   createSharedCharter,
   quoteSharedCharter,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
@@ -115,12 +114,20 @@ export default function SharedRideCharterPage() {
               </Form.Item>
             </Col>
             <Col xs={12} md={6}>
-              <Form.Item name="originLat" label="Origin lat" rules={[{ required: true }]}>
+              <Form.Item
+                name="originLat"
+                label="Origin lat"
+                rules={[{ required: true }]}
+              >
                 <InputNumber style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col xs={12} md={6}>
-              <Form.Item name="originLng" label="Origin lng" rules={[{ required: true }]}>
+              <Form.Item
+                name="originLng"
+                label="Origin lng"
+                rules={[{ required: true }]}
+              >
                 <InputNumber style={{ width: "100%" }} />
               </Form.Item>
             </Col>
@@ -185,12 +192,12 @@ export default function SharedRideCharterPage() {
                       quote.total ??
                       quote.charterPrice ??
                       quote.amount ??
-                      0
-                  )
+                      0,
+                  ),
                 ),
               },
               null,
-              2
+              2,
             )}
           </pre>
         </Card>

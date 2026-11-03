@@ -18,7 +18,6 @@ import {
   getRideDriverRegistration,
   rejectRideDriverRegistration,
 } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import type { RideDriverRegistration } from "../../models/RideDriver";
 
@@ -67,7 +66,7 @@ export default function RideDriverRegistrationDetail() {
 
   const mediaEntries = useMemo(() => {
     const fromDocs = Object.entries({ ...documents, ...vehicleDocs }).filter(
-      ([, url]) => Boolean(url)
+      ([, url]) => Boolean(url),
     );
     const fromPhotos = photos.map((url, index) => [`Ảnh xe ${index + 1}`, url]);
     return [...fromDocs, ...fromPhotos] as [string, string][];
@@ -183,9 +182,7 @@ export default function RideDriverRegistrationDetail() {
                   {String(vehicle.categoryCode || "—")}
                 </Descriptions.Item>
                 <Descriptions.Item label="Biển số">
-                  {String(
-                    vehicle.plateNumber || vehicle.licensePlate || "—"
-                  )}
+                  {String(vehicle.plateNumber || vehicle.licensePlate || "—")}
                 </Descriptions.Item>
                 <Descriptions.Item label="Hãng">
                   {String(vehicle.brand || "—")}

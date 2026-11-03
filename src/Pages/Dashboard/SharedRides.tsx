@@ -22,7 +22,6 @@ import {
   listSharedVehiclesMine,
   searchSharedTrips,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
@@ -94,7 +93,7 @@ export default function SharedRidesPage() {
         String(
           (row.origin as { address?: string } | undefined)?.address ||
             row.originAddress ||
-            "—"
+            "—",
         ),
       ellipsis: true,
     },
@@ -104,7 +103,7 @@ export default function SharedRidesPage() {
         String(
           (row.destination as { address?: string } | undefined)?.address ||
             row.destinationAddress ||
-            "—"
+            "—",
         ),
       ellipsis: true,
     },
@@ -253,7 +252,11 @@ export default function SharedRidesPage() {
               label: "Chuyến / xe của tài khoản",
               children: (
                 <div className="space-y-4">
-                  <Button type="primary" onClick={loadMine} loading={mineLoading}>
+                  <Button
+                    type="primary"
+                    onClick={loadMine}
+                    loading={mineLoading}
+                  >
                     Tải dữ liệu
                   </Button>
                   <Card type="inner" title="Chuyến của tôi" size="small">
@@ -307,7 +310,9 @@ export default function SharedRidesPage() {
                         {
                           title: "Loại xe",
                           render: (_, row) =>
-                            String(row.vehicleType || row.type || row.code || "—"),
+                            String(
+                              row.vehicleType || row.type || row.code || "—",
+                            ),
                         },
                         {
                           title: "Số ghế",
@@ -316,7 +321,7 @@ export default function SharedRidesPage() {
                               row.seatCount ||
                                 (Array.isArray(row.seats)
                                   ? row.seats.length
-                                  : "—")
+                                  : "—"),
                             ),
                         },
                       ]}

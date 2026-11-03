@@ -21,7 +21,6 @@ import {
   quoteSelfDriveVehicle,
   searchSelfDriveVehicles,
 } from "../../Config/managementApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
@@ -40,9 +39,10 @@ export default function SelfDrivePage() {
   const [mineVehicles, setMineVehicles] = useState<AnyRow[]>([]);
   const [selected, setSelected] = useState<AnyRow | null>(null);
   const [quoteOpen, setQuoteOpen] = useState(false);
-  const [quoteResult, setQuoteResult] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [quoteResult, setQuoteResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [working, setWorking] = useState(false);
 
   const handleSearch = async () => {
@@ -244,7 +244,11 @@ export default function SelfDrivePage() {
               label: "Xe của tài khoản",
               children: (
                 <div className="space-y-4">
-                  <Button type="primary" loading={mineLoading} onClick={loadMine}>
+                  <Button
+                    type="primary"
+                    loading={mineLoading}
+                    onClick={loadMine}
+                  >
                     Tải danh sách xe
                   </Button>
                   <Table<AnyRow>

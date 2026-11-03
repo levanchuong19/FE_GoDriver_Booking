@@ -17,7 +17,6 @@ import {
   listUsedCarReports,
   resolveUsedCarReport,
 } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import { getUsedCarId, type UsedCarReport } from "../../models/UsedCar";
 

@@ -644,8 +644,6 @@ export function mergeCatalogRows(
   for (const item of localItems) {
     map.set(item.id, {
       _id: item.id,
-      id: item.id,
-      name: item.name,
       code: item.code,
       ...item,
     });

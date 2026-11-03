@@ -14,7 +14,6 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { deleteUsedCar, listUsedCars } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import {
@@ -63,7 +62,7 @@ export default function UsedCarsPage() {
     nextStatus = status,
     nextKeyword = keyword,
     nextPage = page,
-    nextSize = pageSize
+    nextSize = pageSize,
   ) => {
     setLoading(true);
     try {
@@ -150,9 +149,7 @@ export default function UsedCarsPage() {
       dataIndex: "price",
       width: 140,
       render: (value, row) =>
-        row.negotiable && !value
-          ? "Thương lượng"
-          : formatVND(value ?? 0),
+        row.negotiable && !value ? "Thương lượng" : formatVND(value ?? 0),
     },
     {
       title: "Trạng thái",

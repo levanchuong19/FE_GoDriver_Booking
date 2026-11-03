@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Descriptions, Space, Spin, Tag, Timeline } from "antd";
 import dayjs from "dayjs";
 import { getAdminRide } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type { RideRecord } from "../../models/Ride";
@@ -107,7 +106,8 @@ export default function AdminRideDetailPage() {
             </Card>
 
             <Card title="Lịch sử trạng thái">
-              {Array.isArray(data.statusHistory) && data.statusHistory.length ? (
+              {Array.isArray(data.statusHistory) &&
+              data.statusHistory.length ? (
                 <Timeline
                   items={data.statusHistory.map((item, index) => ({
                     key: index,
@@ -118,9 +118,9 @@ export default function AdminRideDetailPage() {
                         </div>
                         <div className="text-xs text-gray-500">
                           {item.createdAt || item.at
-                            ? dayjs(
-                                String(item.createdAt || item.at)
-                              ).format("DD/MM/YYYY HH:mm")
+                            ? dayjs(String(item.createdAt || item.at)).format(
+                                "DD/MM/YYYY HH:mm",
+                              )
                             : "—"}
                         </div>
                         {Boolean(item.note || item.message) && (

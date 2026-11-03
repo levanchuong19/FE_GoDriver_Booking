@@ -71,7 +71,7 @@ function toOptions(items: unknown[]): CatalogOption[] {
 function ensureOption(
   options: CatalogOption[],
   id?: string,
-  name?: string
+  name?: string,
 ): CatalogOption[] {
   const value = String(id || "").trim();
   if (!value) return options;
@@ -88,7 +88,7 @@ const FEATURE_OPTIONS: Array<{ value: string; label: string }> = [
 ];
 
 const ALLOWED_FEATURES = new Set(
-  FEATURE_OPTIONS.map((item) => item.value.toUpperCase())
+  FEATURE_OPTIONS.map((item) => item.value.toUpperCase()),
 );
 
 function normalizeFeatures(value: unknown): string[] {
@@ -108,8 +108,8 @@ function normalizeFeatures(value: unknown): string[] {
         .map((item) => item.trim())
         .filter((item) => item && !/^(hãng|dòng|phiên bản)\s*:/i.test(item))
         .map((item) => item.toUpperCase().replace(/\s+/g, "_"))
-        .filter((item) => ALLOWED_FEATURES.has(item))
-    )
+        .filter((item) => ALLOWED_FEATURES.has(item)),
+    ),
   );
 }
 
@@ -177,9 +177,10 @@ function cleanPayload(values: Record<string, unknown>) {
       .toLowerCase()
       .includes(String(catalog.brandName).toLowerCase())
   ) {
-    payload.title = `${catalog.brandName} ${catalog.modelName || ""} ${payload.title}`
-      .replace(/\s+/g, " ")
-      .trim();
+    payload.title =
+      `${catalog.brandName} ${catalog.modelName || ""} ${payload.title}`
+        .replace(/\s+/g, " ")
+        .trim();
   }
 
   return payload;
@@ -225,18 +226,23 @@ export default function UsedCarFormPage() {
 
   const titleText = useMemo(
     () => (isEdit ? "Sửa tin xe cũ" : "Thêm tin xe cũ"),
-    [isEdit]
+    [isEdit],
   );
 
   const totalImageCount = media.length + fileList.length;
 
-  const loadBrands = async (type?: string, keep?: { id?: string; name?: string }) => {
+  const loadBrands = async (
+    type?: string,
+    keep?: { id?: string; name?: string },
+  ) => {
     setLoadingBrands(true);
     try {
       const data = await listVehicleBrands({
         vehicleType: type || undefined,
       });
-      setBrandOptions(ensureOption(toOptions(data.items), keep?.id, keep?.name));
+      setBrandOptions(
+        ensureOption(toOptions(data.items), keep?.id, keep?.name),
+      );
     } catch (error) {
       notifyError(error, "Không tải được danh sách hãng xe");
       setBrandOptions(ensureOption([], keep?.id, keep?.name));
@@ -248,7 +254,7 @@ export default function UsedCarFormPage() {
   const loadModels = async (
     brandId: string,
     type?: string,
-    keep?: { id?: string; name?: string }
+    keep?: { id?: string; name?: string },
   ) => {
     if (!brandId) {
       setModelOptions([]);
@@ -261,7 +267,9 @@ export default function UsedCarFormPage() {
         brandId,
         vehicleType: type || undefined,
       });
-      setModelOptions(ensureOption(toOptions(data.items), keep?.id, keep?.name));
+      setModelOptions(
+        ensureOption(toOptions(data.items), keep?.id, keep?.name),
+      );
     } catch (error) {
       notifyError(error, "Không tải được danh sách dòng xe");
       setModelOptions(ensureOption([], keep?.id, keep?.name));
@@ -272,7 +280,7 @@ export default function UsedCarFormPage() {
 
   const loadVariants = async (
     modelId: string,
-    keep?: { id?: string; name?: string }
+    keep?: { id?: string; name?: string },
   ) => {
     if (!modelId) {
       setVariantOptions([]);
@@ -282,7 +290,7 @@ export default function UsedCarFormPage() {
     try {
       const data = await listVehicleVariants({ modelId });
       setVariantOptions(
-        ensureOption(toOptions(data.items), keep?.id, keep?.name)
+        ensureOption(toOptions(data.items), keep?.id, keep?.name),
       );
     } catch (error) {
       notifyError(error, "Không tải được danh sách phiên bản");
@@ -307,7 +315,7 @@ export default function UsedCarFormPage() {
             isCover: Boolean(item.isCover),
             canManage: Boolean(item.id || item._id),
           }))
-          .filter((item) => item.url)
+          .filter((item) => item.url),
       );
       setListingId(getUsedCarId(detail) || carId);
 
@@ -376,7 +384,6 @@ export default function UsedCarFormPage() {
       features: ["ABS", "SUNROOF", "LEATHER", "CRUISE"],
       exteriorColor: MERCEDES_S450_SEED.exteriorColor,
       interiorColor: MERCEDES_S450_SEED.interiorColor,
-      price: MERCEDES_S450_SEED.price > 0 ? MERCEDES_S450_SEED.price : 1_850_000_000,
       provinceCode: "79",
       districtCode: "760",
       brandId,
@@ -391,8 +398,8 @@ export default function UsedCarFormPage() {
     message.success(
       `Đã điền mẫu ${findCatalogLabel("brand", brandId)} ${findCatalogLabel(
         "variant",
-        variantId
-      )}`
+        variantId,
+      )}`,
     );
   };
 
@@ -412,7 +419,7 @@ export default function UsedCarFormPage() {
 
     if (publish && totalImageCount < 5) {
       notifyError(
-        `Gửi duyệt cần tối thiểu 5 ảnh (hiện có ${totalImageCount}). Hãy thêm ảnh rồi thử lại.`
+        `Gửi duyệt cần tối thiểu 5 ảnh (hiện có ${totalImageCount}). Hãy thêm ảnh rồi thử lại.`,
       );
       return;
     }
@@ -437,7 +444,7 @@ export default function UsedCarFormPage() {
           await uploadUsedCarMedia(
             currentId,
             file.originFileObj as File,
-            file.name
+            file.name,
           );
         }
       }
@@ -451,7 +458,7 @@ export default function UsedCarFormPage() {
 
       const latest = (await getUsedCar(currentId)) as UsedCarListing;
       const serverMediaCount = (latest.media || []).filter((item) =>
-        Boolean(item.url)
+        Boolean(item.url),
       ).length;
       setMedia(
         (latest.media || [])
@@ -461,12 +468,12 @@ export default function UsedCarFormPage() {
             isCover: Boolean(item.isCover),
             canManage: Boolean(item.id || item._id),
           }))
-          .filter((item) => item.url)
+          .filter((item) => item.url),
       );
 
       if (serverMediaCount < 5) {
         notifyError(
-          `Server chỉ ghi nhận ${serverMediaCount}/5 ảnh. Hãy thêm ảnh rồi gửi duyệt lại.`
+          `Server chỉ ghi nhận ${serverMediaCount}/5 ảnh. Hãy thêm ảnh rồi gửi duyệt lại.`,
         );
         return;
       }
@@ -481,8 +488,8 @@ export default function UsedCarFormPage() {
           notifyWarning(
             `Đã gửi duyệt (PENDING_REVIEW). Duyệt tự động thất bại: ${getErrorMessage(
               approveError,
-              "không có quyền duyệt"
-            )}`
+              "không có quyền duyệt",
+            )}`,
           );
         }
       } else {
@@ -759,7 +766,7 @@ export default function UsedCarFormPage() {
                         !brandOptions.some(
                           (item) =>
                             item.label.toLowerCase() ===
-                            brandSearch.trim().toLowerCase()
+                            brandSearch.trim().toLowerCase(),
                         ) && (
                           <>
                             <Divider style={{ margin: "8px 0" }} />
@@ -770,7 +777,7 @@ export default function UsedCarFormPage() {
                                 const created = registerCustomCatalogOption(
                                   "brand",
                                   brandSearch.trim(),
-                                  { vehicleType: vehicleType || "CAR" }
+                                  { vehicleType: vehicleType || "CAR" },
                                 );
                                 if (!created) return;
                                 const option = {
@@ -801,7 +808,9 @@ export default function UsedCarFormPage() {
               <Form.Item
                 name="modelId"
                 label="Dòng xe"
-                extra={!brandIdWatch ? "Chọn hãng trước" : "Có thể thêm dòng mới"}
+                extra={
+                  !brandIdWatch ? "Chọn hãng trước" : "Có thể thêm dòng mới"
+                }
                 rules={[{ required: true, message: "Chọn dòng xe" }]}
               >
                 <Select
@@ -830,7 +839,7 @@ export default function UsedCarFormPage() {
                         !modelOptions.some(
                           (item) =>
                             item.label.toLowerCase() ===
-                            modelSearch.trim().toLowerCase()
+                            modelSearch.trim().toLowerCase(),
                         ) && (
                           <>
                             <Divider style={{ margin: "8px 0" }} />
@@ -844,7 +853,7 @@ export default function UsedCarFormPage() {
                                   {
                                     brandId: String(brandIdWatch),
                                     vehicleType: vehicleType || "CAR",
-                                  }
+                                  },
                                 );
                                 if (!created) return;
                                 const option = {
@@ -873,7 +882,11 @@ export default function UsedCarFormPage() {
               <Form.Item
                 name="variantId"
                 label="Phiên bản"
-                extra={!modelIdWatch ? "Chọn dòng xe trước" : "Tùy chọn / có thể thêm mới"}
+                extra={
+                  !modelIdWatch
+                    ? "Chọn dòng xe trước"
+                    : "Tùy chọn / có thể thêm mới"
+                }
               >
                 <Select
                   allowClear
@@ -893,7 +906,7 @@ export default function UsedCarFormPage() {
                         !variantOptions.some(
                           (item) =>
                             item.label.toLowerCase() ===
-                            variantSearch.trim().toLowerCase()
+                            variantSearch.trim().toLowerCase(),
                         ) && (
                           <>
                             <Divider style={{ margin: "8px 0" }} />
@@ -904,7 +917,7 @@ export default function UsedCarFormPage() {
                                 const created = registerCustomCatalogOption(
                                   "variant",
                                   variantSearch.trim(),
-                                  { modelId: String(modelIdWatch) }
+                                  { modelId: String(modelIdWatch) },
                                 );
                                 if (!created) return;
                                 const option = {
@@ -934,7 +947,10 @@ export default function UsedCarFormPage() {
                   Array.isArray(value)
                     ? value
                         .map((item) =>
-                          String(item).trim().toUpperCase().replace(/\s+/g, "_")
+                          String(item)
+                            .trim()
+                            .toUpperCase()
+                            .replace(/\s+/g, "_"),
                         )
                         .filter((item) => ALLOWED_FEATURES.has(item))
                     : []
@@ -1030,7 +1046,9 @@ export default function UsedCarFormPage() {
               loading={saving}
               onClick={() => handleSave(true)}
             >
-              {isAdmin ? "Đăng tin (gửi duyệt + duyệt)" : "Đăng tin / gửi duyệt"}
+              {isAdmin
+                ? "Đăng tin (gửi duyệt + duyệt)"
+                : "Đăng tin / gửi duyệt"}
             </Button>
           </Space>
         </Form>

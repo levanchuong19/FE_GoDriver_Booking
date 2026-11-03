@@ -24,7 +24,6 @@ import {
   rejectUsedCar,
   submitUsedCar,
 } from "../../Config/adminApi";
-import { getErrorMessage } from "../../Utils/apiData";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import { getUsedCarId, type UsedCarListing } from "../../models/UsedCar";
@@ -139,7 +138,9 @@ export default function UsedCarDetailPage() {
             <Button
               type="primary"
               onClick={() =>
-                navigate(`/dashboard/used-cars/${getUsedCarId(data) || id}/edit`)
+                navigate(
+                  `/dashboard/used-cars/${getUsedCarId(data) || id}/edit`,
+                )
               }
             >
               Sửa
@@ -152,11 +153,11 @@ export default function UsedCarDetailPage() {
                   setWorking(true);
                   try {
                     const photoCount = (data.media || []).filter((item) =>
-                      Boolean(item.url)
+                      Boolean(item.url),
                     ).length;
                     if (photoCount < 5) {
                       notifyError(
-                        `Cần tối thiểu 5 ảnh (hiện có ${photoCount}).`
+                        `Cần tối thiểu 5 ảnh (hiện có ${photoCount}).`,
                       );
                       return;
                     }
@@ -379,7 +380,7 @@ export default function UsedCarDetailPage() {
               )}
             </Card>
 
-            {(data.statusHistory?.length || data.moderationLogs?.length) ? (
+            {data.statusHistory?.length || data.moderationLogs?.length ? (
               <Card title="Lịch sử / moderation">
                 <Timeline
                   items={(data.statusHistory || data.moderationLogs || []).map(
@@ -392,26 +393,26 @@ export default function UsedCarDetailPage() {
                               item.status ||
                                 item.action ||
                                 item.type ||
-                                "Cập nhật"
+                                "Cập nhật",
                             )}
                           </div>
                           <div className="text-xs text-gray-500">
                             {item.createdAt
                               ? dayjs(String(item.createdAt)).format(
-                                  "DD/MM/YYYY HH:mm"
+                                  "DD/MM/YYYY HH:mm",
                                 )
                               : "—"}
                           </div>
-                          {Boolean(item.reason || item.note || item.message) && (
+                          {Boolean(
+                            item.reason || item.note || item.message,
+                          ) && (
                             <div className="text-sm">
-                              {String(
-                                item.reason || item.note || item.message
-                              )}
+                              {String(item.reason || item.note || item.message)}
                             </div>
                           )}
                         </div>
                       ),
-                    })
+                    }),
                   )}
                 />
               </Card>
