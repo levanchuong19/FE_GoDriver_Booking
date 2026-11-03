@@ -15,6 +15,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { deleteUsedCar, listUsedCars } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import {
   getUsedCarId,
@@ -75,7 +76,7 @@ export default function UsedCarsPage() {
       setItems(data.items as UsedCarListing[]);
       setTotal(data.total);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải tin xe cũ"));
+      notifyError(error, "Không thể tải tin xe cũ");
     } finally {
       setLoading(false);
     }
@@ -111,7 +112,7 @@ export default function UsedCarsPage() {
       message.success("Đã xóa (archive) tin");
       await reload();
     } catch (error) {
-      message.error(getErrorMessage(error, "Xóa tin thất bại"));
+      notifyError(error, "Xóa tin thất bại");
     }
   };
 
@@ -125,7 +126,7 @@ export default function UsedCarsPage() {
       message.success("Đã thêm tin Mercedes S450 2019");
       navigate(`/dashboard/used-cars/${id}`);
     } catch (error) {
-      message.error(getErrorMessage(error, "Thêm tin S450 thất bại"));
+      notifyError(error, "Thêm tin S450 thất bại");
     } finally {
       setSeeding(false);
     }

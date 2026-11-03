@@ -13,6 +13,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { listRideCategories, updateRideCategory } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type { RideCategory } from "../../models/Ride";
 
@@ -36,7 +37,7 @@ export default function RideCategoriesPage() {
         }))
       );
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải danh mục loại xe"));
+      notifyError(error, "Không thể tải danh mục loại xe");
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ export default function RideCategoriesPage() {
       setEditing(null);
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Cập nhật thất bại"));
+      notifyError(error, "Cập nhật thất bại");
     } finally {
       setWorking(false);
     }

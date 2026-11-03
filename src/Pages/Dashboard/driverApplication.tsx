@@ -3,6 +3,7 @@ import { Button, Descriptions, Modal, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { Driver } from "../../Model/driver";
 import api from "../../Config/api";
+import { notifyError } from "../../Utils/notify";
 
 const DriverDashboard: React.FC = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -60,7 +61,7 @@ const DriverDashboard: React.FC = () => {
         const response = await api.get("/admin/driver-applications");
         setDrivers(response.data.data.items);
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách tài xế:", error);
+        notifyError(error, "Không thể tải danh sách tài xế");
       } finally {
         setLoading(false);
       }

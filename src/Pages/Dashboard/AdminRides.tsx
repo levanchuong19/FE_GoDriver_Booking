@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button, Card, Select, Space, Table, Tag, message } from "antd";
+import { Button, Card, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { listAdminRides } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import { getRideId, type RideRecord } from "../../models/Ride";
 
@@ -83,7 +84,7 @@ export default function AdminRidesPage() {
         }
       } catch (error) {
         if (!ignore) {
-          message.error(getErrorMessage(error, "Không thể tải danh sách chuyến"));
+          notifyError(error, "Không thể tải danh sách chuyến");
         }
       } finally {
         if (!ignore) setLoading(false);

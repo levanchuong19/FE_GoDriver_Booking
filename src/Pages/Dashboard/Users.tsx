@@ -19,6 +19,7 @@ import {
   Tag,
   Avatar,
 } from "antd";
+import { notifyError } from "../../Utils/notify";
 import {
   EyeOutlined,
   EditOutlined,
@@ -68,7 +69,7 @@ export default function UsersPage() {
           current: page,
         }));
       } catch {
-        message.error("Không thể tải danh sách người dùng");
+        notifyError("Không thể tải danh sách người dùng");
       } finally {
         setLoading(false);
       }
@@ -88,7 +89,7 @@ export default function UsersPage() {
       setDetailUser(data);
       setDetailOpen(true);
     } catch {
-      message.error("Không thể tải thông tin người dùng");
+      notifyError("Không thể tải thông tin người dùng");
     }
   };
 
@@ -101,7 +102,7 @@ export default function UsersPage() {
       form.setFieldsValue(data);
       setEditOpen(true);
     } catch {
-      message.error("Không thể tải dữ liệu để chỉnh sửa");
+      notifyError("Không thể tải dữ liệu để chỉnh sửa");
     }
   };
 
@@ -115,7 +116,7 @@ export default function UsersPage() {
       setEditingUser(null);
       fetchUsers(pagination.current, search);
     } catch {
-      message.error("Lưu thất bại");
+      notifyError("Lưu thất bại");
     }
   };
 
@@ -129,7 +130,7 @@ export default function UsersPage() {
           : pagination.current;
       fetchUsers(nextPage, search);
     } catch {
-      message.error("Không thể xóa người dùng");
+      notifyError("Không thể xóa người dùng");
     }
   };
 

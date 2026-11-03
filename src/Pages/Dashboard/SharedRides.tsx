@@ -23,6 +23,7 @@ import {
   searchSharedTrips,
 } from "../../Config/managementApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type AnyRow = Record<string, unknown> & { id?: string; _id?: string };
@@ -56,7 +57,7 @@ export default function SharedRidesPage() {
       setTrips(data.items as AnyRow[]);
       message.success(`Tìm thấy ${data.total} chuyến`);
     } catch (error) {
-      message.error(getErrorMessage(error, "Tìm chuyến thất bại"));
+      notifyError(error, "Tìm chuyến thất bại");
     } finally {
       setSearchLoading(false);
     }
@@ -74,7 +75,7 @@ export default function SharedRidesPage() {
       setVehicles(vehicleData.items as AnyRow[]);
       setTemplates(templateData.items as AnyRow[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được dữ liệu xe ghép"));
+      notifyError(error, "Không tải được dữ liệu xe ghép");
     } finally {
       setMineLoading(false);
     }

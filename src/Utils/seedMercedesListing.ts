@@ -4,6 +4,10 @@ import {
   submitUsedCar,
   uploadUsedCarMedia,
 } from "../Config/adminApi";
+import {
+  resolveCatalogWriteIds,
+  toCatalogObjectId,
+} from "../data/vehicleCatalog";
 import { getUsedCarId } from "../models/UsedCar";
 import { MERCEDES_S450_SEED } from "../models/UsedCarWrite";
 
@@ -18,13 +22,21 @@ export async function seedMercedesS450Listing(options?: {
   autoApprove?: boolean;
   autoSubmit?: boolean;
 }) {
-  const created = (await createUsedCar({
+  const catalog = resolveCatalogWriteIds({
+    brandId: toCatalogObjectId("local:mercedes"),
+    modelId: toCatalogObjectId("local:mercedes:s-class"),
+    variantId: toCatalogObjectId("local:mercedes:s450"),
+    vehicleType: MERCEDES_S450_SEED.vehicleType,
+  });
+
+  // Không gửi free-text features — API chỉ nhận mã enum
+  const payload: Record<string, unknown> = {
     vehicleType: MERCEDES_S450_SEED.vehicleType,
     title: MERCEDES_S450_SEED.title,
     description: MERCEDES_S450_SEED.description,
     manufactureYear: MERCEDES_S450_SEED.manufactureYear,
     mileage: MERCEDES_S450_SEED.mileage,
-    price: MERCEDES_S450_SEED.price,
+    price: MERCEDES_S450_SEED.price > 0 ? MERCEDES_S450_SEED.price : 1_850_000_000,
     negotiable: MERCEDES_S450_SEED.negotiable,
     transmission: MERCEDES_S450_SEED.transmission,
     fuelType: MERCEDES_S450_SEED.fuelType,
@@ -32,8 +44,23 @@ export async function seedMercedesS450Listing(options?: {
     condition: MERCEDES_S450_SEED.condition,
     exteriorColor: MERCEDES_S450_SEED.exteriorColor,
     interiorColor: MERCEDES_S450_SEED.interiorColor,
-    features: [...MERCEDES_S450_SEED.features],
-  })) as { id?: string; _id?: string };
+    provinceCode: "79",
+    districtCode: "760",
+    contactName: "SmartDrive Admin",
+    contactPhone: "0901234567",
+    brandId: catalog.brandId,
+    modelId: catalog.modelId,
+    variantId: catalog.variantId,
+    brandName: catalog.brandName,
+    modelName: catalog.modelName,
+    variantName: catalog.variantName,
+    features: ["ABS", "SUNROOF", "LEATHER", "CRUISE"],
+  };
+
+  const created = (await createUsedCar(payload)) as {
+    id?: string;
+    _id?: string;
+  };
 
   const id = getUsedCarId(created);
   if (!id) throw new Error("API không trả về id tin vừa tạo");
@@ -45,19 +72,11 @@ export async function seedMercedesS450Listing(options?: {
   }
 
   if (options?.autoSubmit !== false) {
-    try {
-      await submitUsedCar(id);
-    } catch {
-      // Có thể thiếu field bắt buộc phía BE; vẫn giữ draft/pending
-    }
+    await submitUsedCar(id);
   }
 
   if (options?.autoApprove) {
-    try {
-      await approveUsedCar(id);
-    } catch {
-      // Admin approve có thể cần role riêng
-    }
+    await approveUsedCar(id);
   }
 
   return id;

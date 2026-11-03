@@ -19,6 +19,7 @@ import {
   rejectRideDriverRegistration,
 } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import type { RideDriverRegistration } from "../../models/RideDriver";
 
 const statusColor: Record<string, string> = {
@@ -44,7 +45,7 @@ export default function RideDriverRegistrationDetail() {
       const detail = await getRideDriverRegistration(userId);
       setData(detail);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải chi tiết đăng ký"));
+      notifyError(error, "Không thể tải chi tiết đăng ký");
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ export default function RideDriverRegistrationDetail() {
       message.success("Đã duyệt tài xế Đặt xe");
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Duyệt thất bại"));
+      notifyError(error, "Duyệt thất bại");
     } finally {
       setWorking(false);
     }
@@ -96,7 +97,7 @@ export default function RideDriverRegistrationDetail() {
       setReason("");
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Từ chối thất bại"));
+      notifyError(error, "Từ chối thất bại");
     } finally {
       setWorking(false);
     }

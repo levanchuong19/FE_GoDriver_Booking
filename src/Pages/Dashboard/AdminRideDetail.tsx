@@ -1,18 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Button,
-  Card,
-  Descriptions,
-  Space,
-  Spin,
-  Tag,
-  Timeline,
-  message,
-} from "antd";
+import { Button, Card, Descriptions, Space, Spin, Tag, Timeline } from "antd";
 import dayjs from "dayjs";
 import { getAdminRide } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type { RideRecord } from "../../models/Ride";
 
@@ -50,7 +42,7 @@ export default function AdminRideDetailPage() {
         if (!ignore) setData(detail);
       } catch (error) {
         if (!ignore) {
-          message.error(getErrorMessage(error, "Không thể tải chi tiết chuyến"));
+          notifyError(error, "Không thể tải chi tiết chuyến");
         }
       } finally {
         if (!ignore) setLoading(false);

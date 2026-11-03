@@ -19,6 +19,7 @@ import {
   listPricingPlans,
 } from "../../Config/managementApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type Plan = Record<string, unknown> & { id?: string; _id?: string };
@@ -50,7 +51,7 @@ export default function PricingPlansPage() {
       const data = await listPricingPlans();
       setPlans(data.items as Plan[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được pricing plans"));
+      notifyError(error, "Không tải được pricing plans");
     } finally {
       setLoading(false);
     }
@@ -85,9 +86,7 @@ export default function PricingPlansPage() {
       createForm.resetFields();
       await load();
     } catch (error) {
-      message.error(
-        getErrorMessage(error, "Tạo plan thất bại (kiểm tra JSON rules nếu có)")
-      );
+      notifyError(error, "Tạo plan thất bại (kiểm tra JSON rules nếu có)");
     } finally {
       setWorking(false);
     }
@@ -108,7 +107,7 @@ export default function PricingPlansPage() {
       setQuoteResult(data);
       message.success("Đã tạo quote");
     } catch (error) {
-      message.error(getErrorMessage(error, "Tạo quote thất bại"));
+      notifyError(error, "Tạo quote thất bại");
     } finally {
       setWorking(false);
     }

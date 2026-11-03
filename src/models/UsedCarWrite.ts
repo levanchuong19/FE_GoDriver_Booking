@@ -35,7 +35,7 @@ export const MERCEDES_S450_SEED = {
 Một chiếc S-Class dành cho người thích xe chất, xe zin và giữ gìn kỹ!`,
   manufactureYear: 2019,
   mileage: 20000,
-  price: 0,
+  price: 1850000000,
   negotiable: true,
   transmission: "AUTOMATIC",
   fuelType: "GASOLINE",

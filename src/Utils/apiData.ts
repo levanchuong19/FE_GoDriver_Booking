@@ -1,10 +1,28 @@
 export function getErrorMessage(error: unknown, fallback = "Đã xảy ra lỗi") {
   if (typeof error === "object" && error) {
     const err = error as {
-      response?: { data?: { message?: string } };
+      response?: {
+        data?: {
+          message?: string;
+          error?: string;
+          errors?: Array<string | { message?: string; msg?: string; path?: string }>;
+          details?: Array<string | { message?: string; msg?: string }>;
+        };
+      };
       message?: string;
     };
-    return err.response?.data?.message || err.message || fallback;
+    const data = err.response?.data;
+    const list = data?.errors || data?.details;
+    if (Array.isArray(list) && list.length) {
+      const parts = list
+        .map((item) => {
+          if (typeof item === "string") return item;
+          return item.message || item.msg || "";
+        })
+        .filter(Boolean);
+      if (parts.length) return parts.join("; ");
+    }
+    return data?.message || data?.error || err.message || fallback;
   }
   return fallback;
 }

@@ -27,6 +27,7 @@ import {
 } from "../../models/Transaction";
 import formatVND from "../../Utils/currency";
 import { getErrorMessage, unwrapList } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 
 type PaginationState = { current: number; pageSize: number; total: number };
 
@@ -80,9 +81,7 @@ export default function TransactionsPage() {
           total: parsed.total,
         });
       } catch (error: any) {
-        message.error(
-          getErrorMessage(error, "Không thể tải danh sách giao dịch")
-        );
+        notifyError(error, "Không thể tải danh sách giao dịch");
       } finally {
         setLoading(false);
       }
@@ -106,7 +105,7 @@ export default function TransactionsPage() {
   const handleApprove = async (tx: Transaction) => {
     const requestId = getWithdrawRequestId(tx);
     if (!requestId) {
-      message.error("Không tìm thấy mã yêu cầu rút tiền");
+      notifyError("Không tìm thấy mã yêu cầu rút tiền");
       return;
     }
     setWorkingId(requestId);
@@ -115,7 +114,7 @@ export default function TransactionsPage() {
       message.success("Đã duyệt yêu cầu rút tiền");
       await fetchTransactions(pagination.current, pagination.pageSize, type);
     } catch (error) {
-      message.error(getErrorMessage(error, "Duyệt rút tiền thất bại"));
+      notifyError(error, "Duyệt rút tiền thất bại");
     } finally {
       setWorkingId(null);
     }
@@ -125,7 +124,7 @@ export default function TransactionsPage() {
     if (!rejectTarget || !rejectMessage.trim()) return;
     const requestId = getWithdrawRequestId(rejectTarget);
     if (!requestId) {
-      message.error("Không tìm thấy mã yêu cầu rút tiền");
+      notifyError("Không tìm thấy mã yêu cầu rút tiền");
       return;
     }
     setWorkingId(requestId);
@@ -137,7 +136,7 @@ export default function TransactionsPage() {
       setRejectTarget(null);
       await fetchTransactions(pagination.current, pagination.pageSize, type);
     } catch (error) {
-      message.error(getErrorMessage(error, "Từ chối rút tiền thất bại"));
+      notifyError(error, "Từ chối rút tiền thất bại");
     } finally {
       setWorkingId(null);
     }

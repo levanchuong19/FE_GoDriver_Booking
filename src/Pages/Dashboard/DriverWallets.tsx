@@ -1,21 +1,11 @@
 import { useState } from "react";
-import {
-  Button,
-  Card,
-  Descriptions,
-  Form,
-  Input,
-  Select,
-  Space,
-  Table,
-  Tag,
-  message,
-} from "antd";
+import { Button, Card, Descriptions, Form, Input, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { getDriverWallet } from "../../Config/adminApi";
 import { listDriverWalletTransactions } from "../../Config/managementApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type { DriverWalletInfo } from "../../models/OnlineDriver";
 
@@ -53,7 +43,7 @@ export default function DriverWalletsPage() {
     } catch (error) {
       setWallet(null);
       setTransactions([]);
-      message.error(getErrorMessage(error, "Không tải được ví / giao dịch"));
+      notifyError(error, "Không tải được ví / giao dịch");
     } finally {
       setLoading(false);
     }
@@ -70,7 +60,7 @@ export default function DriverWalletsPage() {
       });
       setTransactions(txData.items as Tx[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được giao dịch"));
+      notifyError(error, "Không tải được giao dịch");
     } finally {
       setLoading(false);
     }

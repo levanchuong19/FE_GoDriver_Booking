@@ -1,6 +1,7 @@
 import axios from "axios";
 import api from "./api";
 import { unwrapData, unwrapList } from "../Utils/apiData";
+import { normalizeUsedCarDetail } from "../Utils/normalizeUsedCar";
 import type { RideDriverRegistration } from "../models/RideDriver";
 
 async function requestRideDriver(
@@ -186,11 +187,11 @@ export async function listUsedCars(params?: {
 export async function getUsedCar(id: string) {
   try {
     const res = await api.get(`/admin/used-cars/${id}`);
-    return unwrapData(res.data) ?? res.data;
+    return normalizeUsedCarDetail(res.data);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       const res = await api.get(`/used-cars/${id}`);
-      return unwrapData(res.data) ?? res.data;
+      return normalizeUsedCarDetail(res.data);
     }
     throw error;
   }

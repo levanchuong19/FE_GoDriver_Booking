@@ -42,9 +42,28 @@ export interface UsedCarListing {
   exteriorColor?: string;
   interiorColor?: string;
   bodyType?: string;
-  sellerId?: string | { _id?: string; fullName?: string; phone?: string };
+  brandId?: string;
+  modelId?: string;
+  variantId?: string;
+  brandName?: string;
+  modelName?: string;
+  variantName?: string;
+  provinceCode?: string;
+  districtCode?: string;
+  provinceName?: string;
+  districtName?: string;
+  sellerId?:
+    | string
+    | {
+        _id?: string;
+        fullName?: string;
+        phone?: string;
+        email?: string;
+      };
   createdAt?: string;
   updatedAt?: string;
+  submittedAt?: string;
+  publishedAt?: string;
   statusHistory?: Array<Record<string, unknown>>;
   moderationLogs?: Array<Record<string, unknown>>;
   rejectionReason?: string;

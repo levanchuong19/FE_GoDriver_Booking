@@ -20,6 +20,7 @@ import {
   updateBookingStatus,
 } from "../../Config/adminApi";
 import { getErrorMessage, unwrapList } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type Row = Booking & { key?: string };
@@ -73,7 +74,7 @@ export default function BookingPage() {
         setPage(parsed.page ?? p);
         setPageSize(parsed.limit ?? ps);
       } catch (error) {
-        message.error(getErrorMessage(error, "Không thể tải danh sách bookings"));
+        notifyError(error, "Không thể tải danh sách bookings");
       } finally {
         setLoading(false);
       }
@@ -105,7 +106,7 @@ export default function BookingPage() {
       message.success("Đã cập nhật trạng thái booking");
       await refreshCurrent(id);
     } catch (error) {
-      message.error(getErrorMessage(error, "Cập nhật trạng thái thất bại"));
+      notifyError(error, "Cập nhật trạng thái thất bại");
     } finally {
       setWorking(false);
     }
@@ -118,7 +119,7 @@ export default function BookingPage() {
       message.success("Đã cập nhật trạng thái thanh toán");
       await refreshCurrent(id);
     } catch (error) {
-      message.error(getErrorMessage(error, "Cập nhật thanh toán thất bại"));
+      notifyError(error, "Cập nhật thanh toán thất bại");
     } finally {
       setWorking(false);
     }

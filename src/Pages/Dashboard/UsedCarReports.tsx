@@ -18,6 +18,7 @@ import {
   resolveUsedCarReport,
 } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import { getUsedCarId, type UsedCarReport } from "../../models/UsedCar";
 
 const statusColor: Record<string, string> = {
@@ -45,7 +46,7 @@ export default function UsedCarReportsPage() {
       });
       setItems(data.items as UsedCarReport[]);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải báo cáo"));
+      notifyError(error, "Không thể tải báo cáo");
     } finally {
       setLoading(false);
     }
@@ -77,7 +78,7 @@ export default function UsedCarReportsPage() {
       setTarget(null);
       await load(status);
     } catch (error) {
-      message.error(getErrorMessage(error, "Xử lý báo cáo thất bại"));
+      notifyError(error, "Xử lý báo cáo thất bại");
     } finally {
       setWorkingId(null);
     }

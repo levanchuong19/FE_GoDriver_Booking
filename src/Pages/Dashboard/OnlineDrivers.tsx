@@ -1,15 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Descriptions,
-  Drawer,
-  Space,
-  Statistic,
-  Table,
-  Tag,
-  message,
-} from "antd";
+import { Button, Card, Descriptions, Drawer, Space, Statistic, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
@@ -18,6 +8,7 @@ import {
   getOnlineDrivers,
 } from "../../Config/adminApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type {
   DriverWalletInfo,
@@ -71,7 +62,7 @@ export default function OnlineDriversPage() {
       setCount(onlineCount);
       setItems(normalizeDrivers(drivers as unknown[]));
     } catch (error) {
-      message.error(getErrorMessage(error, "Không thể tải tài xế online"));
+      notifyError(error, "Không thể tải tài xế online");
     } finally {
       setLoading(false);
     }
@@ -93,7 +84,7 @@ export default function OnlineDriversPage() {
       setWallet(data);
     } catch (error) {
       setWallet(null);
-      message.error(getErrorMessage(error, "Không thể tải ví tài xế"));
+      notifyError(error, "Không thể tải ví tài xế");
     } finally {
       setWalletLoading(false);
     }

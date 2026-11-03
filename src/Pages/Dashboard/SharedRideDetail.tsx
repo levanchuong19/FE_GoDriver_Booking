@@ -21,6 +21,7 @@ import {
   startSharedTrip,
 } from "../../Config/managementApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 type AnyObj = Record<string, unknown>;
@@ -54,7 +55,7 @@ export default function SharedRideDetailPage() {
             : [];
       setManifest(list);
     } catch (error) {
-      message.error(getErrorMessage(error, "Không tải được chi tiết chuyến"));
+      notifyError(error, "Không tải được chi tiết chuyến");
     } finally {
       setLoading(false);
     }
@@ -75,7 +76,7 @@ export default function SharedRideDetailPage() {
       message.success(success);
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error, "Thao tác thất bại"));
+      notifyError(error, "Thao tác thất bại");
     } finally {
       setWorking(false);
     }

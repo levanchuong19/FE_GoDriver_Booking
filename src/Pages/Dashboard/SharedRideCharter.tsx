@@ -18,6 +18,7 @@ import {
   quoteSharedCharter,
 } from "../../Config/managementApi";
 import { getErrorMessage } from "../../Utils/apiData";
+import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
 export default function SharedRideCharterPage() {
@@ -53,7 +54,7 @@ export default function SharedRideCharterPage() {
       setQuote(data);
       message.success("Đã lấy báo giá bao xe");
     } catch (error) {
-      message.error(getErrorMessage(error, "Báo giá thất bại"));
+      notifyError(error, "Báo giá thất bại");
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function SharedRideCharterPage() {
       await createSharedCharter(buildPayload(values));
       message.success("Đã tạo yêu cầu bao xe");
     } catch (error) {
-      message.error(getErrorMessage(error, "Tạo bao xe thất bại"));
+      notifyError(error, "Tạo bao xe thất bại");
     } finally {
       setLoading(false);
     }

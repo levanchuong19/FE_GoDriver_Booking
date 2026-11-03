@@ -4,6 +4,7 @@ import {
   listDriverApplications,
   // approveDriverApplication,
 } from "../../Config/adminDriverApplications";
+import { notifyError } from "../../Utils/notify";
 
 type Status = "draft" | "pending" | "approved" | "rejected";
 
@@ -108,6 +109,7 @@ const AdminDriverApplications = () => {
             message = err.response?.data?.message || err.message || message;
           }
           setError(message);
+          notifyError(e, message);
         }
       } finally {
         if (!ignore) setLoading(false);

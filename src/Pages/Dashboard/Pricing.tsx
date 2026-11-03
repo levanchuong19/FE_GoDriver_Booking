@@ -20,6 +20,7 @@ import {
   Select,
   DatePicker,
 } from "antd";
+import { notifyError } from "../../Utils/notify";
 import {
   EyeOutlined,
   EditOutlined,
@@ -66,7 +67,7 @@ export default function PricingPage() {
         (Array.isArray(res.data) ? res.data : []);
       setData(list.map((x) => ({ ...x, key: x._id ?? x.serviceType })));
     } catch {
-      message.error("Không thể tải danh sách bảng giá");
+      notifyError("Không thể tải danh sách bảng giá");
     } finally {
       setLoading(false);
     }
@@ -84,7 +85,7 @@ export default function PricingPage() {
       setDetail(item);
       setOpenDetail(true);
     } catch {
-      message.error("Không thể tải chi tiết bảng giá");
+      notifyError("Không thể tải chi tiết bảng giá");
     }
   };
 
@@ -142,7 +143,7 @@ export default function PricingPage() {
       } as any);
       setOpenEdit(true);
     } catch {
-      message.error("Không thể tải dữ liệu để chỉnh sửa");
+      notifyError("Không thể tải dữ liệu để chỉnh sửa");
     }
   };
 
@@ -191,7 +192,7 @@ export default function PricingPage() {
       setEditing(null);
       await fetchAll();
     } catch {
-      message.error("Lưu bảng giá thất bại");
+      notifyError("Lưu bảng giá thất bại");
     }
   };
 
@@ -202,7 +203,7 @@ export default function PricingPage() {
       message.success("Đã xoá bảng giá");
       await fetchAll();
     } catch {
-      message.error("Không thể xoá bảng giá");
+      notifyError("Không thể xoá bảng giá");
     }
   };
 

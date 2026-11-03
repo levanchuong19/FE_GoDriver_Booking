@@ -24,6 +24,7 @@ import {
 } from "../../Config/adminApi";
 import { listDriverApplications } from "../../Config/adminDriverApplications";
 import { unwrapList } from "../../Utils/apiData";
+import { notifyError, suppressErrorToast } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import type { Booking } from "../../models/Booking";
 import {
@@ -85,6 +86,7 @@ export default function Dashboard() {
   useEffect(() => {
     let ignore = false;
 
+    let failedCount = 0;
     const safe = async <T,>(promise: Promise<T>, fallback: T) => {
       try {
         return await Promise.race([
@@ -93,13 +95,16 @@ export default function Dashboard() {
             setTimeout(() => reject(new Error("timeout")), 12000)
           ),
         ]);
-      } catch {
+      } catch (error) {
+        failedCount += 1;
+        suppressErrorToast(error);
         return fallback;
       }
     };
 
     const load = async () => {
       setLoading(true);
+      failedCount = 0;
       const startOfDay = dayjs().startOf("day").toISOString();
       const endOfDay = dayjs().endOf("day").toISOString();
 
@@ -209,6 +214,11 @@ export default function Dashboard() {
       setBookingByStatus(statusCounts);
       setRecentBookings(recentBookingData);
       setRecentTransactions(recentTxData);
+      if (failedCount > 0) {
+        notifyError(
+          `Có ${failedCount} phần dữ liệu overview không tải được. Vui lòng tải lại trang.`
+        );
+      }
       setLoading(false);
     };
 
