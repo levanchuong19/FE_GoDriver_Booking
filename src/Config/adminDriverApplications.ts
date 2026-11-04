@@ -1,7 +1,7 @@
 import api from "./api";
 
 export interface ListParams {
-  status?: "draft" | "pending" | "approved" | "rejected";
+  status?: "draft" | "pending" | "approved" | "rejected" | "revoked";
   search?: string;
   createdFrom?: string;
   createdTo?: string;
