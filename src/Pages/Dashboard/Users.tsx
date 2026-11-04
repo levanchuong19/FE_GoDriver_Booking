@@ -166,6 +166,7 @@ export default function UsersPage() {
       notifySuccess("Đã thu hồi quyền tài xế");
       setRevokeOpen(false);
       setRevokeUser(null);
+      await fetchUsers(pagination.current, search);
       if (detailUser?._id === revokeUser._id) {
         await handleView(revokeUser._id);
       }

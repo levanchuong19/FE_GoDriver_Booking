@@ -12,12 +12,16 @@ const statusColor: Record<string, string> = {
   approved: "green",
   rejected: "red",
   draft: "default",
+  revoked: "purple",
+  locked: "volcano",
+  suspended: "orange",
+  blocked: "volcano",
 };
 
 export default function RideDriverRegistrations() {
   const [sp, setSp] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState(sp.get("status") || "pending");
+  const [status, setStatus] = useState(sp.get("status") ?? "");
   const [searchInput, setSearchInput] = useState(sp.get("search") || "");
   const [search, setSearch] = useState(sp.get("search") || "");
   const [page, setPage] = useState(Number(sp.get("page") || 1));
@@ -151,6 +155,8 @@ export default function RideDriverRegistrations() {
               { value: "pending", label: "Chờ duyệt" },
               { value: "approved", label: "Đã duyệt" },
               { value: "rejected", label: "Từ chối" },
+              { value: "revoked", label: "Đã thu hồi" },
+              { value: "locked", label: "Đã khóa" },
             ]}
           />
           <Input.Search

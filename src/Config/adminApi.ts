@@ -37,8 +37,95 @@ function pickString(...values: unknown[]) {
   return "";
 }
 
+function asStatus(value: unknown): string {
+  if (typeof value === "string" && value.trim()) {
+    return value.trim().toLowerCase();
+  }
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    return asStatus(obj.status ?? obj.state ?? obj.value);
+  }
+  return "";
+}
+
 function pickStatus(...values: unknown[]) {
-  return pickString(...values).toLowerCase();
+  for (const value of values) {
+    const status = asStatus(value);
+    if (status) return status;
+  }
+  return "";
+}
+
+function isTruthyFlag(...values: unknown[]) {
+  for (const value of values) {
+    if (value === true || value === 1) return true;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (
+        ["true", "1", "locked", "blocked", "suspended", "banned"].includes(
+          normalized
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function resolveRideDriverStatus(
+  item: Record<string, unknown>,
+  user: Record<string, unknown>,
+  capabilities: Record<string, unknown>
+) {
+  const registration = (item.registration ??
+    item.rideRegistration ??
+    {}) as Record<string, unknown>;
+  const rideCap = asStatus(capabilities.RIDE_HAILING);
+
+  let status = pickStatus(
+    item.rideHailingStatus,
+    item.rideStatus,
+    item.registrationStatus,
+    registration.status,
+    item.status
+  );
+
+  // Capability only for revoke/lock signals — never KYC, never approve bleed
+  if (
+    !status &&
+    ["revoked", "locked", "suspended", "blocked", "banned"].includes(rideCap)
+  ) {
+    status = rideCap;
+  }
+
+  const locked =
+    isTruthyFlag(
+      user.isLocked,
+      user.locked,
+      user.blocked,
+      user.isBlocked,
+      item.isLocked,
+      item.locked,
+      item.blocked
+    ) ||
+    ["locked", "blocked", "banned", "suspended"].includes(
+      asStatus(user.status)
+    );
+
+  if (locked) return "locked";
+
+  const revoked =
+    Boolean(item.revokedAt) ||
+    Boolean(registration.revokedAt) ||
+    rideCap === "revoked" ||
+    asStatus(item.revokeStatus) === "revoked";
+
+  if (revoked && (!status || status === "approved" || status === "pending")) {
+    return "revoked";
+  }
+
+  return status;
 }
 
 export function normalizeRideDriver(raw: unknown): RideDriverRegistration {
@@ -67,13 +154,7 @@ export function normalizeRideDriver(raw: unknown): RideDriverRegistration {
 
   return {
     userId,
-    status: pickStatus(
-      item.rideHailingStatus,
-      item.rideStatus,
-      capabilities.RIDE_HAILING,
-      item.status,
-      kyc.status
-    ),
+    status: resolveRideDriverStatus(item, user, capabilities),
     kycStatus: pickStatus(kyc.status, item.kycStatus),
     fullName: pickString(
       personal.fullName,

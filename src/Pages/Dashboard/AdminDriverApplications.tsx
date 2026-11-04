@@ -6,7 +6,7 @@ import {
 } from "../../Config/adminDriverApplications";
 import { notifyError } from "../../Utils/notify";
 
-type Status = "draft" | "pending" | "approved" | "rejected";
+type Status = "draft" | "pending" | "approved" | "rejected" | "revoked";
 
 interface ApplicationItem {
   _id: string;
@@ -25,7 +25,7 @@ interface ApplicationItem {
 const AdminDriverApplications = () => {
   const [sp, setSp] = useSearchParams();
   const [status, setStatus] = useState<Status | "">(
-    (sp.get("status") as Status) || "pending"
+    (sp.get("status") as Status) ?? ""
   );
   const [search, setSearch] = useState(sp.get("search") || "");
   const [searchInput, setSearchInput] = useState(search);
@@ -149,6 +149,7 @@ const AdminDriverApplications = () => {
             <option value="pending">Chờ duyệt</option>
             <option value="approved">Đã duyệt</option>
             <option value="rejected">Từ chối</option>
+            <option value="revoked">Đã thu hồi</option>
             <option value="draft">Nháp</option>
           </select>
         </div>
@@ -292,8 +293,12 @@ function renderStatusBadge(status: Status) {
     pending: { text: "Chờ duyệt", cls: "bg-amber-100 text-amber-800" },
     approved: { text: "Đã duyệt", cls: "bg-green-100 text-green-800" },
     rejected: { text: "Từ chối", cls: "bg-red-100 text-red-700" },
+    revoked: { text: "Đã thu hồi", cls: "bg-purple-100 text-purple-800" },
   };
-  const m = map[status];
+  const m = map[status] ?? {
+    text: String(status || "—").toUpperCase(),
+    cls: "bg-gray-100 text-gray-700",
+  };
   return (
     <span
       className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${m.cls}`}

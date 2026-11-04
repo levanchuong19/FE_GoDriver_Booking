@@ -27,6 +27,10 @@ const statusColor: Record<string, string> = {
   approved: "green",
   rejected: "red",
   draft: "default",
+  revoked: "purple",
+  locked: "volcano",
+  suspended: "orange",
+  blocked: "volcano",
 };
 
 export default function RideDriverRegistrationDetail() {
