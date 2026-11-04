@@ -19,8 +19,18 @@ import {
   rejectRideDriverRegistration,
   revokeRideDriverRegistration,
 } from "../../Config/adminApi";
+import {
+  collectKycDocuments,
+  documentsToMediaEntries,
+  resolveMediaUrl,
+} from "../../Utils/kycDocuments";
 import { notifyError, notifySuccess } from "../../Utils/notify";
 import type { RideDriverRegistration } from "../../models/RideDriver";
+import {
+  getDriverApplicationById,
+  listDriverApplications,
+} from "../../Config/adminDriverApplications";
+import { unwrapData } from "../../Utils/apiData";
 
 const statusColor: Record<string, string> = {
   pending: "gold",
@@ -32,6 +42,41 @@ const statusColor: Record<string, string> = {
   suspended: "orange",
   blocked: "volcano",
 };
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function extractApplicationPayload(raw: unknown): Record<string, unknown> {
+  const root = asRecord(unwrapData(raw) ?? raw);
+  return asRecord(root.data ?? root.app ?? root.application ?? root);
+}
+
+function hasCoreKycDocs(docs: Record<string, string>) {
+  return Boolean(
+    docs.idFrontUrl &&
+      docs.idBackUrl &&
+      docs.driverLicenseFrontUrl &&
+      docs.driverLicenseBackUrl
+  );
+}
+
+function mergeHireDriverDocs(
+  detail: RideDriverRegistration,
+  appData: Record<string, unknown>
+): RideDriverRegistration {
+  const kycBag = asRecord(detail.kyc);
+  const merged = collectKycDocuments(kycBag, appData, detail.raw, detail.vehicle);
+  return {
+    ...detail,
+    kyc: {
+      ...kycBag,
+      documents: merged,
+    },
+  };
+}
 
 export default function RideDriverRegistrationDetail() {
   const { userId } = useParams();
@@ -47,7 +92,87 @@ export default function RideDriverRegistrationDetail() {
     if (!userId) return;
     setLoading(true);
     try {
-      const detail = await getRideDriverRegistration(userId);
+      let detail = await getRideDriverRegistration(userId);
+      const kycBag = asRecord(detail.kyc);
+      let docs = collectKycDocuments(kycBag, detail.raw, detail.vehicle);
+
+      if (!hasCoreKycDocs(docs)) {
+        const applicationId = [
+          kycBag.applicationId,
+          kycBag.driverApplicationId,
+          detail.raw?.applicationId,
+          detail.raw?.driverApplicationId,
+          asRecord(detail.raw?.application)._id,
+          asRecord(detail.raw?.driverApplication)._id,
+          // only treat kyc._id as app id when it already carries documents bag
+          kycBag.documents ? kycBag._id : "",
+        ]
+          .map((value) => (typeof value === "string" ? value.trim() : ""))
+          .find(Boolean);
+
+        if (applicationId) {
+          try {
+            const appRes = await getDriverApplicationById(applicationId);
+            detail = mergeHireDriverDocs(
+              detail,
+              extractApplicationPayload(appRes)
+            );
+            docs = collectKycDocuments(
+              detail.kyc,
+              detail.raw,
+              detail.vehicle
+            );
+          } catch {
+            // fall through to search
+          }
+        }
+      }
+
+      if (!hasCoreKycDocs(docs)) {
+        const search = detail.email || detail.phone || detail.fullName || "";
+        if (search) {
+          try {
+            const listed = await listDriverApplications({
+              search,
+              status: "approved",
+              limit: 10,
+            });
+            const payload = asRecord(listed?.data ?? listed);
+            const items = Array.isArray(payload.items)
+              ? payload.items
+              : Array.isArray(listed?.items)
+                ? listed.items
+                : [];
+            const matched = items.find((item: unknown) => {
+              const app = asRecord(item);
+              const personal = asRecord(app.personal);
+              const appUserId = String(
+                app.userId ?? asRecord(app.user)._id ?? ""
+              );
+              if (appUserId && appUserId === detail.userId) return true;
+              if (
+                detail.email &&
+                String(personal.email || app.email || "") === detail.email
+              ) {
+                return true;
+              }
+              if (
+                detail.phone &&
+                String(personal.phone || app.phone || "") === detail.phone
+              ) {
+                return true;
+              }
+              return false;
+            });
+            if (matched) {
+              detail = mergeHireDriverDocs(detail, asRecord(matched));
+            }
+          } catch {
+            // Keep ride-driver payload if hire-driver lookup fails
+          }
+        }
+      }
+
       setData(detail);
     } catch (error) {
       notifyError(error, "Không thể tải chi tiết đăng ký");
@@ -71,18 +196,29 @@ export default function RideDriverRegistrationDetail() {
   const kyc = (data?.kyc ?? {}) as Record<string, unknown>;
   const personal = (kyc.personal ?? {}) as Record<string, unknown>;
   const address = (kyc.address ?? {}) as Record<string, unknown>;
-  const documents = (kyc.documents ?? {}) as Record<string, string>;
   const vehicle = data?.vehicle ?? {};
-  const vehicleDocs = (vehicle.documents ?? {}) as Record<string, string>;
   const photos = Array.isArray(vehicle.photos) ? vehicle.photos : [];
 
   const mediaEntries = useMemo(() => {
-    const fromDocs = Object.entries({ ...documents, ...vehicleDocs }).filter(
-      ([, url]) => Boolean(url),
+    const documents = collectKycDocuments(
+      kyc,
+      data?.raw,
+      vehicle,
+      (vehicle as { documents?: unknown }).documents,
     );
-    const fromPhotos = photos.map((url, index) => [`Ảnh xe ${index + 1}`, url]);
-    return [...fromDocs, ...fromPhotos] as [string, string][];
-  }, [documents, vehicleDocs, photos]);
+    const fromDocs = documentsToMediaEntries(documents).map(
+      ([label, url]) => [label, resolveMediaUrl(url)] as [string, string],
+    );
+    const fromPhotos = photos
+      .map((url, index) => {
+        const resolved = resolveMediaUrl(url);
+        return resolved
+          ? ([`Ảnh xe ${index + 1}`, resolved] as [string, string])
+          : null;
+      })
+      .filter((entry): entry is [string, string] => Boolean(entry));
+    return [...fromDocs, ...fromPhotos];
+  }, [kyc, data?.raw, vehicle, photos]);
 
   const handleApprove = async () => {
     if (!userId) return;

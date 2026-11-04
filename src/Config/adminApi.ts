@@ -1,6 +1,7 @@
 import axios from "axios";
 import api from "./api";
 import { unwrapData, unwrapList } from "../Utils/apiData";
+import { collectKycDocuments } from "../Utils/kycDocuments";
 import { normalizeUsedCarDetail } from "../Utils/normalizeUsedCar";
 import type { RideDriverRegistration } from "../models/RideDriver";
 
@@ -175,10 +176,26 @@ function resolveRideDriverStatus(
 export function normalizeRideDriver(raw: unknown): RideDriverRegistration {
   const item = (raw ?? {}) as Record<string, unknown>;
   const user = (item.user ?? {}) as Record<string, unknown>;
-  const kyc = (item.kyc ??
-    item.application ??
+  const application = (item.application ??
     item.driverApplication ??
     {}) as Record<string, unknown>;
+  const baseKyc = (item.kyc ?? application) as Record<string, unknown>;
+  const mergedDocuments = collectKycDocuments(
+    baseKyc,
+    application,
+    item,
+    user,
+    item.registration,
+    item.rideRegistration,
+    item.rideHailingApplication
+  );
+  const kyc: Record<string, unknown> = {
+    ...application,
+    ...baseKyc,
+    personal: baseKyc.personal ?? application.personal,
+    address: baseKyc.address ?? application.address,
+    documents: mergedDocuments,
+  };
   const personal = (kyc.personal ?? item.personal ?? {}) as Record<
     string,
     unknown
@@ -186,6 +203,15 @@ export function normalizeRideDriver(raw: unknown): RideDriverRegistration {
   const vehicle = (item.vehicle ??
     item.rideVehicle ??
     {}) as RideDriverRegistration["vehicle"];
+  if (vehicle && typeof vehicle === "object") {
+    const vehicleDocs = collectKycDocuments(vehicle, vehicle.documents);
+    if (Object.keys(vehicleDocs).length) {
+      (vehicle as Record<string, unknown>).documents = {
+        ...((vehicle.documents as Record<string, unknown>) || {}),
+        ...vehicleDocs,
+      };
+    }
+  }
   const capabilities = (item.capabilities ?? {}) as Record<string, unknown>;
 
   const userId = pickString(
