@@ -61,9 +61,13 @@ export default function RideDriverRegistrationDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const canDecide = data?.status === "pending";
-  const canRevoke =
-    data?.status === "pending" || data?.status === "approved";
+  const normalizedStatus = (data?.status || "").toLowerCase();
+  const canDecide = ["pending", "submitted", "under_review", "in_review"].includes(
+    normalizedStatus,
+  );
+  const canRevoke = ["pending", "submitted", "under_review", "in_review", "approved"].includes(
+    normalizedStatus,
+  );
   const kyc = (data?.kyc ?? {}) as Record<string, unknown>;
   const personal = (kyc.personal ?? {}) as Record<string, unknown>;
   const address = (kyc.address ?? {}) as Record<string, unknown>;

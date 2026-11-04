@@ -80,23 +80,67 @@ function resolveRideDriverStatus(
 ) {
   const registration = (item.registration ??
     item.rideRegistration ??
+    item.rideHailingApplication ??
+    item.rideDriverRegistration ??
     {}) as Record<string, unknown>;
-  const rideCap = asStatus(capabilities.RIDE_HAILING);
+  const rideNode = (item.rideHailing ??
+    item.rideDriver ??
+    item.ride ??
+    {}) as Record<string, unknown>;
+  const userCaps = (user.capabilities ?? {}) as Record<string, unknown>;
+  const driverCaps = (item.driverCapabilities ?? {}) as Record<string, unknown>;
 
+  // RIDE_HAILING may be "PENDING" or { status: "PENDING" } — never use kyc.status
+  const rideCap = pickStatus(
+    capabilities.RIDE_HAILING,
+    userCaps.RIDE_HAILING,
+    driverCaps.RIDE_HAILING,
+    item.capabilityRIDE_HAILING
+  );
+
+  const kycLike = pickStatus(
+    (item.kyc as Record<string, unknown> | undefined)?.status,
+    item.kycStatus,
+    (item.application as Record<string, unknown> | undefined)?.status,
+    (item.driverApplication as Record<string, unknown> | undefined)?.status
+  );
+
+  // Prefer explicit ride fields + capability. Skip item.status when it only mirrors KYC.
   let status = pickStatus(
     item.rideHailingStatus,
     item.rideStatus,
     item.registrationStatus,
     registration.status,
-    item.status
+    rideNode.status,
+    rideCap
   );
 
-  // Capability only for revoke/lock signals — never KYC, never approve bleed
-  if (
-    !status &&
-    ["revoked", "locked", "suspended", "blocked", "banned"].includes(rideCap)
-  ) {
-    status = rideCap;
+  if (!status) {
+    const bare = asStatus(item.status);
+    if (bare && bare !== kycLike) status = bare;
+    else if (bare && !kycLike) status = bare;
+  }
+
+  // In ride-driver list, missing RIDE_HAILING + có xe → đang chờ duyệt Đặt xe
+  if (!status) {
+    if (
+      pickString(
+        item.rejectionReason,
+        item.rejectReason,
+        registration.rejectionReason,
+        registration.rejectReason
+      )
+    ) {
+      status = "rejected";
+    } else {
+      const hasVehicle = Boolean(
+        item.vehicle ||
+          item.rideVehicle ||
+          registration.vehicle ||
+          rideNode.vehicle
+      );
+      if (hasVehicle) status = "pending";
+    }
   }
 
   const locked =
