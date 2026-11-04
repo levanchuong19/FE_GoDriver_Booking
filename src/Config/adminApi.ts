@@ -136,6 +136,26 @@ export async function rejectRideDriverRegistration(
   return unwrapData(res.data);
 }
 
+/** Thu hồi đăng ký Đặt xe */
+export async function revokeRideDriverRegistration(
+  userId: string,
+  reason: string
+) {
+  const res = await requestRideDriver("post", `/${userId}/revoke`, { reason });
+  return unwrapData(res.data);
+}
+
+export type DriverCapability = "DRIVER_FOR_HIRE" | "RIDE_HAILING" | "ALL";
+
+/** Thu hồi quyền tài xế theo capability */
+export async function revokeUserDriverCapabilities(
+  userId: string,
+  payload: { reason: string; capabilities: DriverCapability[] }
+) {
+  const res = await api.post(`/admin/users/${userId}/revoke-driver`, payload);
+  return unwrapData(res.data) ?? res.data;
+}
+
 export async function approveWithdrawRequest(requestId: string) {
   const res = await api.post(`/admin/withdraw-requests/${requestId}/approve`);
   return unwrapData(res.data);

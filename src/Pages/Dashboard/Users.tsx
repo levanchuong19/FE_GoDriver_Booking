@@ -19,15 +19,20 @@ import {
   Tag,
   Avatar,
 } from "antd";
-import { notifyError } from "../../Utils/notify";
+import { notifyError, notifySuccess } from "../../Utils/notify";
 import {
   EyeOutlined,
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
+  StopOutlined,
 } from "@ant-design/icons";
 import type { User } from "../../models/User";
 import api from "../../Config/api";
+import {
+  revokeUserDriverCapabilities,
+  type DriverCapability,
+} from "../../Config/adminApi";
 
 type PaginationState = { current: number; pageSize: number; total: number };
 
@@ -47,6 +52,13 @@ export default function UsersPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form] = Form.useForm();
+  const [revokeOpen, setRevokeOpen] = useState(false);
+  const [revokeUser, setRevokeUser] = useState<User | null>(null);
+  const [revokeReason, setRevokeReason] = useState("");
+  const [revokeCapabilities, setRevokeCapabilities] = useState<
+    DriverCapability[]
+  >(["ALL"]);
+  const [revoking, setRevoking] = useState(false);
 
   // --- Fetch Users ---
   const fetchUsers = useCallback(
@@ -134,6 +146,36 @@ export default function UsersPage() {
     }
   };
 
+  const openRevoke = (user: User) => {
+    setRevokeUser(user);
+    setRevokeReason("");
+    setRevokeCapabilities(["ALL"]);
+    setRevokeOpen(true);
+  };
+
+  const handleRevokeDriver = async () => {
+    if (!revokeUser?._id || !revokeReason.trim() || !revokeCapabilities.length) {
+      return;
+    }
+    setRevoking(true);
+    try {
+      await revokeUserDriverCapabilities(revokeUser._id, {
+        reason: revokeReason.trim(),
+        capabilities: revokeCapabilities,
+      });
+      notifySuccess("Đã thu hồi quyền tài xế");
+      setRevokeOpen(false);
+      setRevokeUser(null);
+      if (detailUser?._id === revokeUser._id) {
+        await handleView(revokeUser._id);
+      }
+    } catch (error) {
+      notifyError(error, "Thu hồi quyền tài xế thất bại");
+    } finally {
+      setRevoking(false);
+    }
+  };
+
   // --- Table columns ---
   const columns = [
     {
@@ -178,6 +220,13 @@ export default function UsersPage() {
           >
             Sửa
           </Button>
+          <Button
+            icon={<StopOutlined />}
+            danger
+            onClick={() => openRevoke(user)}
+          >
+            Thu hồi quyền
+          </Button>
           <Popconfirm
             title="Xóa người dùng?"
             onConfirm={() => handleDelete(user._id)}
@@ -188,7 +237,7 @@ export default function UsersPage() {
           </Popconfirm>
         </Space>
       ),
-      width: 230,
+      width: 360,
     },
   ];
 
@@ -280,7 +329,68 @@ export default function UsersPage() {
         ) : (
           "Đang tải…"
         )}
+        {detailUser && (
+          <div className="mt-4">
+            <Button
+              danger
+              icon={<StopOutlined />}
+              block
+              onClick={() => openRevoke(detailUser)}
+            >
+              Thu hồi quyền tài xế
+            </Button>
+          </div>
+        )}
       </Drawer>
+
+      <Modal
+        title={`Thu hồi quyền tài xế — ${revokeUser?.fullName || ""}`}
+        open={revokeOpen}
+        onCancel={() => {
+          setRevokeOpen(false);
+          setRevokeUser(null);
+        }}
+        onOk={handleRevokeDriver}
+        okText="Thu hồi"
+        okButtonProps={{
+          danger: true,
+          loading: revoking,
+          disabled: !revokeReason.trim() || !revokeCapabilities.length,
+        }}
+        centered
+      >
+        <Form layout="vertical">
+          <Form.Item label="Quyền thu hồi" required>
+            <Select
+              mode="multiple"
+              value={revokeCapabilities}
+              onChange={(value: DriverCapability[]) =>
+                setRevokeCapabilities(value.length ? value : ["ALL"])
+              }
+              options={[
+                { value: "ALL", label: "ALL — tất cả quyền tài xế" },
+                {
+                  value: "DRIVER_FOR_HIRE",
+                  label: "DRIVER_FOR_HIRE — lái hộ",
+                },
+                {
+                  value: "RIDE_HAILING",
+                  label: "RIDE_HAILING — đặt xe",
+                },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="Lý do" required>
+            <Input.TextArea
+              rows={4}
+              maxLength={300}
+              value={revokeReason}
+              onChange={(e) => setRevokeReason(e.target.value)}
+              placeholder="Nhập lý do thu hồi"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {/* Modal chỉnh sửa */}
       <Modal

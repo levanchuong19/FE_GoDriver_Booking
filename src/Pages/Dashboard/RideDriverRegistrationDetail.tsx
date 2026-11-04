@@ -17,8 +17,9 @@ import {
   approveRideDriverRegistration,
   getRideDriverRegistration,
   rejectRideDriverRegistration,
+  revokeRideDriverRegistration,
 } from "../../Config/adminApi";
-import { notifyError } from "../../Utils/notify";
+import { notifyError, notifySuccess } from "../../Utils/notify";
 import type { RideDriverRegistration } from "../../models/RideDriver";
 
 const statusColor: Record<string, string> = {
@@ -35,6 +36,7 @@ export default function RideDriverRegistrationDetail() {
   const [working, setWorking] = useState(false);
   const [data, setData] = useState<RideDriverRegistration | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [revokeOpen, setRevokeOpen] = useState(false);
   const [reason, setReason] = useState("");
 
   const load = async () => {
@@ -56,6 +58,8 @@ export default function RideDriverRegistrationDetail() {
   }, [userId]);
 
   const canDecide = data?.status === "pending";
+  const canRevoke =
+    data?.status === "pending" || data?.status === "approved";
   const kyc = (data?.kyc ?? {}) as Record<string, unknown>;
   const personal = (kyc.personal ?? {}) as Record<string, unknown>;
   const address = (kyc.address ?? {}) as Record<string, unknown>;
@@ -102,10 +106,26 @@ export default function RideDriverRegistrationDetail() {
     }
   };
 
+  const handleRevoke = async () => {
+    if (!userId || !reason.trim()) return;
+    setWorking(true);
+    try {
+      await revokeRideDriverRegistration(userId, reason.trim());
+      notifySuccess("Đã thu hồi đăng ký Đặt xe");
+      setRevokeOpen(false);
+      setReason("");
+      await load();
+    } catch (error) {
+      notifyError(error, "Thu hồi đăng ký Đặt xe thất bại");
+    } finally {
+      setWorking(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <Space>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <Space wrap>
           <Button onClick={() => navigate(-1)}>Quay lại</Button>
           <h1 className="text-xl font-semibold m-0">Chi tiết tài xế Đặt xe</h1>
           {data?.status && (
@@ -114,16 +134,37 @@ export default function RideDriverRegistrationDetail() {
             </Tag>
           )}
         </Space>
-        {canDecide && (
-          <Space>
-            <Button type="primary" loading={working} onClick={handleApprove}>
-              Duyệt
+        <Space wrap>
+          {canDecide && (
+            <>
+              <Button type="primary" loading={working} onClick={handleApprove}>
+                Duyệt
+              </Button>
+              <Button
+                danger
+                onClick={() => {
+                  setReason("");
+                  setRejectOpen(true);
+                }}
+              >
+                Từ chối
+              </Button>
+            </>
+          )}
+          {canRevoke && (
+            <Button
+              danger
+              ghost
+              loading={working}
+              onClick={() => {
+                setReason("");
+                setRevokeOpen(true);
+              }}
+            >
+              Thu hồi
             </Button>
-            <Button danger onClick={() => setRejectOpen(true)}>
-              Từ chối
-            </Button>
-          </Space>
-        )}
+          )}
+        </Space>
       </div>
 
       <Spin spinning={loading}>
@@ -222,7 +263,7 @@ export default function RideDriverRegistrationDetail() {
         open={rejectOpen}
         onCancel={() => setRejectOpen(false)}
         onOk={handleReject}
-        okButtonProps={{ disabled: !reason.trim(), loading: working }}
+        okButtonProps={{ disabled: !reason.trim(), loading: working, danger: true }}
         okText="Gửi"
       >
         <Input.TextArea
@@ -231,6 +272,23 @@ export default function RideDriverRegistrationDetail() {
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="Nhập lý do từ chối"
+        />
+      </Modal>
+
+      <Modal
+        title="Thu hồi đăng ký Đặt xe"
+        open={revokeOpen}
+        onCancel={() => setRevokeOpen(false)}
+        onOk={handleRevoke}
+        okButtonProps={{ disabled: !reason.trim(), loading: working, danger: true }}
+        okText="Thu hồi"
+      >
+        <Input.TextArea
+          rows={4}
+          maxLength={300}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Nhập lý do thu hồi"
         />
       </Modal>
     </div>

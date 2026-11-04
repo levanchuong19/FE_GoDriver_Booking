@@ -32,6 +32,10 @@ export const rejectDriverApplication = async (id: string, reason: string) => {
   return data;
 };
 
-
-
-
+/** Thu hồi đơn KYC lái hộ (pending/approved) */
+export const revokeDriverApplication = async (id: string, reason: string) => {
+  const { data } = await api.post(`admin/driver-applications/${id}/revoke`, {
+    reason,
+  });
+  return data;
+};

@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { approveDriverApplication, getDriverApplicationById, rejectDriverApplication } from "../../Config/adminDriverApplications";
+import {
+  approveDriverApplication,
+  getDriverApplicationById,
+  rejectDriverApplication,
+  revokeDriverApplication,
+} from "../../Config/adminDriverApplications";
 import { jwtDecode } from "jwt-decode";
 import type { JwtPayload } from "../../Model/User";
 import { notifyError, notifySuccess } from "../../Utils/notify";
@@ -34,6 +39,7 @@ export default function AdminDriverApplicationDetail() {
   const [working, setWorking] = useState(false);
   const [reason, setReason] = useState("");
   const [openReject, setOpenReject] = useState(false);
+  const [openRevoke, setOpenRevoke] = useState(false);
 
   const role = useMemo(() => {
     try {
@@ -91,28 +97,49 @@ export default function AdminDriverApplicationDetail() {
           <h1 className="text-xl md:text-2xl font-semibold">Chi tiết hồ sơ</h1>
           {data && renderStatusBadge(data.status)}
         </div>
-        {role === "admin" && data?.status === "pending" && (
-          <div className="flex gap-2">
-            <button
-              className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
-              disabled={working}
-              onClick={async () => {
-                if (!id) return;
-                setWorking(true);
-                try {
-                  await approveDriverApplication(id);
-                  notifySuccess("Đã duyệt hồ sơ tài xế");
-                  await refresh();
-                } catch (e) {
-                  notifyError(e, "Duyệt hồ sơ thất bại");
-                } finally {
-                  setWorking(false);
-                }
-              }}
-            >
-              Duyệt
-            </button>
-            <button className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700" onClick={() => setOpenReject(true)}>Từ chối</button>
+        {role === "admin" && data && (
+          <div className="flex gap-2 flex-wrap">
+            {data.status === "pending" && (
+              <>
+                <button
+                  className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                  disabled={working}
+                  onClick={async () => {
+                    if (!id) return;
+                    setWorking(true);
+                    try {
+                      await approveDriverApplication(id);
+                      notifySuccess("Đã duyệt hồ sơ tài xế");
+                      await refresh();
+                    } catch (e) {
+                      notifyError(e, "Duyệt hồ sơ thất bại");
+                    } finally {
+                      setWorking(false);
+                    }
+                  }}
+                >
+                  Duyệt
+                </button>
+                <button
+                  className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                  onClick={() => setOpenReject(true)}
+                >
+                  Từ chối
+                </button>
+              </>
+            )}
+            {(data.status === "pending" || data.status === "approved") && (
+              <button
+                className="px-3 py-1 rounded border border-red-600 text-red-700 hover:bg-red-50 disabled:opacity-50"
+                disabled={working}
+                onClick={() => {
+                  setReason("");
+                  setOpenRevoke(true);
+                }}
+              >
+                Thu hồi
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -206,6 +233,64 @@ export default function AdminDriverApplicationDetail() {
                 }}
               >
                 Gửi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {openRevoke && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center"
+          onClick={() => setOpenRevoke(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-lg p-4 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 className="font-semibold mb-2">Thu hồi đơn KYC lái hộ</h4>
+            <p className="text-sm text-gray-600 mb-2">
+              Thu hồi hồ sơ đang pending/approved. Nhập lý do bắt buộc.
+            </p>
+            <textarea
+              className="w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={4}
+              maxLength={300}
+              placeholder="Lý do thu hồi"
+            />
+            <div className="flex justify-between mt-2 text-xs text-gray-500">
+              <span>Yêu cầu bắt buộc</span>
+              <span>{reason.length}/300</span>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                className="border px-3 py-1 rounded"
+                onClick={() => setOpenRevoke(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className="px-3 py-1 rounded bg-red-600 text-white disabled:opacity-50 hover:bg-red-700"
+                disabled={working || !reason.trim() || !id}
+                onClick={async () => {
+                  if (!id) return;
+                  setWorking(true);
+                  try {
+                    await revokeDriverApplication(id, reason.trim());
+                    notifySuccess("Đã thu hồi đơn KYC lái hộ");
+                    setOpenRevoke(false);
+                    setReason("");
+                    await refresh();
+                  } catch (e) {
+                    notifyError(e, "Thu hồi đơn thất bại");
+                  } finally {
+                    setWorking(false);
+                  }
+                }}
+              >
+                Thu hồi
               </button>
             </div>
           </div>
