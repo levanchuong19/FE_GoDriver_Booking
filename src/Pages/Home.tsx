@@ -676,37 +676,6 @@ export default function HomePage() {
               </div>
             </Reveal>
           </div>
-
-          <div className="mt-24 grid md:grid-cols-3 gap-5">
-            <Reveal className="sd-card p-6 md:col-span-2 grid sm:grid-cols-[1fr_200px] gap-6 items-center overflow-hidden">
-              <div>
-                <div className="sd-ico">
-                  <img src={`${A}/render/ic-parking.webp`} alt="" />
-                </div>
-                <h3 className="text-xl font-bold mt-4">Tìm bãi đậu xe</h3>
-                <p className="mt-2 text-[var(--sd-mut)]">
-                  Xem bãi đỗ gần điểm đến, giờ mở cửa và chỉ đường nhanh.
-                </p>
-                <span className="sd-tag mt-4">Sắp ra mắt</span>
-              </div>
-              <div className="sd-photo h-[160px]">
-                <img src={`${A}/render/parking.webp`} alt="Bãi đỗ xe" />
-              </div>
-            </Reveal>
-            <Reveal className="sd-card p-6">
-              <div className="sd-ico sd-ico-g">
-                <img src={`${A}/render/ic-usedcar.webp`} alt="" />
-              </div>
-              <h3 className="text-xl font-bold mt-4">Chợ xe cũ</h3>
-              <p className="mt-2 text-[var(--sd-mut)]">
-                Mua bán xe đã qua sử dụng, thông tin minh bạch.
-              </p>
-              <span className="sd-tag mt-4">Sắp ra mắt</span>
-              <div className="sd-photo h-[150px] mt-5 block">
-                <img src={`${A}/render/usedcar.webp`} alt="Chợ xe cũ" />
-              </div>
-            </Reveal>
-          </div>
         </div>
       </section>
 
@@ -755,7 +724,7 @@ export default function HomePage() {
                 <img src={`${A}/render/ic-parking.webp`} alt="" />
               </div>
               <div className="mt-5 flex items-center gap-3 flex-wrap">
-                <span className="sd-eyebrow">Tiện ích đỗ xe</span>
+                <span className="sd-eyebrow">Tiện ích tìm bãi đỗ xe</span>
                 <span className="sd-ride-status">
                   <CheckCircle2 className="w-[15px] h-[15px]" />
                   Đã sẵn sàng
