@@ -135,14 +135,8 @@ export default function Footer() {
       </div>
 
       <div className="sd-wrap mt-12 pt-6 border-t border-[var(--sd-line)] flex flex-wrap justify-between gap-4 text-xs text-[var(--sd-mut)]">
-        <div>© {new Date().getFullYear()} SmartDrive. Tất cả quyền được bảo lưu.</div>
         <div>
-          <Link to="/privacy-policy" className="underline mr-3">
-            Privacy
-          </Link>
-          <Link to="/delete-account" className="underline">
-            Xóa tài khoản
-          </Link>
+          © {new Date().getFullYear()} SmartDrive. Tất cả quyền được bảo lưu.
         </div>
       </div>
     </footer>
