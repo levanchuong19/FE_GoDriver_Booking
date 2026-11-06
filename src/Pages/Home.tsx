@@ -26,7 +26,6 @@ import {
   MessageCircle,
   MessagesSquare,
   Navigation,
-  Play,
   Route,
   SearchCheck,
   ShieldCheck,
@@ -45,11 +44,16 @@ import {
   loadLandingPricing,
   type LandingPriceCard,
 } from "../Utils/landingPricing";
+import chPlayBadge from "../assets/badge-google-play.svg";
+import appStoreBadge from "../assets/badge-app-store.svg";
 
 const PLAY_STORE =
   "https://play.google.com/store/apps/details?id=com.anonymous.smartdrive";
 
 const A = "/landing";
+
+const COVERAGE_MAP_EMBED =
+  "https://www.google.com/maps?q=Việt+Nam&hl=vi&z=5&output=embed";
 
 function Reveal({
   children,
@@ -192,41 +196,42 @@ export default function HomePage() {
           <div>
             <div className="inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-full border border-[var(--sd-line)] bg-[var(--sd-card)]">
               <span className="w-2 h-2 rounded-full bg-[var(--sd-green)]" />
-              Đã có trên Google Play
+              Hệ sinh thái di chuyển thông minh
             </div>
             <h1
               className="mt-6 font-bold tracking-[-.03em] leading-[1.05] text-[var(--sd-ink)]"
               style={{ fontSize: "clamp(40px,5.4vw,72px)" }}
             >
-              Gọi tài xế lái hộ.
-              <br />
+              Một ứng dụng{" "}
               <span className="font-serif-display italic font-medium text-[var(--sd-navy)]">
-                An tâm
-              </span>{" "}
-              mọi hành trình.
+                Muôn hành trình.
+              </span>
             </h1>
-            <p className="mt-6 text-lg text-[var(--sd-mut)] max-w-[520px] leading-relaxed">
-              Thuê tài xế theo km, giờ, ngày hoặc đi liên tỉnh — cùng thuê xe tự
-              lái, giao hàng và cứu hộ ô tô. Tài xế đã xác minh, theo dõi chuyến
-              đi theo thời gian thực.
+            <p className="mt-6 text-lg text-[var(--sd-mut)] max-w-[560px] leading-relaxed">
+              <span className="font-semibold text-[var(--sd-ink)]">
+                HỆ SINH THÁI DI CHUYỂN THÔNG MINH
+              </span>{" "}
+              tích hợp Đặt xe, thuê tài xế lái hộ, xe ghép, thuê xe tự lái, giao
+              hàng, cứu hộ, tìm bãi đậu xe và mua bán xe cũ. Tất cả trong một
+              ứng dụng.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
-                className="sd-btn sd-btn-p"
                 href={PLAY_STORE}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Tải trên Google Play"
+                className="sd-store-badge"
               >
-                <Play className="w-4 h-4" />
-                Tải trên Google Play
+                <img src={chPlayBadge} alt="Tải trên Google Play" />
               </a>
-              <a className="sd-btn sd-btn-g" href="#services">
-                Xem dịch vụ
-                <ArrowRight className="w-4 h-4" />
+              <a
+                href="#download"
+                aria-label="Tải trên App Store"
+                className="sd-store-badge"
+              >
+                <img src={appStoreBadge} alt="Tải trên App Store" />
               </a>
-              <Link to="/login" className="sd-btn sd-btn-g">
-                Đăng nhập
-              </Link>
             </div>
             <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-[var(--sd-mut)]">
               <div className="flex items-center gap-2">
@@ -239,7 +244,7 @@ export default function HomePage() {
               </div>
               <div className="hidden sm:flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-[var(--sd-green)]" />
-                Thanh toán PayOS
+                Thanh toán Online
               </div>
             </div>
           </div>
@@ -259,7 +264,10 @@ export default function HomePage() {
               />
             </div>
             <div className="absolute left-[2%] top-2 w-[190px] md:w-[220px] sd-phone rotate-[-5deg] z-10">
-              <img src={`${A}/shot1.png`} alt="Màn hình thuê tài xế lái hộ" />
+              <img
+                src={`${A}/promo/hero-app.jpg`}
+                alt="SmartDrive — một app cho mọi hành trình"
+              />
             </div>
             <div className="absolute right-[4%] bottom-2 w-[130px] md:w-[150px] sd-phone rotate-[4deg] hidden sm:block z-10">
               <img src={`${A}/shot2.png`} alt="Màn hình thuê xe tự lái" />
@@ -1238,8 +1246,8 @@ export default function HomePage() {
               {[
                 ["Hà Nội", "Đang hoạt động", true],
                 ["TP. Hồ Chí Minh", "Đang hoạt động", true],
+                ["Thanh Hóa · Nghệ An · Hà Tĩnh", "Đang hoạt động", true],
                 ["Đà Nẵng", "Đang hoạt động", true],
-                ["Hải Phòng · Cần Thơ", "Sắp mở", false],
               ].map(([city, st, active]) => (
                 <div
                   key={String(city)}
@@ -1258,46 +1266,42 @@ export default function HomePage() {
               ))}
             </div>
           </Reveal>
-          <Reveal className="sd-photo relative h-[520px]">
-            <img
-              src={`${A}/render/coverage.webp`}
-              alt="TP.HCM nhìn từ trên cao"
+          <Reveal className="sd-photo relative h-[520px] bg-[#dce8f5]">
+            <iframe
+              title="Bản đồ khu vực phục vụ SmartDrive"
+              src={COVERAGE_MAP_EMBED}
+              className="absolute inset-0 h-full w-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
             />
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(180deg,rgba(13,25,45,.1),rgba(13,25,45,.55))",
+                  "linear-gradient(180deg,rgba(13,25,45,.04),rgba(13,25,45,.28))",
               }}
             />
-            <div
-              className="sd-city text-white"
-              style={{ left: "52%", top: "13%" }}
-            >
-              <div className="dot" />
-              <div className="absolute left-5 -top-2 text-sm font-semibold whitespace-nowrap">
-                Hà Nội
+            {[
+              { name: "Hà Nội", left: "48%", top: "18%" },
+              { name: "Thanh Hóa", left: "50%", top: "28%" },
+              { name: "Nghệ An", left: "52%", top: "34%" },
+              { name: "Hà Tĩnh", left: "53%", top: "39%" },
+              { name: "Đà Nẵng", left: "58%", top: "48%" },
+              { name: "TP.HCM", left: "46%", top: "78%" },
+            ].map((city) => (
+              <div
+                key={city.name}
+                className="sd-city text-[var(--sd-ink)] pointer-events-none"
+                style={{ left: city.left, top: city.top }}
+              >
+                <div className="dot" />
+                <div className="absolute left-5 -top-2 text-sm font-semibold whitespace-nowrap drop-shadow-sm">
+                  {city.name}
+                </div>
               </div>
-            </div>
-            <div
-              className="sd-city text-white"
-              style={{ left: "62%", top: "47%" }}
-            >
-              <div className="dot" />
-              <div className="absolute left-5 -top-2 text-sm font-semibold whitespace-nowrap">
-                Đà Nẵng
-              </div>
-            </div>
-            <div
-              className="sd-city text-white"
-              style={{ left: "43%", top: "84%" }}
-            >
-              <div className="dot" />
-              <div className="absolute left-5 -top-2 text-sm font-semibold whitespace-nowrap">
-                TP.HCM
-              </div>
-            </div>
-            <div className="absolute right-5 bottom-5 sd-card px-4 py-3 text-sm">
+            ))}
+            <div className="absolute right-5 bottom-5 sd-card px-4 py-3 text-sm z-10">
               <div className="font-semibold">Đi tỉnh toàn quốc</div>
               <div className="text-xs text-[var(--sd-mut)]">63 tỉnh thành</div>
             </div>
@@ -1507,13 +1511,20 @@ export default function HomePage() {
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <a
-                  className="sd-btn bg-white !text-[var(--sd-navy)] hover:-translate-y-0.5"
                   href={PLAY_STORE}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Tải trên Google Play"
+                  className="sd-store-badge"
                 >
-                  <Play className="w-4 h-4" />
-                  Google Play
+                  <img src={chPlayBadge} alt="Tải trên Google Play" />
+                </a>
+                <a
+                  href="#download"
+                  aria-label="Tải trên App Store"
+                  className="sd-store-badge"
+                >
+                  <img src={appStoreBadge} alt="Tải trên App Store" />
                 </a>
                 <Link
                   to="/register"

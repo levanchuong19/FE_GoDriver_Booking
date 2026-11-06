@@ -18,8 +18,8 @@ export default function Footer() {
             <span className="font-bold text-[var(--sd-ink)]">SmartDrive</span>
           </div>
           <p className="mt-4 text-sm text-[var(--sd-mut)] max-w-[300px]">
-            Gọi tài xế lái hộ, thuê xe tự lái, giao hàng và cứu hộ ô tô. Phát
-            triển bởi SmartDriveApp.
+            Đặt xe, thuê tài xế lái hộ, xe tự lái, tìm bãi đậu xe, chợ xe cũ,
+            giao hàng và cứu hộ. Phát triển bởi SmartDriveApp.
           </p>
           <div className="mt-5 flex gap-3">
             <a
@@ -55,6 +55,9 @@ export default function Footer() {
           </div>
           <ul className="mt-4 space-y-2.5 text-sm text-[var(--sd-mut)]">
             <li>
+              <a href="/#ride">Đặt xe</a>
+            </li>
+            <li>
               <a href="/#services">Lái hộ</a>
             </li>
             <li>
@@ -65,6 +68,12 @@ export default function Footer() {
             </li>
             <li>
               <a href="/#services">Cứu hộ ô tô</a>
+            </li>
+            <li>
+              <a href="/#parking">Tìm bãi đậu xe</a>
+            </li>
+            <li>
+              <a href="/#used-cars">Chợ xe cũ</a>
             </li>
           </ul>
         </div>

@@ -90,9 +90,6 @@ export default function Header() {
               {item.label}
             </button>
           ))}
-        </div>
-
-        <div className="hidden md:flex items-center gap-3">
           <a
             href="mailto:support@smartdrive.io.vn"
             className="hidden lg:flex items-center gap-2 text-sm font-medium text-[var(--sd-mut)]"
@@ -100,6 +97,9 @@ export default function Header() {
             <Headset className="w-4 h-4" />
             Hỗ trợ 24/7
           </a>
+        </div>
+
+        <div className="hidden md:flex items-center gap-3">
           {token ? (
             <button
               type="button"
@@ -117,13 +117,6 @@ export default function Header() {
                 className="sd-btn sd-btn-g !py-2.5 !px-4 text-sm"
               >
                 Đăng nhập
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/register")}
-                className="sd-btn sd-btn-g !py-2.5 !px-4 text-sm hidden xl:inline-flex"
-              >
-                Đăng ký
               </button>
             </>
           )}
