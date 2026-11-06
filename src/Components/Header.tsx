@@ -1,162 +1,219 @@
-import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo-no-br.png";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Download, Headset, LogOut, Menu, X } from "lucide-react";
 import { toast } from "react-toastify";
+
+const PLAY_STORE =
+  "https://play.google.com/store/apps/details?id=com.anonymous.smartdrive";
+
+const NAV = [
+  { href: "/#services", label: "Dịch vụ" },
+  { href: "/#pricing", label: "Bảng giá" },
+  { href: "/#safety", label: "An toàn" },
+  { href: "/register-partner", label: "Tài xế đối tác" },
+  { href: "/#faq", label: "Hỏi đáp" },
+];
 
 export default function Header() {
   const navigate = useNavigate();
-  const [, setScrollY] = useState(0);
-  const [isDark, setIsDark] = useState(false);
+  const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("accessToken");
-    setToken(storedToken);
+    setToken(localStorage.getItem("accessToken"));
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDark]);
-
-  const handleDownloadApp = () => {
-    toast.warning(
-      "Phiên bản đang trong thời gian nâng cấp, vui lòng quay lại sau."
-    );
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     toast.success("Đăng xuất thành công!");
     setToken(null);
+    navigate("/");
   };
+
+  const goNav = (href: string) => {
+    setOpen(false);
+    if (href.startsWith("/#")) {
+      const id = href.slice(2);
+      if (location.pathname !== "/") {
+        navigate("/" + href.slice(1));
+        return;
+      }
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    navigate(href);
+  };
+
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-        {/* Logo + Brand */}
-        <div className="flex items-center gap-3">
+    <header
+      id="top"
+      className="fixed top-0 inset-x-0 z-50 transition-all"
+      style={{
+        backdropFilter: "blur(12px)",
+        background: "rgba(247,245,240,.82)",
+        borderBottom: scrolled
+          ? "1px solid var(--sd-line)"
+          : "1px solid transparent",
+      }}
+    >
+      <nav className="sd-wrap flex items-center justify-between h-[70px]">
+        <Link to="/" className="flex items-center gap-2.5">
           <img
-            src={logo}
+            src="/landing/icon.png"
             alt="SmartDrive"
-            className="w-9 h-9 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-full object-cover"
+            className="w-9 h-9 rounded-[10px]"
           />
-          <span
-            onClick={() => navigate("/")}
-            className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-400 bg-clip-text text-transparent cursor-pointer"
-          >
+          <span className="font-bold text-[17px] text-[var(--sd-ink)]">
             SmartDrive
           </span>
+        </Link>
+
+        <div className="hidden lg:flex items-center gap-8">
+          {NAV.map((item) => (
+            <button
+              key={item.href}
+              type="button"
+              className="sd-nav-link"
+              onClick={() => goNav(item.href)}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
 
-        {/* Menu desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-3">
           <a
-            href="#services"
-            className="hover:text-cyan-500 dark:hover:text-cyan-400 transition"
+            href="mailto:support@smartdrive.io.vn"
+            className="hidden lg:flex items-center gap-2 text-sm font-medium text-[var(--sd-mut)]"
           >
-            Dịch vụ
+            <Headset className="w-4 h-4" />
+            Hỗ trợ 24/7
           </a>
-          <a
-            href="#features"
-            className="hover:text-cyan-500 dark:hover:text-cyan-400 transition"
-          >
-            Tính năng
-          </a>
-          <a
-            href="#testimonials"
-            className="hover:text-cyan-500 dark:hover:text-cyan-400 transition"
-          >
-            Đánh giá
-          </a>
-          <a
-            href="#pricing"
-            className="hover:text-cyan-500 dark:hover:text-cyan-400 transition"
-          >
-            Giá cả
-          </a>
-        </div>
-
-        {/* Nút hành động */}
-        <div className="hidden sm:flex items-center gap-3">
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </button>
-          <button
-            onClick={handleDownloadApp}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-400 text-white rounded-lg font-semibold text-sm"
-          >
-            Tải ứng dụng
-          </button>
           {token ? (
             <button
+              type="button"
               onClick={handleLogout}
-              className="px-4 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg font-semibold text-sm"
+              className="sd-btn sd-btn-g !py-2.5 !px-4 text-sm"
             >
+              <LogOut className="w-4 h-4" />
               Đăng xuất
             </button>
           ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-lg font-semibold text-sm"
-            >
-              Đăng nhập
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="sd-btn sd-btn-g !py-2.5 !px-4 text-sm"
+              >
+                Đăng nhập
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="sd-btn sd-btn-g !py-2.5 !px-4 text-sm hidden xl:inline-flex"
+              >
+                Đăng ký
+              </button>
+            </>
           )}
+          <a
+            href={PLAY_STORE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sd-btn sd-btn-p !py-2.5 !px-4 text-sm"
+          >
+            <Download className="w-4 h-4" />
+            Tải app
+          </a>
         </div>
 
-        {/* Menu mobile */}
-        <div className="flex sm:hidden items-center gap-2">
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5" />
+        <button
+          type="button"
+          className="md:hidden p-2 rounded-lg border border-[var(--sd-line)] bg-[var(--sd-card)]"
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Menu"
+        >
+          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </nav>
+
+      {open && (
+        <div className="md:hidden border-t border-[var(--sd-line)] bg-[var(--sd-card)] px-6 py-4 space-y-3">
+          {NAV.map((item) => (
+            <button
+              key={item.href}
+              type="button"
+              className="block w-full text-left sd-nav-link py-2"
+              onClick={() => goNav(item.href)}
+            >
+              {item.label}
+            </button>
+          ))}
+          <div className="flex flex-col gap-2 pt-2">
+            {token ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="sd-btn sd-btn-g justify-center"
+              >
+                Đăng xuất
+              </button>
             ) : (
-              <Moon className="w-5 h-5" />
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate("/login");
+                  }}
+                  className="sd-btn sd-btn-g justify-center"
+                >
+                  Đăng nhập
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate("/register");
+                  }}
+                  className="sd-btn sd-btn-g justify-center"
+                >
+                  Đăng ký
+                </button>
+              </>
             )}
-          </button>
-          {token ? (
             <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg font-semibold text-sm"
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                navigate("/register-partner");
+              }}
+              className="sd-btn sd-btn-p justify-center"
             >
-              Đăng xuất
+              Đăng ký làm tài xế
             </button>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-lg font-semibold text-sm"
+            <a
+              href={PLAY_STORE}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sd-btn sd-btn-g justify-center"
             >
-              Đăng nhập
-            </button>
-          )}
-          {/* <button
-            onClick={() => navigate("/login")}
-            className="p-2 rounded-md bg-gradient-to-r from-cyan-500 to-blue-400 text-white font-medium"
-          >
-            Đăng nhập
-          </button> */}
+              Tải app
+            </a>
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }

@@ -222,7 +222,7 @@ export default function RegisterPartnerStatus() {
             </div>
             <div className="flex items-center gap-3">
               <span className="font-semibold text-gray-700">Hotline:</span>
-              <span className="text-blue-600">0776192138</span>
+              <span className="text-blue-600">0867845622</span>
             </div>
           </div>
         </div>

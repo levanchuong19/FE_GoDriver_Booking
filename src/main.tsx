@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import { Provider } from "react-redux";
 import { store } from "./redux/store.ts";
 import "./global.css";
+import "./styles/landing.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FloatingFacebookButton from "./Components/FloatingFacebookButton.tsx";

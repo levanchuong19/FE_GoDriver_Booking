@@ -1,6 +1,7 @@
 const DOC_FLAT_KEYS = [
   "idFrontUrl",
   "idBackUrl",
+  "idVneidUrl",
   "portraitUrl",
   "driverLicenseFrontUrl",
   "driverLicenseBackUrl",
@@ -8,8 +9,11 @@ const DOC_FLAT_KEYS = [
   "vehicleRegistrationUrl",
   "insuranceUrl",
   "registrationUrl",
+  "inspectionUrl",
   "cavetUrl",
   "plateUrl",
+  "vehiclePhotoUrl",
+  "platePhotoUrl",
 ] as const;
 
 const PLACEHOLDER_KEYS = new Set(

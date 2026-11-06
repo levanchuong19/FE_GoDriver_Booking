@@ -1,5 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import { useForm, Controller, type FieldErrors } from "react-hook-form";
+import {
+  useForm,
+  Controller,
+  type FieldErrors,
+  type Resolver,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -20,6 +25,7 @@ import {
   updateAddress,
   updateDriver,
   updateDocuments,
+  updateVehicle,
   setDraftApplicationId,
   setStatus,
   setUploading,
@@ -40,12 +46,17 @@ import {
   updateDriverApplication,
   submitDriverApplication,
   uploadDocuments,
+  uploadVehicleDocuments,
+  saveRideDriverVehicle,
+  submitRideDriverRegistration,
+  getRideCategories,
   type DriverApplicationData,
+  type DriverCapabilityType,
 } from "../Config/driverApi";
 import { toast } from "react-toastify";
 
 const steps = [
-  { id: 1, title: "Thông tin cá nhân", icon: User },
+  { id: 1, title: "Dịch vụ & cá nhân", icon: User },
   { id: 2, title: "Địa chỉ", icon: MapPin },
   { id: 3, title: "Thông tin tài xế", icon: Car },
   { id: 4, title: "Tài liệu", icon: FileText },
@@ -59,6 +70,23 @@ const serviceMapping: { [key: string]: string } = {
   daily: "dich_vu_tai_xe_theo_ngay",
   per_km: "dich_vu_tai_xe_theo_cay_so",
 };
+
+const driverTypeOptions: Array<{
+  id: DriverCapabilityType;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: "DRIVER_FOR_HIRE",
+    label: "Lái hộ",
+    description: "Lái xe của khách theo giờ / ngày / km / liên tỉnh.",
+  },
+  {
+    id: "RIDE_HAILING",
+    label: "Đặt xe",
+    description: "Nhận chuyến đặt xe bằng xe của bạn (cần đăng ký xe).",
+  },
+];
 
 const services = [
   {
@@ -83,6 +111,15 @@ const services = [
   },
 ];
 
+const REQUIRED_DOC_FIELDS = [
+  "idFrontUrl",
+  "idBackUrl",
+  "idVneidUrl",
+  "portraitUrl",
+  "driverLicenseFrontUrl",
+  "driverLicenseBackUrl",
+] as const;
+
 export default function RegisterPartner() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -97,9 +134,14 @@ export default function RegisterPartner() {
   const [documentFiles, setDocumentFiles] = useState<{
     idFront?: File;
     idBack?: File;
+    idVneid?: File;
+    portrait?: File;
     driverLicenseFront?: File;
     driverLicenseBack?: File;
   }>({});
+  const [rideCategories, setRideCategories] = useState<
+    Array<{ code: string; name?: string; seatCount?: number }>
+  >([]);
 
   const registrationState = useSelector(
     (state: RootState) => state.driverRegistration
@@ -125,28 +167,52 @@ export default function RegisterPartner() {
     licenseExpiryDate: "",
     yearsExperience: "",
     services: [],
+    driverTypes: [] as DriverCapabilityType[],
   };
 
   const documentsData = registrationState?.documents || {
     idFrontUrl: "",
     idBackUrl: "",
+    idVneidUrl: "",
+    portraitUrl: "",
     driverLicenseFrontUrl: "",
     driverLicenseBackUrl: "",
+  };
+
+  const vehicleData = registrationState?.vehicle || {
+    categoryCode: "",
+    seatCount: "4",
+    brand: "",
+    model: "",
+    color: "",
+    plate: "",
+    manufactureYear: "",
+    registrationUrl: "",
+    inspectionUrl: "",
+    insuranceUrl: "",
+    vehiclePhotoUrl: "",
+    platePhotoUrl: "",
   };
 
   const draftApplicationId = registrationState?.draftApplicationId;
   const uploadingState = registrationState?.uploading || {
     idFrontUrl: false,
     idBackUrl: false,
+    idVneidUrl: false,
+    portraitUrl: false,
     driverLicenseFrontUrl: false,
     driverLicenseBackUrl: false,
   };
   const uploadErrorState = registrationState?.uploadError || {
     idFrontUrl: null,
     idBackUrl: null,
+    idVneidUrl: null,
+    portraitUrl: null,
     driverLicenseFrontUrl: null,
     driverLicenseBackUrl: null,
   };
+  const wantsHire = (driverData.driverTypes || []).includes("DRIVER_FOR_HIRE");
+  const wantsRide = (driverData.driverTypes || []).includes("RIDE_HAILING");
 
   // Form hooks for each step
   const personalForm = useForm<PersonalFormData>({
@@ -167,15 +233,19 @@ export default function RegisterPartner() {
   });
 
   const driverForm = useForm<DriverFormData>({
-    resolver: zodResolver(driverSchema),
+    resolver: zodResolver(driverSchema) as Resolver<DriverFormData>,
     defaultValues: {
+      driverTypes: (driverData.driverTypes || []) as DriverCapabilityType[],
       licenseNumber: driverData.licenseNumber || "",
       licenseExpiryDate: driverData.licenseExpiryDate || "",
       yearsExperience: driverData.yearsExperience || "",
-      services: (driverData.services || []) as any,
+      services: driverData.services || [],
     },
     mode: "onChange",
   });
+  const watchedDriverTypes = driverForm.watch("driverTypes") || [];
+  const formWantsHire = watchedDriverTypes.includes("DRIVER_FOR_HIRE");
+  const formWantsRide = watchedDriverTypes.includes("RIDE_HAILING");
 
   // Load provinces on mount
   useEffect(() => {
@@ -191,6 +261,25 @@ export default function RegisterPartner() {
         }
       })
       .catch((err) => console.error("Lỗi tải tỉnh/thành:", err));
+  }, []);
+
+  useEffect(() => {
+    getRideCategories()
+      .then((res) => {
+        const list = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+            ? res
+            : [];
+        setRideCategories(
+          list.map((item: any) => ({
+            code: String(item.code || item.categoryCode || ""),
+            name: String(item.name || item.label || item.code || ""),
+            seatCount: Number(item.seatCount || item.seats || 4) || 4,
+          })).filter((item: { code: string }) => item.code)
+        );
+      })
+      .catch(() => setRideCategories([]));
   }, []);
 
   // Load draft on mount (after provinces are loaded)
@@ -357,9 +446,15 @@ export default function RegisterPartner() {
                 yearsExperience:
                   draftApplication.yearsExperience?.toString() || "",
                 services: frontendServices as any,
+                driverTypes: (driverData.driverTypes?.length
+                  ? driverData.driverTypes
+                  : frontendServices.length > 0
+                    ? (["DRIVER_FOR_HIRE"] as DriverCapabilityType[])
+                    : []) as DriverCapabilityType[],
               };
               dispatch(updateDriver(driver));
               driverForm.reset({
+                driverTypes: driver.driverTypes,
                 licenseNumber: driver.licenseNumber,
                 licenseExpiryDate: driver.licenseExpiryDate,
                 yearsExperience: driver.yearsExperience,
@@ -373,6 +468,11 @@ export default function RegisterPartner() {
                 updateDocuments({
                   idFrontUrl: draftApplication.documents.idFrontUrl || "",
                   idBackUrl: draftApplication.documents.idBackUrl || "",
+                  idVneidUrl:
+                    draftApplication.documents.idVneidUrl ||
+                    draftApplication.documents.vneidUrl ||
+                    "",
+                  portraitUrl: draftApplication.documents.portraitUrl || "",
                   driverLicenseFrontUrl:
                     draftApplication.documents.driverLicenseFrontUrl || "",
                   driverLicenseBackUrl:
@@ -468,6 +568,7 @@ export default function RegisterPartner() {
           phone: personalData.phone || "",
           email: personalData.email || "",
           idNumber: personalData.idNumber || "",
+          gender: personalData.gender,
         };
       }
 
@@ -501,7 +602,7 @@ export default function RegisterPartner() {
         driverData.licenseNumber &&
         driverData.licenseExpiryDate &&
         driverData.yearsExperience &&
-        driverData.services.length > 0
+        (driverData.driverTypes?.length || 0) > 0
       ) {
         const [day, month, year] = driverData.licenseExpiryDate.split("/");
         const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
@@ -514,18 +615,20 @@ export default function RegisterPartner() {
         draftData.yearsExperience = parseInt(driverData.yearsExperience) || 0;
 
         // Map frontend service IDs to backend enum values
-        draftData.services = driverData.services.map((id) => {
-          const mapped = serviceMapping[id];
-          if (
-            mapped === "dich_vu_tai_xe_theo_gio" ||
-            mapped === "dich_vu_tai_xe_lien_tinh" ||
-            mapped === "dich_vu_tai_xe_theo_ngay" ||
-            mapped === "dich_vu_tai_xe_theo_cay_so"
-          ) {
-            return mapped;
-          }
-          return "dich_vu_tai_xe_theo_gio"; // fallback
-        });
+        if (wantsHire && driverData.services.length > 0) {
+          draftData.services = driverData.services.map((id) => {
+            const mapped = serviceMapping[id];
+            if (
+              mapped === "dich_vu_tai_xe_theo_gio" ||
+              mapped === "dich_vu_tai_xe_lien_tinh" ||
+              mapped === "dich_vu_tai_xe_theo_ngay" ||
+              mapped === "dich_vu_tai_xe_theo_cay_so"
+            ) {
+              return mapped;
+            }
+            return "dich_vu_tai_xe_theo_gio"; // fallback
+          });
+        }
       }
 
       // Include documents if at least one exists
@@ -536,6 +639,8 @@ export default function RegisterPartner() {
         draftData.documents = {
           idFrontUrl: documentsData.idFrontUrl || "",
           idBackUrl: documentsData.idBackUrl || "",
+          idVneidUrl: documentsData.idVneidUrl || "",
+          portraitUrl: documentsData.portraitUrl || "",
           driverLicenseFrontUrl: documentsData.driverLicenseFrontUrl || "",
           driverLicenseBackUrl: documentsData.driverLicenseBackUrl || "",
         };
@@ -607,6 +712,8 @@ export default function RegisterPartner() {
     } = {
       idFrontUrl: "idFront",
       idBackUrl: "idBack",
+      idVneidUrl: "idVneid",
+      portraitUrl: "portrait",
       driverLicenseFrontUrl: "driverLicenseFront",
       driverLicenseBackUrl: "driverLicenseBack",
     };
@@ -651,6 +758,8 @@ export default function RegisterPartner() {
     const uploadFieldMap: { [key: string]: keyof typeof documentFiles } = {
       idFrontUrl: "idFront",
       idBackUrl: "idBack",
+      idVneidUrl: "idVneid",
+      portraitUrl: "portrait",
       driverLicenseFrontUrl: "driverLicenseFront",
       driverLicenseBackUrl: "driverLicenseBack",
     };
@@ -665,7 +774,24 @@ export default function RegisterPartner() {
   };
 
   const onPersonalSubmit = (data: PersonalFormData) => {
+    const types = (driverForm.getValues("driverTypes") ||
+      []) as DriverCapabilityType[];
+    if (types.length === 0) {
+      toast.warning(
+        "Vui lòng chọn ít nhất một loại dịch vụ tài xế: Lái hộ và/hoặc Đặt xe"
+      );
+      return;
+    }
     dispatch(updatePersonal(data));
+    dispatch(
+      updateDriver({
+        licenseNumber: driverData.licenseNumber || "",
+        licenseExpiryDate: driverData.licenseExpiryDate || "",
+        yearsExperience: driverData.yearsExperience || "",
+        services: driverData.services || [],
+        driverTypes: types,
+      })
+    );
     setCurrentStep(2);
   };
 
@@ -716,17 +842,36 @@ export default function RegisterPartner() {
   };
 
   const onDriverSubmit = (data: DriverFormData) => {
-    dispatch(updateDriver(data));
+    if (data.driverTypes.includes("RIDE_HAILING")) {
+      if (
+        !vehicleData.categoryCode ||
+        !vehicleData.brand.trim() ||
+        !vehicleData.color.trim() ||
+        !vehicleData.plate.trim()
+      ) {
+        toast.warning(
+          "Đăng ký Đặt xe cần đủ thông tin xe: loại xe, hãng, màu, biển số"
+        );
+        return;
+      }
+    }
+    dispatch(
+      updateDriver({
+        ...data,
+        driverTypes: data.driverTypes as DriverCapabilityType[],
+      })
+    );
     setCurrentStep(4);
   };
 
   const onDriverError = (errors: FieldErrors<DriverFormData>) => {
     const missingFields = Object.keys(errors).map((field) => {
       const fieldNames: { [key: string]: string } = {
+        driverTypes: "Loại dịch vụ tài xế",
         licenseNumber: "Số bằng lái xe",
         licenseExpiryDate: "Ngày hết hạn bằng lái",
         yearsExperience: "Số năm kinh nghiệm",
-        services: "Dịch vụ cung cấp",
+        services: "Gói dịch vụ lái hộ",
       };
       return fieldNames[field] || field;
     });
@@ -743,30 +888,47 @@ export default function RegisterPartner() {
     } else if (currentStep === 3) {
       driverForm.handleSubmit(onDriverSubmit, onDriverError)();
     } else if (currentStep === 4) {
-      // Check if all documents are uploaded
-      const allDocsUploaded =
-        documentsData.idFrontUrl?.startsWith("https://") &&
-        documentsData.idBackUrl?.startsWith("https://") &&
-        documentsData.driverLicenseFrontUrl?.startsWith("https://") &&
-        documentsData.driverLicenseBackUrl?.startsWith("https://");
+      const docLabels: Record<(typeof REQUIRED_DOC_FIELDS)[number], string> = {
+        idFrontUrl: "CMND/CCCD mặt trước",
+        idBackUrl: "CMND/CCCD mặt sau",
+        idVneidUrl: "CCCD điện tử VNeID",
+        portraitUrl: "Ảnh chân dung",
+        driverLicenseFrontUrl: "Bằng lái xe mặt trước",
+        driverLicenseBackUrl: "Bằng lái xe mặt sau",
+      };
+      const missingDocs = REQUIRED_DOC_FIELDS.filter(
+        (field) => !documentsData[field]?.startsWith("https://")
+      ).map((field) => docLabels[field]);
 
-      if (!allDocsUploaded) {
-        const missingDocs = [];
-        if (!documentsData.idFrontUrl?.startsWith("https://"))
-          missingDocs.push("CMND/CCCD mặt trước");
-        if (!documentsData.idBackUrl?.startsWith("https://"))
-          missingDocs.push("CMND/CCCD mặt sau");
-        if (!documentsData.driverLicenseFrontUrl?.startsWith("https://"))
-          missingDocs.push("Bằng lái xe mặt trước");
-        if (!documentsData.driverLicenseBackUrl?.startsWith("https://"))
-          missingDocs.push("Bằng lái xe mặt sau");
-
+      if (missingDocs.length > 0) {
         toast.warning(
           `Vui lòng tải lên đầy đủ các tài liệu bắt buộc:\n- ${missingDocs.join(
             "\n- "
           )}`
         );
         return;
+      }
+
+      if (wantsRide) {
+        const missingVehicleDocs = [
+          !vehicleData.registrationUrl?.startsWith("https://")
+            ? "Cà vẹt / đăng ký xe"
+            : "",
+          !vehicleData.vehiclePhotoUrl?.startsWith("https://")
+            ? "Ảnh xe"
+            : "",
+          !vehicleData.platePhotoUrl?.startsWith("https://")
+            ? "Ảnh biển số"
+            : "",
+        ].filter(Boolean);
+        if (missingVehicleDocs.length > 0) {
+          toast.warning(
+            `Đăng ký Đặt xe cần thêm giấy tờ xe:\n- ${missingVehicleDocs.join(
+              "\n- "
+            )}`
+          );
+          return;
+        }
       }
 
       const isAnyUploading = Object.values(uploadingState).some((u) => u);
@@ -811,14 +973,19 @@ export default function RegisterPartner() {
       return;
     }
 
-    const allDocsUploaded =
-      documentsData.idFrontUrl?.startsWith("https://") &&
-      documentsData.idBackUrl?.startsWith("https://") &&
-      documentsData.driverLicenseFrontUrl?.startsWith("https://") &&
-      documentsData.driverLicenseBackUrl?.startsWith("https://");
+    const allDocsUploaded = REQUIRED_DOC_FIELDS.every((field) =>
+      documentsData[field]?.startsWith("https://")
+    );
 
     if (!allDocsUploaded) {
-      toast.error("Vui lòng tải lên tất cả các tài liệu bắt buộc");
+      toast.error(
+        "Vui lòng tải lên đủ giấy tờ: CCCD trước/sau, VNeID, ảnh chân dung, GPLX trước/sau"
+      );
+      return;
+    }
+
+    if ((driverData.driverTypes || []).length === 0) {
+      toast.error("Vui lòng chọn loại dịch vụ tài xế muốn đăng ký");
       return;
     }
 
@@ -842,12 +1009,28 @@ export default function RegisterPartner() {
         "0"
       )}`;
 
+      const mappedServices = wantsHire
+        ? driverData.services.map((id) => {
+            const mapped = serviceMapping[id];
+            if (
+              mapped === "dich_vu_tai_xe_theo_gio" ||
+              mapped === "dich_vu_tai_xe_lien_tinh" ||
+              mapped === "dich_vu_tai_xe_theo_ngay" ||
+              mapped === "dich_vu_tai_xe_theo_cay_so"
+            ) {
+              return mapped;
+            }
+            return "dich_vu_tai_xe_theo_gio";
+          })
+        : [];
+
       const applicationData: DriverApplicationData = {
         personal: {
           fullName: personalData.fullName,
           phone: personalData.phone,
           email: personalData.email,
           idNumber: personalData.idNumber,
+          gender: personalData.gender,
         },
         address: {
           province: provinceName,
@@ -858,24 +1041,15 @@ export default function RegisterPartner() {
         documents: {
           idFrontUrl: documentsData.idFrontUrl,
           idBackUrl: documentsData.idBackUrl,
+          idVneidUrl: documentsData.idVneidUrl,
+          portraitUrl: documentsData.portraitUrl,
           driverLicenseFrontUrl: documentsData.driverLicenseFrontUrl,
           driverLicenseBackUrl: documentsData.driverLicenseBackUrl,
         },
         licenseNumber: driverData.licenseNumber,
         licenseExpiry: formattedDate,
         yearsExperience: parseInt(driverData.yearsExperience) || 0,
-        services: driverData.services.map((id) => {
-          const mapped = serviceMapping[id];
-          if (
-            mapped === "dich_vu_tai_xe_theo_gio" ||
-            mapped === "dich_vu_tai_xe_lien_tinh" ||
-            mapped === "dich_vu_tai_xe_theo_ngay" ||
-            mapped === "dich_vu_tai_xe_theo_cay_so"
-          ) {
-            return mapped;
-          }
-          return "dich_vu_tai_xe_theo_gio"; // fallback
-        }),
+        ...(mappedServices.length > 0 ? { services: mappedServices } : {}),
       };
 
       let applicationId = draftApplicationId;
@@ -896,6 +1070,36 @@ export default function RegisterPartner() {
         applicationId = createResponse.data._id;
       }
 
+      if (wantsRide) {
+        const seatCount =
+          Number(vehicleData.seatCount) ||
+          rideCategories.find((c) => c.code === vehicleData.categoryCode)
+            ?.seatCount ||
+          4;
+        await saveRideDriverVehicle({
+          categoryCode: vehicleData.categoryCode,
+          seatCount,
+          brand: vehicleData.brand,
+          make: vehicleData.brand,
+          model: vehicleData.model || undefined,
+          color: vehicleData.color,
+          vehicleColor: vehicleData.color,
+          plate: vehicleData.plate,
+          licensePlate: vehicleData.plate,
+          manufactureYear: vehicleData.manufactureYear
+            ? Number(vehicleData.manufactureYear)
+            : undefined,
+          documents: {
+            registrationUrl: vehicleData.registrationUrl,
+            inspectionUrl: vehicleData.inspectionUrl || undefined,
+            insuranceUrl: vehicleData.insuranceUrl || undefined,
+            vehiclePhotoUrl: vehicleData.vehiclePhotoUrl,
+            platePhotoUrl: vehicleData.platePhotoUrl,
+          } as Record<string, string>,
+        });
+        await submitRideDriverRegistration();
+      }
+
       dispatch(
         setApplication({
           id: applicationId || "",
@@ -905,14 +1109,22 @@ export default function RegisterPartner() {
       dispatch(setStatus("submitted"));
 
       toast.success(
-        "Đăng ký thành công! Hồ sơ của bạn đã được gửi và đang trong quá trình kiểm duyệt."
+        wantsRide && wantsHire
+          ? "Đã gửi hồ sơ Lái hộ và Đặt xe để kiểm duyệt."
+          : wantsRide
+            ? "Đã gửi đăng ký Đặt xe để kiểm duyệt."
+            : "Đăng ký thành công! Hồ sơ của bạn đang trong quá trình kiểm duyệt."
       );
 
       navigate("/register-partner/status");
     } catch (error: any) {
       console.error("Submission error:", error);
       dispatch(setStatus("error"));
-      alert(error.message || "Có lỗi xảy ra khi gửi hồ sơ. Vui lòng thử lại.");
+      const apiMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Có lỗi xảy ra khi gửi hồ sơ. Vui lòng thử lại.";
+      alert(apiMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -1095,10 +1307,10 @@ export default function RegisterPartner() {
             </h2>
             <p className="text-sm text-gray-600">
               {currentStep === 1 &&
-                "Vui lòng cung cấp thông tin cá nhân của bạn"}
+                "Chọn loại tài xế muốn đăng ký, rồi điền thông tin cá nhân"}
               {currentStep === 2 && "Nhập địa chỉ chi tiết"}
               {currentStep === 3 &&
-                "Thông tin về kinh nghiệm và dịch vụ lái xe"}
+                "Thông tin bằng lái, kinh nghiệm và gói dịch vụ"}
               {currentStep === 4 && "Tải lên các tài liệu cần thiết"}
               {currentStep === 5 && "Xem lại thông tin và hoàn tất đăng ký"}
             </p>
@@ -1107,6 +1319,88 @@ export default function RegisterPartner() {
           {/* Step 1: Personal Info */}
           {currentStep === 1 && (
             <div className="space-y-6 mt-8">
+              <div className="space-y-2">
+                <label className="font-medium">
+                  Bạn muốn trở thành tài xế loại nào? *
+                </label>
+                <p className="text-xs text-gray-500">
+                  Có thể chọn một hoặc cả hai.
+                </p>
+                <Controller
+                  name="driverTypes"
+                  control={driverForm.control}
+                  render={({ field }) => (
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {driverTypeOptions.map((option) => {
+                        const checked = (
+                          (field.value || []) as DriverCapabilityType[]
+                        ).includes(option.id);
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              const current = (field.value ||
+                                []) as DriverCapabilityType[];
+                              const next = checked
+                                ? current.filter((id) => id !== option.id)
+                                : [...current, option.id];
+                              field.onChange(next);
+                              dispatch(
+                                updateDriver({
+                                  licenseNumber:
+                                    driverData.licenseNumber || "",
+                                  licenseExpiryDate:
+                                    driverData.licenseExpiryDate || "",
+                                  yearsExperience:
+                                    driverData.yearsExperience || "",
+                                  services: driverData.services || [],
+                                  driverTypes: next,
+                                })
+                              );
+                            }}
+                            className={`text-left border-2 rounded-xl p-4 transition-colors ${
+                              checked
+                                ? "border-blue-600 bg-blue-50 shadow-sm"
+                                : "border-gray-200 hover:border-blue-300"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="font-semibold text-gray-900">
+                                {option.label}
+                              </div>
+                              <span
+                                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                  checked
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-100 text-gray-500"
+                                }`}
+                              >
+                                {checked ? "Đã chọn" : "Chọn"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-2">
+                              {option.description}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                />
+                {(driverForm.watch("driverTypes") || []).length === 0 && (
+                  <p className="text-amber-600 text-xs">
+                    Bắt buộc chọn Lái hộ và/hoặc Đặt xe trước khi tiếp tục.
+                  </p>
+                )}
+              </div>
+
+              <div className="border-t pt-6">
+                <h3 className="font-semibold text-gray-900 mb-4">
+                  Thông tin cá nhân
+                </h3>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1 flex flex-col">
                   <label htmlFor="fullName">Họ và tên *</label>
@@ -1412,6 +1706,55 @@ export default function RegisterPartner() {
           {/* Step 3: Driver Info */}
           {currentStep === 3 && (
             <div className="space-y-6 mt-8">
+              <div className="space-y-2">
+                <label>Loại dịch vụ tài xế muốn đăng ký *</label>
+                <Controller
+                  name="driverTypes"
+                  control={driverForm.control}
+                  render={({ field }) => (
+                    <>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        {driverTypeOptions.map((option) => {
+                          const checked = (
+                            (field.value || []) as DriverCapabilityType[]
+                          ).includes(option.id);
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => {
+                                const current = (field.value ||
+                                  []) as DriverCapabilityType[];
+                                field.onChange(
+                                  checked
+                                    ? current.filter((id) => id !== option.id)
+                                    : [...current, option.id]
+                                );
+                              }}
+                              className={`text-left border rounded-lg p-4 transition-colors ${
+                                checked
+                                  ? "border-blue-600 bg-blue-50"
+                                  : "border-gray-200 hover:border-gray-300"
+                              }`}
+                            >
+                              <div className="font-semibold">{option.label}</div>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {option.description}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {driverForm.formState.errors.driverTypes && (
+                        <p className="text-red-500 text-xs mt-2">
+                          {driverForm.formState.errors.driverTypes.message}
+                        </p>
+                      )}
+                    </>
+                  )}
+                />
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1 flex flex-col">
                   <label htmlFor="licenseNumber">Số bằng lái xe *</label>
@@ -1545,64 +1888,164 @@ export default function RegisterPartner() {
                   />
                 </div>
               </div>
-              <div className="space-y-1 flex flex-col">
-                <label>Dịch vụ cung cấp *</label>
-                <Controller
-                  name="services"
-                  control={driverForm.control}
-                  render={({ field }) => (
-                    <>
-                      <div className="grid md:grid-cols-2 gap-4 mt-2">
-                        {services.map((service) => {
-                          const isChecked = (
-                            (field.value || []) as string[]
-                          ).includes(service.id);
-                          return (
-                            <div
-                              key={service.id}
-                              className={`border rounded-lg p-4 transition-colors cursor-pointer ${
-                                isChecked
-                                  ? "border-blue-500 bg-blue-50"
-                                  : "border-gray-200 hover:border-gray-300"
-                              }`}
-                              onClick={() => {
-                                const newSelection = isChecked
-                                  ? (field.value || []).filter(
-                                      (v) => v !== service.id
-                                    )
-                                  : [...(field.value || []), service.id];
-                                field.onChange(newSelection);
-                              }}
-                            >
-                              <div className="flex items-start space-x-3">
-                                <input
-                                  className="border border-gray-300 rounded-sm p-2 mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  readOnly
-                                />
-                                <div className="space-y-1 flex flex-col w-full">
-                                  <div className="font-medium">
-                                    {service.label}
-                                  </div>
-                                  <div className="text-sm text-gray-600">
-                                    {service.description}
+              {formWantsHire && (
+                <div className="space-y-1 flex flex-col">
+                  <label>Gói dịch vụ Lái hộ *</label>
+                  <Controller
+                    name="services"
+                    control={driverForm.control}
+                    render={({ field }) => (
+                      <>
+                        <div className="grid md:grid-cols-2 gap-4 mt-2">
+                          {services.map((service) => {
+                            const isChecked = (
+                              (field.value || []) as string[]
+                            ).includes(service.id);
+                            return (
+                              <div
+                                key={service.id}
+                                className={`border rounded-lg p-4 transition-colors cursor-pointer ${
+                                  isChecked
+                                    ? "border-blue-500 bg-blue-50"
+                                    : "border-gray-200 hover:border-gray-300"
+                                }`}
+                                onClick={() => {
+                                  const newSelection = isChecked
+                                    ? (field.value || []).filter(
+                                        (v) => v !== service.id
+                                      )
+                                    : [...(field.value || []), service.id];
+                                  field.onChange(newSelection);
+                                }}
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <input
+                                    className="border border-gray-300 rounded-sm p-2 mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    readOnly
+                                  />
+                                  <div className="space-y-1 flex flex-col w-full">
+                                    <div className="font-medium">
+                                      {service.label}
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                      {service.description}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
+                            );
+                          })}
+                        </div>
+                        {driverForm.formState.errors.services && (
+                          <p className="text-red-500 text-xs mt-2">
+                            {driverForm.formState.errors.services.message}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  />
+                </div>
+              )}
+
+              {formWantsRide && (
+                <div className="space-y-4 border rounded-lg p-4 bg-slate-50">
+                  <h4 className="font-semibold">Thông tin xe Đặt xe *</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1 flex flex-col">
+                      <label>Loại xe *</label>
+                      <select
+                        className="border rounded-md p-2 border-gray-300"
+                        value={vehicleData.categoryCode}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          const cat = rideCategories.find((c) => c.code === code);
+                          dispatch(
+                            updateVehicle({
+                              categoryCode: code,
+                              seatCount: String(cat?.seatCount || 4),
+                            })
                           );
-                        })}
-                      </div>
-                      {driverForm.formState.errors.services && (
-                        <p className="text-red-500 text-xs mt-2">
-                          {driverForm.formState.errors.services.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
+                        }}
+                      >
+                        <option value="">Chọn loại xe</option>
+                        {rideCategories.map((cat) => (
+                          <option key={cat.code} value={cat.code}>
+                            {cat.name || cat.code}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1 flex flex-col">
+                      <label>Biển số *</label>
+                      <input
+                        className="border rounded-md p-2 border-gray-300"
+                        value={vehicleData.plate}
+                        onChange={(e) =>
+                          dispatch(
+                            updateVehicle({
+                              plate: e.target.value.toUpperCase(),
+                            })
+                          )
+                        }
+                        placeholder="51A12345"
+                      />
+                    </div>
+                    <div className="space-y-1 flex flex-col">
+                      <label>Hãng xe *</label>
+                      <input
+                        className="border rounded-md p-2 border-gray-300"
+                        value={vehicleData.brand}
+                        onChange={(e) =>
+                          dispatch(updateVehicle({ brand: e.target.value }))
+                        }
+                        placeholder="Toyota"
+                      />
+                    </div>
+                    <div className="space-y-1 flex flex-col">
+                      <label>Màu xe *</label>
+                      <input
+                        className="border rounded-md p-2 border-gray-300"
+                        value={vehicleData.color}
+                        onChange={(e) =>
+                          dispatch(updateVehicle({ color: e.target.value }))
+                        }
+                        placeholder="Trắng"
+                      />
+                    </div>
+                    <div className="space-y-1 flex flex-col">
+                      <label>Dòng xe</label>
+                      <input
+                        className="border rounded-md p-2 border-gray-300"
+                        value={vehicleData.model}
+                        onChange={(e) =>
+                          dispatch(updateVehicle({ model: e.target.value }))
+                        }
+                        placeholder="Vios"
+                      />
+                    </div>
+                    <div className="space-y-1 flex flex-col">
+                      <label>Năm sản xuất</label>
+                      <input
+                        className="border rounded-md p-2 border-gray-300"
+                        value={vehicleData.manufactureYear}
+                        onChange={(e) =>
+                          dispatch(
+                            updateVehicle({
+                              manufactureYear: e.target.value.replace(
+                                /[^0-9]/g,
+                                ""
+                              ),
+                            })
+                          )
+                        }
+                        placeholder="2020"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1629,6 +2072,24 @@ export default function RegisterPartner() {
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <FileUploadCard
+                  title="CCCD điện tử VNeID *"
+                  description="Ảnh CCCD điện tử xuất từ ứng dụng VNeID"
+                  field="idVneidUrl"
+                  uploadedUrl={documentsData.idVneidUrl}
+                  uploading={uploadingState.idVneidUrl}
+                  uploadError={uploadErrorState.idVneidUrl}
+                />
+                <FileUploadCard
+                  title="Ảnh chân dung *"
+                  description="Ảnh khuôn mặt rõ, chính diện, đủ ánh sáng"
+                  field="portraitUrl"
+                  uploadedUrl={documentsData.portraitUrl}
+                  uploading={uploadingState.portraitUrl}
+                  uploadError={uploadErrorState.portraitUrl}
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <FileUploadCard
                   title="Bằng lái xe mặt trước *"
                   description="Chụp rõ nét mặt trước bằng lái xe"
                   field="driverLicenseFrontUrl"
@@ -1645,17 +2106,103 @@ export default function RegisterPartner() {
                   uploadError={uploadErrorState.driverLicenseBackUrl}
                 />
               </div>
+
+              {wantsRide && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Giấy tờ xe Đặt xe *</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {(
+                      [
+                        ["registrationUrl", "registration", "Cà vẹt / đăng ký xe *"],
+                        ["inspectionUrl", "inspection", "Đăng kiểm"],
+                        ["insuranceUrl", "insurance", "Bảo hiểm"],
+                        ["vehiclePhotoUrl", "vehiclePhoto", "Ảnh xe *"],
+                        ["platePhotoUrl", "platePhoto", "Ảnh biển số *"],
+                      ] as const
+                    ).map(([urlKey, fileKey, label]) => (
+                      <div
+                        key={urlKey}
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-4"
+                      >
+                        <div className="text-sm font-medium mb-2">{label}</div>
+                        {vehicleData[urlKey]?.startsWith("https://") ? (
+                          <div className="space-y-2">
+                            <img
+                              src={vehicleData[urlKey]}
+                              alt={label}
+                              className="h-28 w-full object-cover rounded"
+                            />
+                            <button
+                              type="button"
+                              className="text-xs text-red-600"
+                              onClick={() =>
+                                dispatch(updateVehicle({ [urlKey]: "" }))
+                              }
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ) : (
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (!file.type.startsWith("image/")) {
+                                toast.error("Vui lòng chọn file hình ảnh");
+                                return;
+                              }
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast.error("File không được vượt quá 5MB");
+                                return;
+                              }
+                              try {
+                                const res = await uploadVehicleDocuments({
+                                  [fileKey]: file,
+                                });
+                                const data = res.data || {};
+                                const mapped =
+                                  data[
+                                    urlKey as keyof typeof data
+                                  ] ||
+                                  data[
+                                    `${fileKey}Url` as keyof typeof data
+                                  ] ||
+                                  Object.values(data).find(
+                                    (v) =>
+                                      typeof v === "string" &&
+                                      v.startsWith("https://")
+                                  );
+                                if (typeof mapped === "string") {
+                                  dispatch(updateVehicle({ [urlKey]: mapped }));
+                                } else {
+                                  toast.error("Upload giấy tờ xe thất bại");
+                                }
+                              } catch (err: any) {
+                                toast.error(
+                                  err?.response?.data?.message ||
+                                    "Upload giấy tờ xe thất bại"
+                                );
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-medium text-yellow-800 mb-2">
-                  📋 Yêu cầu về hình ảnh:
+                  Yêu cầu về hình ảnh
                 </h4>
                 <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
                   <li>Hình ảnh phải rõ nét, đầy đủ thông tin, không bị mờ</li>
                   <li>Định dạng: JPG, PNG (tối đa 5MB mỗi file)</li>
+                  <li>Bắt buộc có ảnh VNeID và ảnh chân dung khi gửi duyệt</li>
                   <li>Chụp thẳng, không bị nghiêng hoặc cắt góc</li>
-                  <li>
-                    Thông tin trên giấy tờ phải khớp với thông tin đã khai báo
-                  </li>
                   <li>Không chấp nhận ảnh photocopy hoặc ảnh chụp màn hình</li>
                 </ul>
               </div>
@@ -1706,6 +2253,16 @@ export default function RegisterPartner() {
                     </div>
                   </div>
                   <div className="space-y-2">
+                    <div className="space-y-1 flex flex-col">
+                      <span className="text-gray-600">Loại dịch vụ:</span>
+                      <span className="font-medium">
+                        {(driverData.driverTypes || [])
+                          .map((t) =>
+                            t === "DRIVER_FOR_HIRE" ? "Lái hộ" : "Đặt xe"
+                          )
+                          .join(", ") || "Chưa chọn"}
+                      </span>
+                    </div>
                     <div className="space-y-1 flex flex-col">
                       <span className="text-gray-600">Bằng lái:</span>
                       <span className="font-medium">

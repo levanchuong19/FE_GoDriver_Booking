@@ -42,64 +42,81 @@ export const addressSchema = z.object({
     .max(100, "Địa chỉ cụ thể không được vượt quá 100 ký tự"),
 });
 
-export const driverSchema = z.object({
-  licenseNumber: z
-    .string()
-    .min(5, "Số bằng lái xe phải có ít nhất 5 ký tự")
-    .max(20, "Số bằng lái xe không được vượt quá 20 ký tự")
-    .regex(/^[A-Z0-9]+$/, "Số bằng lái xe chỉ được chứa chữ cái in hoa và số"),
-  licenseExpiryDate: z
-    .string()
-    .min(1, "Ngày hết hạn bằng lái là bắt buộc")
-    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Ngày hết hạn phải theo định dạng DD/MM/YYYY")
-    .refine(
-      (dateString) => {
-        const [day, month, year] = dateString.split("/").map(Number);
-        if (!day || !month || !year) return false;
-        if (month < 1 || month > 12) return false;
-        const daysInMonth = new Date(year, month, 0).getDate();
-        return day >= 1 && day <= daysInMonth;
-      },
-      "Ngày không hợp lệ cho tháng đã chọn"
-    )
-    .refine(
-      (dateString) => {
-        const [day, month, year] = dateString.split("/").map(Number);
-        const expiryDate = new Date(year, month - 1, day);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return expiryDate >= today;
-      },
-      "Ngày hết hạn không hợp lệ hoặc đã qua"
-    )
-    .refine(
-      (dateString) => {
-        const [day, month, year] = dateString.split("/").map(Number);
-        const expiryDate = new Date(year, month - 1, day);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const sixMonthsLater = new Date(today);
-        sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-        sixMonthsLater.setHours(0, 0, 0, 0);
-        return expiryDate >= sixMonthsLater;
-      },
-      "Bằng lái xe phải còn hiệu lực ít nhất 6 tháng"
-    ),
-  yearsExperience: z
-    .string()
-    .min(1, "Số năm kinh nghiệm là bắt buộc")
-    .regex(/^\d+$/, "Số năm kinh nghiệm phải là số")
-    .refine(
-      (yearsStr) => {
-        const years = parseInt(yearsStr);
-        return years >= 0 && years <= 50;
-      },
-      "Số năm kinh nghiệm phải từ 0 đến 50"
-    ),
-  services: z
-    .array(z.string())
-    .min(1, "Phải chọn ít nhất một dịch vụ"),
-});
+export const driverSchema = z
+  .object({
+    driverTypes: z
+      .array(z.enum(["DRIVER_FOR_HIRE", "RIDE_HAILING"]))
+      .min(1, "Phải chọn ít nhất một loại dịch vụ tài xế"),
+    licenseNumber: z
+      .string()
+      .min(5, "Số bằng lái xe phải có ít nhất 5 ký tự")
+      .max(20, "Số bằng lái xe không được vượt quá 20 ký tự")
+      .regex(/^[A-Z0-9]+$/, "Số bằng lái xe chỉ được chứa chữ cái in hoa và số"),
+    licenseExpiryDate: z
+      .string()
+      .min(1, "Ngày hết hạn bằng lái là bắt buộc")
+      .regex(
+        /^\d{2}\/\d{2}\/\d{4}$/,
+        "Ngày hết hạn phải theo định dạng DD/MM/YYYY"
+      )
+      .refine(
+        (dateString) => {
+          const [day, month, year] = dateString.split("/").map(Number);
+          if (!day || !month || !year) return false;
+          if (month < 1 || month > 12) return false;
+          const daysInMonth = new Date(year, month, 0).getDate();
+          return day >= 1 && day <= daysInMonth;
+        },
+        "Ngày không hợp lệ cho tháng đã chọn"
+      )
+      .refine(
+        (dateString) => {
+          const [day, month, year] = dateString.split("/").map(Number);
+          const expiryDate = new Date(year, month - 1, day);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return expiryDate >= today;
+        },
+        "Ngày hết hạn không hợp lệ hoặc đã qua"
+      )
+      .refine(
+        (dateString) => {
+          const [day, month, year] = dateString.split("/").map(Number);
+          const expiryDate = new Date(year, month - 1, day);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const sixMonthsLater = new Date(today);
+          sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+          sixMonthsLater.setHours(0, 0, 0, 0);
+          return expiryDate >= sixMonthsLater;
+        },
+        "Bằng lái xe phải còn hiệu lực ít nhất 6 tháng"
+      ),
+    yearsExperience: z
+      .string()
+      .min(1, "Số năm kinh nghiệm là bắt buộc")
+      .regex(/^\d+$/, "Số năm kinh nghiệm phải là số")
+      .refine(
+        (yearsStr) => {
+          const years = parseInt(yearsStr);
+          return years >= 0 && years <= 50;
+        },
+        "Số năm kinh nghiệm phải từ 0 đến 50"
+      ),
+    services: z.array(z.string()),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.driverTypes.includes("DRIVER_FOR_HIRE") &&
+      data.services.length < 1
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["services"],
+        message: "Phải chọn ít nhất một gói dịch vụ lái hộ",
+      });
+    }
+  });
 
 export type PersonalFormData = z.infer<typeof personalSchema>;
 export type AddressFormData = z.infer<typeof addressSchema>;

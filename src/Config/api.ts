@@ -1,7 +1,11 @@
 import axios from "axios";
 import { notifyErrorDeferred } from "../Utils/notify";
 
-const rawUrl = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
+const DEFAULT_API_ORIGIN = "https://api.smartdrive.io.vn";
+
+const rawUrl = String(
+  import.meta.env.VITE_API_URL || DEFAULT_API_ORIGIN
+).replace(/\/+$/, "");
 const apiUrl = rawUrl.endsWith("/api") ? rawUrl : `${rawUrl}/api`;
 
 const api = axios.create({
@@ -14,7 +18,11 @@ const api = axios.create({
 api.interceptors.request.use(
   function (config) {
     const token = localStorage.getItem("accessToken");
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else if (config.headers) {
+      delete config.headers.Authorization;
+    }
     return config;
   },
   function (error) {

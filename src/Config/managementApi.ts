@@ -135,8 +135,10 @@ export async function createSelfDriveBooking(payload: Record<string, unknown>) {
 }
 
 /** Pricing engine */
-export async function listPricingPlans() {
-  const res = await api.get("/pricing/plans");
+export async function listPricingPlans(options?: { public?: boolean }) {
+  const res = await api.get("/pricing/plans", {
+    skipErrorToast: Boolean(options?.public),
+  });
   return asList(res.data);
 }
 
@@ -145,11 +147,34 @@ export async function createPricingPlan(payload: Record<string, unknown>) {
   return unwrapData(res.data) ?? res.data;
 }
 
+/** Public: POST /pricing/quote — không bắt buộc đăng nhập */
 export async function createPricingQuote(payload: {
   service: string;
   context?: Record<string, unknown>;
 }) {
-  const res = await api.post("/pricing/quote", payload);
+  const res = await api.post("/pricing/quote", payload, {
+    skipErrorToast: true,
+  });
+  return unwrapData(res.data) ?? res.data;
+}
+
+/** Public: GET /pricing/getAll */
+export async function listFarePoliciesPublic(params?: {
+  page?: number;
+  limit?: number;
+}) {
+  const res = await api.get("/pricing/getAll", {
+    params,
+    skipErrorToast: true,
+  });
+  return unwrapList(res.data);
+}
+
+/** Public: POST /bookings/calculateFare */
+export async function calculateFarePublic(payload: Record<string, unknown>) {
+  const res = await api.post("/bookings/calculateFare", payload, {
+    skipErrorToast: true,
+  });
   return unwrapData(res.data) ?? res.data;
 }
 
