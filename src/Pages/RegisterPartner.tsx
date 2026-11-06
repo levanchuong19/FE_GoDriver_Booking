@@ -144,7 +144,7 @@ export default function RegisterPartner() {
   >([]);
 
   const registrationState = useSelector(
-    (state: RootState) => state.driverRegistration
+    (state: RootState) => state.driverRegistration,
   );
 
   const personalData = registrationState?.personal || {
@@ -272,11 +272,13 @@ export default function RegisterPartner() {
             ? res
             : [];
         setRideCategories(
-          list.map((item: any) => ({
-            code: String(item.code || item.categoryCode || ""),
-            name: String(item.name || item.label || item.code || ""),
-            seatCount: Number(item.seatCount || item.seats || 4) || 4,
-          })).filter((item: { code: string }) => item.code)
+          list
+            .map((item: any) => ({
+              code: String(item.code || item.categoryCode || ""),
+              name: String(item.name || item.label || item.code || ""),
+              seatCount: Number(item.seatCount || item.seats || 4) || 4,
+            }))
+            .filter((item: { code: string }) => item.code),
         );
       })
       .catch(() => setRideCategories([]));
@@ -291,7 +293,7 @@ export default function RegisterPartner() {
         const response = await getMyDriverApplications();
         if (response.success && response.data && response.data.length > 0) {
           const draftApplication = response.data.find(
-            (app: any) => app.status === "draft"
+            (app: any) => app.status === "draft",
           );
 
           if (draftApplication) {
@@ -317,7 +319,7 @@ export default function RegisterPartner() {
               // Find province ID by name
               const provinceId =
                 provinces.find(
-                  (p) => p.name === draftApplication.address.province
+                  (p) => p.name === draftApplication.address.province,
                 )?.idProvince || "";
 
               // If we have a province ID, load districts
@@ -330,13 +332,13 @@ export default function RegisterPartner() {
                       const districtId =
                         data.data.find(
                           (d: any) =>
-                            d.name === draftApplication.address.district
+                            d.name === draftApplication.address.district,
                         )?.id || "";
 
                       // If we have a district ID, load wards
                       if (districtId) {
                         fetch(
-                          `https://esgoo.net/api-tinhthanh/3/${districtId}.htm`
+                          `https://esgoo.net/api-tinhthanh/3/${districtId}.htm`,
                         )
                           .then((res) => res.json())
                           .then((wardData) => {
@@ -345,7 +347,7 @@ export default function RegisterPartner() {
                               const wardId =
                                 wardData.data.find(
                                   (w: any) =>
-                                    w.name === draftApplication.address.ward
+                                    w.name === draftApplication.address.ward,
                                 )?.id || "";
 
                               const address = {
@@ -368,14 +370,14 @@ export default function RegisterPartner() {
                                   (w: any) => ({
                                     idWard: w.id,
                                     name: w.name,
-                                  })
+                                  }),
                                 );
                                 setWards(formatted);
                               }
                             }
                           })
                           .catch((err) =>
-                            console.error("Lỗi tải phường/xã:", err)
+                            console.error("Lỗi tải phường/xã:", err),
                           );
                       } else {
                         const address = {
@@ -434,10 +436,10 @@ export default function RegisterPartner() {
                 (service: string) => {
                   return (
                     Object.keys(serviceMapping).find(
-                      (key) => serviceMapping[key] === service
+                      (key) => serviceMapping[key] === service,
                     ) || service
                   );
-                }
+                },
               );
 
               const driver = {
@@ -477,7 +479,7 @@ export default function RegisterPartner() {
                     draftApplication.documents.driverLicenseFrontUrl || "",
                   driverLicenseBackUrl:
                     draftApplication.documents.driverLicenseBackUrl || "",
-                })
+                }),
               );
             }
           }
@@ -500,7 +502,7 @@ export default function RegisterPartner() {
         district: "",
         ward: "",
         streetAddress: addressData.streetAddress || "",
-      })
+      }),
     );
     setAvailableDistricts([]);
     setAvailableWards([]);
@@ -533,7 +535,7 @@ export default function RegisterPartner() {
         district: districtId,
         ward: "",
         streetAddress: addressData.streetAddress || "",
-      })
+      }),
     );
     setAvailableWards([]);
 
@@ -607,7 +609,7 @@ export default function RegisterPartner() {
         const [day, month, year] = driverData.licenseExpiryDate.split("/");
         const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
           2,
-          "0"
+          "0",
         )}`;
 
         draftData.licenseNumber = driverData.licenseNumber;
@@ -633,7 +635,7 @@ export default function RegisterPartner() {
 
       // Include documents if at least one exists
       const hasDocuments = Object.values(documentsData).some(
-        (url) => url && url.trim() !== ""
+        (url) => url && url.trim() !== "",
       );
       if (hasDocuments) {
         draftData.documents = {
@@ -653,12 +655,12 @@ export default function RegisterPartner() {
         try {
           response = await updateDriverApplication(
             draftApplicationId,
-            draftData
+            draftData,
           );
         } catch (updateError: any) {
           console.warn(
             "Failed to update draft, creating new one:",
-            updateError.message
+            updateError.message,
           );
           dispatch(setDraftApplicationId(undefined));
           response = await saveDraftApplication(draftData);
@@ -680,7 +682,7 @@ export default function RegisterPartner() {
           setApplication({
             id: finalApplicationId || "",
             state: "draft",
-          })
+          }),
         );
         dispatch(setStatus("draft"));
         alert("Đã lưu bản nháp thành công!");
@@ -695,7 +697,7 @@ export default function RegisterPartner() {
 
   const handleFileUpload = async (
     field: keyof typeof documentsData,
-    file: File
+    file: File,
   ) => {
     if (!file.type.startsWith("image/")) {
       alert("Vui lòng chọn file hình ảnh");
@@ -732,7 +734,7 @@ export default function RegisterPartner() {
         dispatch(
           updateDocuments({
             [field]: response.data[field] || "",
-          })
+          }),
         );
       }
     } catch (error: any) {
@@ -741,7 +743,7 @@ export default function RegisterPartner() {
         setUploadError({
           field,
           error: error.message || "Lỗi tải lên",
-        })
+        }),
       );
       toast.error("Lỗi tải lên. Vui lòng thử lại.");
     } finally {
@@ -753,7 +755,7 @@ export default function RegisterPartner() {
     dispatch(
       updateDocuments({
         [field]: "",
-      })
+      }),
     );
     const uploadFieldMap: { [key: string]: keyof typeof documentFiles } = {
       idFrontUrl: "idFront",
@@ -778,7 +780,7 @@ export default function RegisterPartner() {
       []) as DriverCapabilityType[];
     if (types.length === 0) {
       toast.warning(
-        "Vui lòng chọn ít nhất một loại dịch vụ tài xế: Lái hộ và/hoặc Đặt xe"
+        "Vui lòng chọn ít nhất một loại dịch vụ tài xế: Lái hộ và/hoặc Đặt xe",
       );
       return;
     }
@@ -790,7 +792,7 @@ export default function RegisterPartner() {
         yearsExperience: driverData.yearsExperience || "",
         services: driverData.services || [],
         driverTypes: types,
-      })
+      }),
     );
     setCurrentStep(2);
   };
@@ -808,8 +810,8 @@ export default function RegisterPartner() {
     });
     toast.warning(
       `Vui lòng điền đầy đủ thông tin bắt buộc:\n- ${missingFields.join(
-        "\n- "
-      )}`
+        "\n- ",
+      )}`,
     );
   };
 
@@ -821,7 +823,7 @@ export default function RegisterPartner() {
         district: data.district,
         ward: data.ward,
         streetAddress: data.streetAddress,
-      })
+      }),
     );
     setCurrentStep(3);
   };
@@ -837,7 +839,7 @@ export default function RegisterPartner() {
       return fieldNames[field] || field;
     });
     toast.warning(
-      `Vui lòng điền đầy đủ thông tin địa chỉ:\n- ${missingFields.join("\n- ")}`
+      `Vui lòng điền đầy đủ thông tin địa chỉ:\n- ${missingFields.join("\n- ")}`,
     );
   };
 
@@ -850,7 +852,7 @@ export default function RegisterPartner() {
         !vehicleData.plate.trim()
       ) {
         toast.warning(
-          "Đăng ký Đặt xe cần đủ thông tin xe: loại xe, hãng, màu, biển số"
+          "Đăng ký Đặt xe cần đủ thông tin xe: loại xe, hãng, màu, biển số",
         );
         return;
       }
@@ -859,7 +861,7 @@ export default function RegisterPartner() {
       updateDriver({
         ...data,
         driverTypes: data.driverTypes as DriverCapabilityType[],
-      })
+      }),
     );
     setCurrentStep(4);
   };
@@ -876,7 +878,7 @@ export default function RegisterPartner() {
       return fieldNames[field] || field;
     });
     toast.warning(
-      `Vui lòng điền đầy đủ thông tin tài xế:\n- ${missingFields.join("\n- ")}`
+      `Vui lòng điền đầy đủ thông tin tài xế:\n- ${missingFields.join("\n- ")}`,
     );
   };
 
@@ -897,14 +899,14 @@ export default function RegisterPartner() {
         driverLicenseBackUrl: "Bằng lái xe mặt sau",
       };
       const missingDocs = REQUIRED_DOC_FIELDS.filter(
-        (field) => !documentsData[field]?.startsWith("https://")
+        (field) => !documentsData[field]?.startsWith("https://"),
       ).map((field) => docLabels[field]);
 
       if (missingDocs.length > 0) {
         toast.warning(
           `Vui lòng tải lên đầy đủ các tài liệu bắt buộc:\n- ${missingDocs.join(
-            "\n- "
-          )}`
+            "\n- ",
+          )}`,
         );
         return;
       }
@@ -914,9 +916,7 @@ export default function RegisterPartner() {
           !vehicleData.registrationUrl?.startsWith("https://")
             ? "Cà vẹt / đăng ký xe"
             : "",
-          !vehicleData.vehiclePhotoUrl?.startsWith("https://")
-            ? "Ảnh xe"
-            : "",
+          !vehicleData.vehiclePhotoUrl?.startsWith("https://") ? "Ảnh xe" : "",
           !vehicleData.platePhotoUrl?.startsWith("https://")
             ? "Ảnh biển số"
             : "",
@@ -924,8 +924,8 @@ export default function RegisterPartner() {
         if (missingVehicleDocs.length > 0) {
           toast.warning(
             `Đăng ký Đặt xe cần thêm giấy tờ xe:\n- ${missingVehicleDocs.join(
-              "\n- "
-            )}`
+              "\n- ",
+            )}`,
           );
           return;
         }
@@ -934,13 +934,13 @@ export default function RegisterPartner() {
       const isAnyUploading = Object.values(uploadingState).some((u) => u);
       if (isAnyUploading) {
         toast.warning(
-          "Vui lòng đợi quá trình tải lên hoàn tất trước khi tiếp tục"
+          "Vui lòng đợi quá trình tải lên hoàn tất trước khi tiếp tục",
         );
         return;
       }
 
       const hasUploadErrors = Object.values(uploadErrorState).some(
-        (e) => e !== null
+        (e) => e !== null,
       );
       if (hasUploadErrors) {
         toast.warning("Vui lòng sửa lỗi tải lên tài liệu trước khi tiếp tục");
@@ -974,12 +974,12 @@ export default function RegisterPartner() {
     }
 
     const allDocsUploaded = REQUIRED_DOC_FIELDS.every((field) =>
-      documentsData[field]?.startsWith("https://")
+      documentsData[field]?.startsWith("https://"),
     );
 
     if (!allDocsUploaded) {
       toast.error(
-        "Vui lòng tải lên đủ giấy tờ: CCCD trước/sau, VNeID, ảnh chân dung, GPLX trước/sau"
+        "Vui lòng tải lên đủ giấy tờ: CCCD trước/sau, VNeID, ảnh chân dung, GPLX trước/sau",
       );
       return;
     }
@@ -1006,7 +1006,7 @@ export default function RegisterPartner() {
       const [day, month, year] = driverData.licenseExpiryDate.split("/");
       const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
         2,
-        "0"
+        "0",
       )}`;
 
       const mappedServices = wantsHire
@@ -1104,7 +1104,7 @@ export default function RegisterPartner() {
         setApplication({
           id: applicationId || "",
           state: "pending",
-        })
+        }),
       );
       dispatch(setStatus("submitted"));
 
@@ -1113,7 +1113,7 @@ export default function RegisterPartner() {
           ? "Đã gửi hồ sơ Lái hộ và Đặt xe để kiểm duyệt."
           : wantsRide
             ? "Đã gửi đăng ký Đặt xe để kiểm duyệt."
-            : "Đăng ký thành công! Hồ sơ của bạn đang trong quá trình kiểm duyệt."
+            : "Đăng ký thành công! Hồ sơ của bạn đang trong quá trình kiểm duyệt.",
       );
 
       navigate("/register-partner/status");
@@ -1228,10 +1228,10 @@ export default function RegisterPartner() {
     if (currentStep === 4) {
       const isAnyUploading = Object.values(uploadingState).some((u) => u);
       const hasUploadErrors = Object.values(uploadErrorState).some(
-        (e) => e !== null
+        (e) => e !== null,
       );
       const hasLocalURIs = Object.values(documentsData).some(
-        (url) => url && !isValidUploadedUrl(url)
+        (url) => url && !isValidUploadedUrl(url),
       );
       return isAnyUploading || hasUploadErrors || hasLocalURIs;
     }
@@ -1348,15 +1348,14 @@ export default function RegisterPartner() {
                               field.onChange(next);
                               dispatch(
                                 updateDriver({
-                                  licenseNumber:
-                                    driverData.licenseNumber || "",
+                                  licenseNumber: driverData.licenseNumber || "",
                                   licenseExpiryDate:
                                     driverData.licenseExpiryDate || "",
                                   yearsExperience:
                                     driverData.yearsExperience || "",
                                   services: driverData.services || [],
                                   driverTypes: next,
-                                })
+                                }),
                               );
                             }}
                             className={`text-left border-2 rounded-xl p-4 transition-colors ${
@@ -1642,7 +1641,7 @@ export default function RegisterPartner() {
                                 district: addressData.district || "",
                                 ward: e.target.value,
                                 streetAddress: addressData.streetAddress || "",
-                              })
+                              }),
                             );
                           }}
                         >
@@ -1686,7 +1685,7 @@ export default function RegisterPartner() {
                               district: addressData.district || "",
                               ward: addressData.ward || "",
                               streetAddress: e.target.value,
-                            })
+                            }),
                           );
                         }}
                         placeholder="Số nhà, tên đường..."
@@ -1728,7 +1727,7 @@ export default function RegisterPartner() {
                                 field.onChange(
                                   checked
                                     ? current.filter((id) => id !== option.id)
-                                    : [...current, option.id]
+                                    : [...current, option.id],
                                 );
                               }}
                               className={`text-left border rounded-lg p-4 transition-colors ${
@@ -1737,7 +1736,9 @@ export default function RegisterPartner() {
                                   : "border-gray-200 hover:border-gray-300"
                               }`}
                             >
-                              <div className="font-semibold">{option.label}</div>
+                              <div className="font-semibold">
+                                {option.label}
+                              </div>
                               <p className="text-sm text-gray-600 mt-1">
                                 {option.description}
                               </p>
@@ -1912,7 +1913,7 @@ export default function RegisterPartner() {
                                 onClick={() => {
                                   const newSelection = isChecked
                                     ? (field.value || []).filter(
-                                        (v) => v !== service.id
+                                        (v) => v !== service.id,
                                       )
                                     : [...(field.value || []), service.id];
                                   field.onChange(newSelection);
@@ -1960,12 +1961,14 @@ export default function RegisterPartner() {
                         value={vehicleData.categoryCode}
                         onChange={(e) => {
                           const code = e.target.value;
-                          const cat = rideCategories.find((c) => c.code === code);
+                          const cat = rideCategories.find(
+                            (c) => c.code === code,
+                          );
                           dispatch(
                             updateVehicle({
                               categoryCode: code,
                               seatCount: String(cat?.seatCount || 4),
-                            })
+                            }),
                           );
                         }}
                       >
@@ -1986,7 +1989,7 @@ export default function RegisterPartner() {
                           dispatch(
                             updateVehicle({
                               plate: e.target.value.toUpperCase(),
-                            })
+                            }),
                           )
                         }
                         placeholder="51A12345"
@@ -2035,9 +2038,9 @@ export default function RegisterPartner() {
                             updateVehicle({
                               manufactureYear: e.target.value.replace(
                                 /[^0-9]/g,
-                                ""
+                                "",
                               ),
-                            })
+                            }),
                           )
                         }
                         placeholder="2020"
@@ -2113,7 +2116,11 @@ export default function RegisterPartner() {
                   <div className="grid md:grid-cols-2 gap-4">
                     {(
                       [
-                        ["registrationUrl", "registration", "Cà vẹt / đăng ký xe *"],
+                        [
+                          "registrationUrl",
+                          "registration",
+                          "Cà vẹt / đăng ký xe *",
+                        ],
                         ["inspectionUrl", "inspection", "Đăng kiểm"],
                         ["insuranceUrl", "insurance", "Bảo hiểm"],
                         ["vehiclePhotoUrl", "vehiclePhoto", "Ảnh xe *"],
@@ -2163,16 +2170,12 @@ export default function RegisterPartner() {
                                 });
                                 const data = res.data || {};
                                 const mapped =
-                                  data[
-                                    urlKey as keyof typeof data
-                                  ] ||
-                                  data[
-                                    `${fileKey}Url` as keyof typeof data
-                                  ] ||
+                                  data[urlKey as keyof typeof data] ||
+                                  data[`${fileKey}Url` as keyof typeof data] ||
                                   Object.values(data).find(
                                     (v) =>
                                       typeof v === "string" &&
-                                      v.startsWith("https://")
+                                      v.startsWith("https://"),
                                   );
                                 if (typeof mapped === "string") {
                                   dispatch(updateVehicle({ [urlKey]: mapped }));
@@ -2182,7 +2185,7 @@ export default function RegisterPartner() {
                               } catch (err: any) {
                                 toast.error(
                                   err?.response?.data?.message ||
-                                    "Upload giấy tờ xe thất bại"
+                                    "Upload giấy tờ xe thất bại",
                                 );
                               }
                             }}
@@ -2258,7 +2261,7 @@ export default function RegisterPartner() {
                       <span className="font-medium">
                         {(driverData.driverTypes || [])
                           .map((t) =>
-                            t === "DRIVER_FOR_HIRE" ? "Lái hộ" : "Đặt xe"
+                            t === "DRIVER_FOR_HIRE" ? "Lái hộ" : "Đặt xe",
                           )
                           .join(", ") || "Chưa chọn"}
                       </span>
@@ -2297,10 +2300,10 @@ export default function RegisterPartner() {
                           wards.find((w) => w.idWard === addressData.ward)
                             ?.name || "",
                           districts.find(
-                            (d) => d.idDistrict === addressData.district
+                            (d) => d.idDistrict === addressData.district,
                           )?.name || "",
                           provinces.find(
-                            (p) => p.idProvince === addressData.province
+                            (p) => p.idProvince === addressData.province,
                           )?.name || "",
                         ].join(", ")
                       : "Chưa nhập"}
@@ -2312,7 +2315,7 @@ export default function RegisterPartner() {
                     {driverData.services.length > 0
                       ? driverData.services.map((serviceId) => {
                           const service = services.find(
-                            (s) => s.id === serviceId
+                            (s) => s.id === serviceId,
                           );
                           return (
                             <span
@@ -2340,14 +2343,14 @@ export default function RegisterPartner() {
                       </span>
                     )}
                     {documentsData.driverLicenseFrontUrl?.startsWith(
-                      "https://"
+                      "https://",
                     ) && (
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs text-center">
                         ✓ Bằng lái mặt trước
                       </span>
                     )}
                     {documentsData.driverLicenseBackUrl?.startsWith(
-                      "https://"
+                      "https://",
                     ) && (
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs text-center">
                         ✓ Bằng lái mặt sau
