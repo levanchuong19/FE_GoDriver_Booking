@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   UsersRound,
   KeyRound,
+  Package,
   Layers3,
   Library,
   MessageSquare,
@@ -94,6 +95,11 @@ const groups: NavGroup[] = [
         to: "/dashboard/self-drive",
         label: "Thuê xe tự lái",
         icon: KeyRound,
+      },
+      {
+        to: "/dashboard/delivery",
+        label: "Giao hàng",
+        icon: Package,
       },
       {
         to: "/dashboard/used-cars",

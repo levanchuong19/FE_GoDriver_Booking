@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
   Card,
-  Col,
-  DatePicker,
-  Form,
-  InputNumber,
-  Row,
+  Select,
   Space,
   Table,
   Tabs,
@@ -17,10 +13,14 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
-  listSeatTemplates,
-  listSharedTripsMine,
-  listSharedVehiclesMine,
-  searchSharedTrips,
+  listAdminSharedBookings,
+  listAdminSharedTrips,
+} from "../../Config/adminApi";
+import {
+  cancelSharedTrip,
+  completeSharedTrip,
+  publishSharedTrip,
+  startSharedTrip,
 } from "../../Config/managementApi";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
@@ -28,63 +28,112 @@ import formatVND from "../../Utils/currency";
 type AnyRow = Record<string, unknown> & { id?: string; _id?: string };
 
 function rowId(row: AnyRow) {
-  return String(row.id || row._id || row.tripId || "");
+  return String(row.id || row._id || row.tripId || row.bookingId || "");
 }
+
+const statusColor: Record<string, string> = {
+  DRAFT: "default",
+  PUBLISHED: "green",
+  OPEN: "green",
+  FULL: "blue",
+  STARTED: "cyan",
+  IN_PROGRESS: "cyan",
+  COMPLETED: "purple",
+  CANCELLED: "red",
+  CONFIRMED: "green",
+  PENDING: "gold",
+  HELD: "gold",
+};
 
 export default function SharedRidesPage() {
   const navigate = useNavigate();
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [mineLoading, setMineLoading] = useState(false);
+  const [tripStatus, setTripStatus] = useState("");
+  const [bookingStatus, setBookingStatus] = useState("");
+  const [tripPage, setTripPage] = useState(1);
+  const [bookingPage, setBookingPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [tripsLoading, setTripsLoading] = useState(false);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [workingId, setWorkingId] = useState<string | null>(null);
   const [trips, setTrips] = useState<AnyRow[]>([]);
-  const [mineTrips, setMineTrips] = useState<AnyRow[]>([]);
-  const [vehicles, setVehicles] = useState<AnyRow[]>([]);
-  const [templates, setTemplates] = useState<AnyRow[]>([]);
-  const [form] = Form.useForm();
+  const [tripTotal, setTripTotal] = useState(0);
+  const [bookings, setBookings] = useState<AnyRow[]>([]);
+  const [bookingTotal, setBookingTotal] = useState(0);
 
-  const handleSearch = async () => {
-    const values = await form.validateFields();
-    setSearchLoading(true);
+  const loadTrips = async (
+    status = tripStatus,
+    page = tripPage,
+    limit = pageSize,
+  ) => {
+    setTripsLoading(true);
     try {
-      const data = await searchSharedTrips({
-        pickupLat: values.pickupLat,
-        pickupLng: values.pickupLng,
-        dropoffLat: values.dropoffLat,
-        dropoffLng: values.dropoffLng,
-        date: dayjs(values.date).format("YYYY-MM-DD"),
-        passengerCount: values.passengerCount || 1,
+      const data = await listAdminSharedTrips({
+        status: status || undefined,
+        page,
+        limit,
       });
       setTrips(data.items as AnyRow[]);
-      message.success(`Tìm thấy ${data.total} chuyến`);
+      setTripTotal(data.total);
     } catch (error) {
-      notifyError(error, "Tìm chuyến thất bại");
+      notifyError(error, "Không tải được danh sách chuyến xe ghép");
     } finally {
-      setSearchLoading(false);
+      setTripsLoading(false);
     }
   };
 
-  const loadMine = async () => {
-    setMineLoading(true);
+  const loadBookings = async (
+    status = bookingStatus,
+    page = bookingPage,
+    limit = pageSize,
+  ) => {
+    setBookingsLoading(true);
     try {
-      const [tripData, vehicleData, templateData] = await Promise.all([
-        listSharedTripsMine(),
-        listSharedVehiclesMine(),
-        listSeatTemplates(),
-      ]);
-      setMineTrips(tripData.items as AnyRow[]);
-      setVehicles(vehicleData.items as AnyRow[]);
-      setTemplates(templateData.items as AnyRow[]);
+      const data = await listAdminSharedBookings({
+        status: status || undefined,
+        page,
+        limit,
+      });
+      setBookings(data.items as AnyRow[]);
+      setBookingTotal(data.total);
     } catch (error) {
-      notifyError(error, "Không tải được dữ liệu xe ghép");
+      notifyError(error, "Không tải được booking xe ghép");
     } finally {
-      setMineLoading(false);
+      setBookingsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTrips();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripStatus, tripPage, pageSize]);
+
+  useEffect(() => {
+    loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingStatus, bookingPage, pageSize]);
+
+  const runTripAction = async (
+    id: string,
+    label: string,
+    fn: () => Promise<unknown>,
+  ) => {
+    setWorkingId(id);
+    try {
+      await fn();
+      message.success(label);
+      await loadTrips();
+    } catch (error) {
+      notifyError(error, `${label} thất bại`);
+    } finally {
+      setWorkingId(null);
     }
   };
 
   const tripColumns: ColumnsType<AnyRow> = [
     {
-      title: "Mã",
+      title: "Mã chuyến",
       render: (_, row) => rowId(row) || "—",
-      width: 160,
+      width: 170,
       ellipsis: true,
     },
     {
@@ -118,8 +167,12 @@ export default function SharedRidesPage() {
     {
       title: "Trạng thái",
       dataIndex: "status",
-      width: 120,
-      render: (value) => <Tag>{String(value || "—")}</Tag>,
+      width: 130,
+      render: (value) => (
+        <Tag color={statusColor[String(value)] || "default"}>
+          {String(value || "—")}
+        </Tag>
+      ),
     },
     {
       title: "Giá ghế",
@@ -129,27 +182,151 @@ export default function SharedRidesPage() {
     },
     {
       title: "Thao tác",
-      width: 100,
-      render: (_, row) => (
-        <Button
-          type="primary"
-          disabled={!rowId(row)}
-          onClick={() => navigate(`/dashboard/shared-rides/${rowId(row)}`)}
-        >
-          Quản lý
-        </Button>
+      width: 280,
+      render: (_, row) => {
+        const id = rowId(row);
+        const status = String(row.status || "").toUpperCase();
+        return (
+          <Space wrap>
+            <Button
+              onClick={() => navigate(`/dashboard/shared-rides/${id}`)}
+              disabled={!id}
+            >
+              Chi tiết
+            </Button>
+            {status === "DRAFT" && (
+              <Button
+                type="primary"
+                loading={workingId === id}
+                onClick={() =>
+                  runTripAction(id, "Đã publish", () => publishSharedTrip(id))
+                }
+              >
+                Publish
+              </Button>
+            )}
+            {(status === "PUBLISHED" || status === "OPEN" || status === "FULL") && (
+              <Button
+                loading={workingId === id}
+                onClick={() =>
+                  runTripAction(id, "Đã bắt đầu", () => startSharedTrip(id))
+                }
+              >
+                Start
+              </Button>
+            )}
+            {(status === "STARTED" || status === "IN_PROGRESS") && (
+              <Button
+                type="primary"
+                loading={workingId === id}
+                onClick={() =>
+                  runTripAction(id, "Đã hoàn thành", () =>
+                    completeSharedTrip(id),
+                  )
+                }
+              >
+                Complete
+              </Button>
+            )}
+            {!["COMPLETED", "CANCELLED"].includes(status) && (
+              <Button
+                danger
+                loading={workingId === id}
+                onClick={() =>
+                  runTripAction(id, "Đã hủy", () => cancelSharedTrip(id))
+                }
+              >
+                Hủy
+              </Button>
+            )}
+          </Space>
+        );
+      },
+    },
+  ];
+
+  const bookingColumns: ColumnsType<AnyRow> = [
+    {
+      title: "Mã booking",
+      render: (_, row) => rowId(row) || "—",
+      width: 170,
+      ellipsis: true,
+    },
+    {
+      title: "Chuyến",
+      render: (_, row) =>
+        String(row.tripId || (row.trip as { _id?: string } | undefined)?._id || "—"),
+      width: 160,
+      ellipsis: true,
+    },
+    {
+      title: "Khách",
+      render: (_, row) => {
+        const passenger = row.passenger as
+          | { fullName?: string; phone?: string }
+          | undefined;
+        return String(
+          passenger?.fullName ||
+            passenger?.phone ||
+            row.passengerName ||
+            row.customerName ||
+            "—",
+        );
+      },
+      ellipsis: true,
+    },
+    {
+      title: "Ghế",
+      render: (_, row) =>
+        String(
+          row.seatCount ||
+            (Array.isArray(row.seats) ? row.seats.length : row.quantity) ||
+            "—",
+        ),
+      width: 80,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      width: 130,
+      render: (value) => (
+        <Tag color={statusColor[String(value)] || "default"}>
+          {String(value || "—")}
+        </Tag>
       ),
+    },
+    {
+      title: "Tổng tiền",
+      render: (_, row) =>
+        formatVND(Number(row.totalAmount ?? row.amount ?? row.fare ?? 0)),
+      width: 130,
+    },
+    {
+      title: "Tạo lúc",
+      render: (_, row) =>
+        row.createdAt
+          ? dayjs(String(row.createdAt)).format("DD/MM/YYYY HH:mm")
+          : "—",
+      width: 160,
     },
   ];
 
   return (
     <div className="p-6 space-y-4">
       <Card
-        title="Xe ghép / Shared Rides"
+        title="Quản trị Xe ghép"
         extra={
           <Space>
             <Button onClick={() => navigate("/dashboard/shared-rides/charter")}>
               Báo giá bao xe
+            </Button>
+            <Button
+              onClick={() => {
+                loadTrips();
+                loadBookings();
+              }}
+            >
+              Làm mới
             </Button>
           </Space>
         }
@@ -157,176 +334,83 @@ export default function SharedRidesPage() {
         <Tabs
           items={[
             {
-              key: "search",
-              label: "Tìm chuyến",
+              key: "trips",
+              label: "Chuyến (admin)",
               children: (
                 <div className="space-y-4">
-                  <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{
-                      passengerCount: 1,
-                      date: dayjs(),
-                      pickupLat: 10.7769,
-                      pickupLng: 106.7009,
-                      dropoffLat: 10.8231,
-                      dropoffLng: 106.6297,
+                  <Select
+                    value={tripStatus}
+                    style={{ width: 220 }}
+                    onChange={(value) => {
+                      setTripPage(1);
+                      setTripStatus(value);
                     }}
-                  >
-                    <Row gutter={12}>
-                      <Col xs={24} md={6}>
-                        <Form.Item
-                          name="pickupLat"
-                          label="Pickup lat"
-                          rules={[{ required: true }]}
-                        >
-                          <InputNumber style={{ width: "100%" }} />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={6}>
-                        <Form.Item
-                          name="pickupLng"
-                          label="Pickup lng"
-                          rules={[{ required: true }]}
-                        >
-                          <InputNumber style={{ width: "100%" }} />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={6}>
-                        <Form.Item
-                          name="dropoffLat"
-                          label="Dropoff lat"
-                          rules={[{ required: true }]}
-                        >
-                          <InputNumber style={{ width: "100%" }} />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={6}>
-                        <Form.Item
-                          name="dropoffLng"
-                          label="Dropoff lng"
-                          rules={[{ required: true }]}
-                        >
-                          <InputNumber style={{ width: "100%" }} />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={8}>
-                        <Form.Item
-                          name="date"
-                          label="Ngày"
-                          rules={[{ required: true }]}
-                        >
-                          <DatePicker style={{ width: "100%" }} />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={8}>
-                        <Form.Item name="passengerCount" label="Số khách">
-                          <InputNumber min={1} style={{ width: "100%" }} />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={8} className="flex items-end">
-                        <Form.Item>
-                          <Button
-                            type="primary"
-                            loading={searchLoading}
-                            onClick={handleSearch}
-                          >
-                            Tìm chuyến
-                          </Button>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Form>
+                    options={[
+                      { value: "", label: "Tất cả trạng thái" },
+                      { value: "DRAFT", label: "DRAFT" },
+                      { value: "PUBLISHED", label: "PUBLISHED" },
+                      { value: "OPEN", label: "OPEN" },
+                      { value: "STARTED", label: "STARTED" },
+                      { value: "COMPLETED", label: "COMPLETED" },
+                      { value: "CANCELLED", label: "CANCELLED" },
+                    ]}
+                  />
                   <Table<AnyRow>
                     rowKey={(row) => rowId(row)}
                     columns={tripColumns}
                     dataSource={trips}
-                    loading={searchLoading}
-                    pagination={{ pageSize: 10 }}
+                    loading={tripsLoading}
+                    pagination={{
+                      current: tripPage,
+                      pageSize,
+                      total: tripTotal,
+                      showSizeChanger: true,
+                      onChange: (nextPage, nextSize) => {
+                        setTripPage(nextPage);
+                        setPageSize(nextSize);
+                      },
+                    }}
                   />
                 </div>
               ),
             },
             {
-              key: "mine",
-              label: "Chuyến / xe của tài khoản",
+              key: "bookings",
+              label: "Booking (admin)",
               children: (
                 <div className="space-y-4">
-                  <Button
-                    type="primary"
-                    onClick={loadMine}
-                    loading={mineLoading}
-                  >
-                    Tải dữ liệu
-                  </Button>
-                  <Card type="inner" title="Chuyến của tôi" size="small">
-                    <Table<AnyRow>
-                      rowKey={(row) => rowId(row)}
-                      columns={tripColumns}
-                      dataSource={mineTrips}
-                      loading={mineLoading}
-                      pagination={{ pageSize: 8 }}
-                    />
-                  </Card>
-                  <Card type="inner" title="Xe của tôi" size="small">
-                    <Table<AnyRow>
-                      rowKey={(row) => rowId(row)}
-                      loading={mineLoading}
-                      dataSource={vehicles}
-                      pagination={false}
-                      columns={[
-                        {
-                          title: "Tên",
-                          dataIndex: "name",
-                          render: (v) => String(v || "—"),
-                        },
-                        {
-                          title: "Biển số",
-                          dataIndex: "plate",
-                          render: (v) => String(v || "—"),
-                        },
-                        {
-                          title: "Loại",
-                          dataIndex: "vehicleType",
-                          render: (v) => String(v || "—"),
-                        },
-                        {
-                          title: "Màu",
-                          dataIndex: "color",
-                          render: (v) => String(v || "—"),
-                        },
-                      ]}
-                    />
-                  </Card>
-                  <Card type="inner" title="Seat templates" size="small">
-                    <Table<AnyRow>
-                      rowKey={(row, index) =>
-                        String(row.vehicleType || row.code || index)
-                      }
-                      loading={mineLoading}
-                      dataSource={templates}
-                      pagination={false}
-                      columns={[
-                        {
-                          title: "Loại xe",
-                          render: (_, row) =>
-                            String(
-                              row.vehicleType || row.type || row.code || "—",
-                            ),
-                        },
-                        {
-                          title: "Số ghế",
-                          render: (_, row) =>
-                            String(
-                              row.seatCount ||
-                                (Array.isArray(row.seats)
-                                  ? row.seats.length
-                                  : "—"),
-                            ),
-                        },
-                      ]}
-                    />
-                  </Card>
+                  <Select
+                    value={bookingStatus}
+                    style={{ width: 220 }}
+                    onChange={(value) => {
+                      setBookingPage(1);
+                      setBookingStatus(value);
+                    }}
+                    options={[
+                      { value: "", label: "Tất cả trạng thái" },
+                      { value: "PENDING", label: "PENDING" },
+                      { value: "HELD", label: "HELD" },
+                      { value: "CONFIRMED", label: "CONFIRMED" },
+                      { value: "CANCELLED", label: "CANCELLED" },
+                      { value: "COMPLETED", label: "COMPLETED" },
+                    ]}
+                  />
+                  <Table<AnyRow>
+                    rowKey={(row) => rowId(row)}
+                    columns={bookingColumns}
+                    dataSource={bookings}
+                    loading={bookingsLoading}
+                    pagination={{
+                      current: bookingPage,
+                      pageSize,
+                      total: bookingTotal,
+                      showSizeChanger: true,
+                      onChange: (nextPage, nextSize) => {
+                        setBookingPage(nextPage);
+                        setPageSize(nextSize);
+                      },
+                    }}
+                  />
                 </div>
               ),
             },

@@ -13,7 +13,12 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
-import { deleteUsedCar, listUsedCars } from "../../Config/adminApi";
+import {
+  approveUsedCar,
+  deleteUsedCar,
+  listUsedCars,
+  rejectUsedCar,
+} from "../../Config/adminApi";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 import {
@@ -48,13 +53,14 @@ const STATUS_OPTIONS: UsedCarStatus[] = [
 export default function UsedCarsPage() {
   const navigate = useNavigate();
   const [sp, setSp] = useSearchParams();
-  const [status, setStatus] = useState(sp.get("status") || "");
+  const [status, setStatus] = useState(sp.get("status") || "PENDING_REVIEW");
   const [keywordInput, setKeywordInput] = useState(sp.get("keyword") || "");
   const [keyword, setKeyword] = useState(sp.get("keyword") || "");
   const [page, setPage] = useState(Number(sp.get("page") || 1));
   const [pageSize, setPageSize] = useState(Number(sp.get("limit") || 10));
   const [loading, setLoading] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [workingId, setWorkingId] = useState<string | null>(null);
   const [items, setItems] = useState<UsedCarListing[]>([]);
   const [total, setTotal] = useState(0);
 
@@ -112,6 +118,34 @@ export default function UsedCarsPage() {
       await reload();
     } catch (error) {
       notifyError(error, "Xóa tin thất bại");
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    setWorkingId(id);
+    try {
+      await approveUsedCar(id);
+      message.success("Đã duyệt tin");
+      await reload();
+    } catch (error) {
+      notifyError(error, "Duyệt tin thất bại");
+    } finally {
+      setWorkingId(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const reason = window.prompt("Lý do từ chối tin?");
+    if (!reason?.trim()) return;
+    setWorkingId(id);
+    try {
+      await rejectUsedCar(id, reason.trim());
+      message.success("Đã từ chối tin");
+      await reload();
+    } catch (error) {
+      notifyError(error, "Từ chối tin thất bại");
+    } finally {
+      setWorkingId(null);
     }
   };
 
@@ -174,20 +208,40 @@ export default function UsedCarsPage() {
     },
     {
       title: "Thao tác",
-      width: 260,
+      width: 340,
       render: (_, row) => {
         const id = getUsedCarId(row);
+        const pending = row.status === "PENDING_REVIEW";
         return (
           <Space wrap>
             <Button onClick={() => navigate(`/dashboard/used-cars/${id}`)}>
               Xem
             </Button>
-            <Button
-              type="primary"
-              onClick={() => navigate(`/dashboard/used-cars/${id}/edit`)}
-            >
-              Sửa
-            </Button>
+            {pending ? (
+              <>
+                <Button
+                  type="primary"
+                  loading={workingId === id}
+                  onClick={() => handleApprove(id)}
+                >
+                  Duyệt
+                </Button>
+                <Button
+                  danger
+                  loading={workingId === id}
+                  onClick={() => handleReject(id)}
+                >
+                  Từ chối
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => navigate(`/dashboard/used-cars/${id}/edit`)}
+              >
+                Sửa
+              </Button>
+            )}
             <Popconfirm
               title="Xóa tin này?"
               description="Tin sẽ được archive (soft-delete)."

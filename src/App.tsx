@@ -30,6 +30,7 @@ import SharedRidesPage from "./Pages/Dashboard/SharedRides";
 import SharedRideDetailPage from "./Pages/Dashboard/SharedRideDetail";
 import SharedRideCharterPage from "./Pages/Dashboard/SharedRideCharter";
 import SelfDrivePage from "./Pages/Dashboard/SelfDrive";
+import DeliveryOrdersPage from "./Pages/Dashboard/DeliveryOrders";
 import PricingPlansPage from "./Pages/Dashboard/PricingPlans";
 import VehicleCatalogPage from "./Pages/Dashboard/VehicleCatalog";
 import ChatSupportPage from "./Pages/Dashboard/ChatSupport";
@@ -171,6 +172,10 @@ function App() {
         {
           path: "/dashboard/self-drive",
           element: <SelfDrivePage />,
+        },
+        {
+          path: "/dashboard/delivery",
+          element: <DeliveryOrdersPage />,
         },
         {
           path: "/dashboard/pricing-plans",

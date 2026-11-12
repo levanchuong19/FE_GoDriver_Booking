@@ -443,6 +443,56 @@ export async function resolveUsedCarReport(
   return unwrapData(res.data);
 }
 
+export async function listAdminSharedTrips(params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const res = await api.get("/shared-rides/admin/trips", { params });
+  return unwrapList(res.data);
+}
+
+export async function listAdminSharedBookings(params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const res = await api.get("/shared-rides/admin/bookings", { params });
+  return unwrapList(res.data);
+}
+
+export async function listAdminSelfDriveBookings(params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const res = await api.get("/self-drive/admin/bookings", { params });
+  return unwrapList(res.data);
+}
+
+/** Giao hàng — BE chưa có module orders; thử endpoint admin nếu đã mount. */
+export async function listAdminDeliveryOrders(params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) {
+  try {
+    const res = await api.get("/delivery/admin/orders", {
+      params,
+      skipErrorToast: true,
+    } as Parameters<typeof api.get>[1]);
+    return unwrapList(res.data);
+  } catch (error) {
+    if (
+      axios.isAxiosError(error) &&
+      (error.response?.status === 404 || error.response?.status === 501)
+    ) {
+      return { items: [], total: 0 };
+    }
+    throw error;
+  }
+}
+
 export async function listAdminRides(params?: {
   status?: string;
   page?: number;
