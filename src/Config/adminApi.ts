@@ -470,6 +470,31 @@ export async function listAdminSelfDriveBookings(params?: {
   return unwrapList(res.data);
 }
 
+export async function listAdminSelfDriveVehicles(params?: {
+  status?: string;
+  keyword?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const res = await api.get("/self-drive/admin/vehicles", { params });
+  return unwrapList(res.data);
+}
+
+export async function approveSelfDriveVehicle(id: string) {
+  const res = await api.post(`/self-drive/admin/vehicles/${id}/approve`);
+  return unwrapData(res.data);
+}
+
+export async function rejectSelfDriveVehicle(id: string, reason: string) {
+  const res = await api.post(`/self-drive/admin/vehicles/${id}/reject`, { reason });
+  return unwrapData(res.data);
+}
+
+export async function hideSelfDriveVehicle(id: string, reason: string) {
+  const res = await api.post(`/self-drive/admin/vehicles/${id}/hide`, { reason });
+  return unwrapData(res.data);
+}
+
 /** Giao hàng — BE chưa có module orders; thử endpoint admin nếu đã mount. */
 export async function listAdminDeliveryOrders(params?: {
   status?: string;
