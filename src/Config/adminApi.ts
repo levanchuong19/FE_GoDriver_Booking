@@ -495,9 +495,10 @@ export async function hideSelfDriveVehicle(id: string, reason: string) {
   return unwrapData(res.data);
 }
 
-/** Giao hàng — BE chưa có module orders; thử endpoint admin nếu đã mount. */
+/** Giao hàng — GET /api/delivery/admin/orders */
 export async function listAdminDeliveryOrders(params?: {
   status?: string;
+  q?: string;
   page?: number;
   limit?: number;
 }) {
@@ -506,16 +507,80 @@ export async function listAdminDeliveryOrders(params?: {
       params,
       skipErrorToast: true,
     } as Parameters<typeof api.get>[1]);
-    return unwrapList(res.data);
+    return { ...unwrapList(res.data), ready: true as const };
   } catch (error) {
     if (
       axios.isAxiosError(error) &&
       (error.response?.status === 404 || error.response?.status === 501)
     ) {
-      return { items: [], total: 0 };
+      return { items: [], total: 0, ready: false as const };
     }
     throw error;
   }
+}
+
+export async function updateAdminDeliveryStatus(
+  id: string,
+  payload: {
+    status: string;
+    adminNote?: string;
+    cancelledReason?: string;
+    driverId?: string;
+  }
+) {
+  const res = await api.patch(`/delivery/admin/orders/${id}/status`, payload);
+  return unwrapData(res.data) ?? res.data;
+}
+
+export async function cancelAdminDeliveryOrder(id: string, reason?: string) {
+  const res = await api.post(`/delivery/admin/orders/${id}/cancel`, {
+    reason: reason || "Admin hủy đơn",
+  });
+  return unwrapData(res.data) ?? res.data;
+}
+
+/** Xe ghép — admin đổi trạng thái / hủy booking */
+export async function updateAdminSharedTripStatus(
+  id: string,
+  payload: { status: string; reason?: string }
+) {
+  const res = await api.patch(`/shared-rides/admin/trips/${id}/status`, payload);
+  return unwrapData(res.data) ?? res.data;
+}
+
+export async function cancelAdminSharedBooking(id: string) {
+  const res = await api.post(`/shared-rides/admin/bookings/${id}/cancel`);
+  return unwrapData(res.data) ?? res.data;
+}
+
+/** Tự lái — admin hủy / đổi trạng thái booking */
+export async function updateAdminSelfDriveBookingStatus(
+  id: string,
+  payload: { status: string; reason?: string }
+) {
+  const res = await api.patch(
+    `/self-drive/admin/bookings/${id}/status`,
+    payload
+  );
+  return unwrapData(res.data) ?? res.data;
+}
+
+export async function cancelAdminSelfDriveBooking(id: string, reason?: string) {
+  const res = await api.post(`/self-drive/admin/bookings/${id}/cancel`, {
+    reason: reason || "Admin hủy booking",
+  });
+  return unwrapData(res.data) ?? res.data;
+}
+
+/** Danh sách yêu cầu rút tiền */
+export async function listWithdrawRequests(params?: {
+  status?: string;
+  driverId?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const res = await api.get("/admin/withdraw-requests", { params });
+  return unwrapList(res.data);
 }
 
 export async function listAdminRides(params?: {

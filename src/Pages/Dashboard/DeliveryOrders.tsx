@@ -3,39 +3,58 @@ import {
   Alert,
   Button,
   Card,
+  Popconfirm,
   Select,
   Space,
   Table,
   Tag,
+  message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
+  cancelAdminDeliveryOrder,
   listAdminDeliveryOrders,
-  listAdminRides,
+  updateAdminDeliveryStatus,
 } from "../../Config/adminApi";
 import { listPricingPlans } from "../../Config/managementApi";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
-type AnyRow = Record<string, unknown> & { id?: string; _id?: string };
+type AnyRow = Record<string, unknown> & { id?: string; _id?: string; code?: string };
 
 function rowId(row: AnyRow) {
-  return String(row.id || row._id || row.orderId || row.rideId || "");
+  return String(row.id || row._id || row.orderId || "");
 }
 
+const DELIVERY_STATUSES = [
+  "WAITING_PAYMENT",
+  "FINDING_DRIVER",
+  "ACCEPTED",
+  "PICKED_UP",
+  "DELIVERING",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
 const statusColor: Record<string, string> = {
-  REQUESTED: "gold",
-  SEARCHING: "gold",
-  OFFERED: "blue",
-  ASSIGNED: "blue",
-  ARRIVING: "purple",
-  IN_PROGRESS: "cyan",
+  WAITING_PAYMENT: "gold",
+  FINDING_DRIVER: "gold",
+  ACCEPTED: "blue",
+  PICKED_UP: "purple",
+  DELIVERING: "cyan",
   COMPLETED: "green",
   CANCELLED: "red",
-  PENDING: "gold",
-  DELIVERING: "cyan",
-  DELIVERED: "green",
+};
+
+const statusLabel: Record<string, string> = {
+  WAITING_PAYMENT: "Chờ thanh toán",
+  FINDING_DRIVER: "Đang tìm tài xế",
+  ACCEPTED: "Đã nhận đơn",
+  PICKED_UP: "Đã lấy hàng",
+  DELIVERING: "Đang giao",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
 };
 
 export default function DeliveryOrdersPage() {
@@ -44,6 +63,7 @@ export default function DeliveryOrdersPage() {
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(false);
   const [moduleReady, setModuleReady] = useState(false);
+  const [workingId, setWorkingId] = useState<string | null>(null);
   const [items, setItems] = useState<AnyRow[]>([]);
   const [total, setTotal] = useState(0);
   const [plans, setPlans] = useState<AnyRow[]>([]);
@@ -60,32 +80,11 @@ export default function DeliveryOrdersPage() {
         page: nextPage,
         limit: nextSize,
       });
-      if (orders.items.length || orders.total > 0) {
-        setModuleReady(true);
-        setItems(orders.items as AnyRow[]);
-        setTotal(orders.total);
-        return;
-      }
-
-      // Fallback: lọc chuyến đặt xe có category giao hàng (nếu seed có).
-      const rides = await listAdminRides({
-        status: nextStatus || undefined,
-        page: nextPage,
-        limit: nextSize,
-      });
-      const deliveryLike = (rides.items as AnyRow[]).filter((row) => {
-        const code = String(row.categoryCode || row.serviceType || "").toUpperCase();
-        return (
-          code.includes("DELIVERY") ||
-          code.includes("VAN") ||
-          code.includes("PACKAGE") ||
-          code.includes("CARGO")
-        );
-      });
-      setModuleReady(false);
-      setItems(deliveryLike);
-      setTotal(deliveryLike.length);
+      setModuleReady(orders.ready);
+      setItems(orders.items as AnyRow[]);
+      setTotal(orders.total);
     } catch (error) {
+      setModuleReady(false);
       notifyError(error, "Không tải được đơn giao hàng");
     } finally {
       setLoading(false);
@@ -114,26 +113,41 @@ export default function DeliveryOrdersPage() {
     })();
   }, []);
 
+  const runAction = async (
+    id: string,
+    label: string,
+    fn: () => Promise<unknown>,
+  ) => {
+    setWorkingId(id);
+    try {
+      await fn();
+      message.success(label);
+      await load();
+    } catch (error) {
+      notifyError(error, `${label} thất bại`);
+    } finally {
+      setWorkingId(null);
+    }
+  };
+
   const columns: ColumnsType<AnyRow> = [
     {
       title: "Mã",
-      render: (_, row) => rowId(row) || "—",
-      width: 180,
+      render: (_, row) => String(row.code || rowId(row) || "—"),
+      width: 140,
       ellipsis: true,
     },
     {
-      title: "Loại",
-      render: (_, row) =>
-        String(row.categoryCode || row.serviceType || row.vehicleType || "—"),
-      width: 140,
+      title: "Xe",
+      render: (_, row) => String(row.vehicle || row.vehicleType || "—"),
+      width: 100,
     },
     {
       title: "Lấy hàng",
       render: (_, row) =>
         String(
-          row.pickupAddress ||
-            row.pickupLocation ||
-            (row.pickup as { address?: string } | undefined)?.address ||
+          (row.pickup as { address?: string } | undefined)?.address ||
+            row.pickupAddress ||
             "—",
         ),
       ellipsis: true,
@@ -142,28 +156,58 @@ export default function DeliveryOrdersPage() {
       title: "Giao hàng",
       render: (_, row) =>
         String(
-          row.dropoffAddress ||
-            row.dropoffLocation ||
-            (row.dropoff as { address?: string } | undefined)?.address ||
+          (row.dropoff as { address?: string } | undefined)?.address ||
+            row.dropoffAddress ||
             "—",
         ),
       ellipsis: true,
     },
     {
+      title: "Khách",
+      render: (_, row) => {
+        const customer = row.customer as
+          | { name?: string; phone?: string }
+          | undefined;
+        return String(
+          customer?.name ||
+            customer?.phone ||
+            row.senderName ||
+            row.recipientName ||
+            "—",
+        );
+      },
+      width: 140,
+      ellipsis: true,
+    },
+    {
+      title: "Tài xế",
+      render: (_, row) => {
+        const driver = row.driver as
+          | { name?: string; phone?: string }
+          | undefined;
+        return String(driver?.name || driver?.phone || "—");
+      },
+      width: 120,
+      ellipsis: true,
+    },
+    {
       title: "Trạng thái",
       dataIndex: "status",
-      width: 140,
-      render: (value) => (
-        <Tag color={statusColor[String(value)] || "default"}>
-          {String(value || "—")}
-        </Tag>
-      ),
+      width: 150,
+      render: (value) => {
+        const key = String(value || "");
+        return (
+          <Tag color={statusColor[key] || "default"}>
+            {statusLabel[key] || key || "—"}
+          </Tag>
+        );
+      },
     },
     {
       title: "Cước",
       render: (_, row) =>
-        formatVND(Number(row.totalFare ?? row.fare ?? row.amount ?? 0)),
-      width: 130,
+        formatVND(Number(row.quotedFare ?? row.totalFare ?? row.fare ?? 0)),
+      width: 120,
     },
     {
       title: "Tạo lúc",
@@ -171,7 +215,63 @@ export default function DeliveryOrdersPage() {
         row.createdAt
           ? dayjs(String(row.createdAt)).format("DD/MM/YYYY HH:mm")
           : "—",
-      width: 160,
+      width: 150,
+    },
+    {
+      title: "Thao tác",
+      width: 320,
+      fixed: "right",
+      render: (_, row) => {
+        const id = rowId(row);
+        const current = String(row.status || "").toUpperCase();
+        if (!id || !moduleReady) return null;
+        return (
+          <Space wrap>
+            <Select
+              size="small"
+              placeholder="Đổi TT"
+              style={{ width: 150 }}
+              disabled={workingId === id}
+              value={undefined}
+              options={DELIVERY_STATUSES.filter((s) => s !== current).map(
+                (s) => ({
+                  value: s,
+                  label: statusLabel[s] || s,
+                }),
+              )}
+              onChange={(next) => {
+                if (next === "CANCELLED") {
+                  const reason =
+                    window.prompt("Lý do hủy đơn?") || "Admin hủy đơn";
+                  runAction(id, "Đã hủy đơn", () =>
+                    cancelAdminDeliveryOrder(id, reason),
+                  );
+                  return;
+                }
+                runAction(id, "Đã cập nhật trạng thái", () =>
+                  updateAdminDeliveryStatus(id, { status: next }),
+                );
+              }}
+            />
+            {current !== "CANCELLED" && current !== "COMPLETED" && (
+              <Popconfirm
+                title="Hủy đơn giao hàng?"
+                onConfirm={() => {
+                  const reason =
+                    window.prompt("Lý do hủy đơn?") || "Admin hủy đơn";
+                  runAction(id, "Đã hủy đơn", () =>
+                    cancelAdminDeliveryOrder(id, reason),
+                  );
+                }}
+              >
+                <Button danger size="small" loading={workingId === id}>
+                  Hủy
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -183,12 +283,12 @@ export default function DeliveryOrdersPage() {
         message={
           moduleReady
             ? "Đã kết nối API giao hàng admin"
-            : "Module giao hàng trên BE chưa có CRUD orders — đang dùng fallback từ chuyến/pricing"
+            : "Chưa kết nối được /api/delivery/admin/orders"
         }
         description={
           moduleReady
-            ? undefined
-            : "App mobile đang dùng mock/upload tạm. Khi BE mount POST /api/delivery/orders và GET /api/delivery/admin/orders, bảng này sẽ hiện đơn thật để duyệt/kiểm soát."
+            ? "Có thể lọc, đổi trạng thái và hủy đơn giao hàng."
+            : "Kiểm tra BE đã mount delivery routes và token admin/staff còn hiệu lực."
         }
       />
 
@@ -217,13 +317,10 @@ export default function DeliveryOrdersPage() {
               }}
               options={[
                 { value: "", label: "Tất cả trạng thái" },
-                { value: "PENDING", label: "PENDING" },
-                { value: "SEARCHING", label: "SEARCHING" },
-                { value: "ASSIGNED", label: "ASSIGNED" },
-                { value: "IN_PROGRESS", label: "IN_PROGRESS" },
-                { value: "DELIVERING", label: "DELIVERING" },
-                { value: "COMPLETED", label: "COMPLETED" },
-                { value: "CANCELLED", label: "CANCELLED" },
+                ...DELIVERY_STATUSES.map((s) => ({
+                  value: s,
+                  label: statusLabel[s] || s,
+                })),
               ]}
             />
             <Button onClick={() => load()}>Làm mới</Button>
@@ -235,11 +332,8 @@ export default function DeliveryOrdersPage() {
           columns={columns}
           dataSource={items}
           loading={loading}
-          locale={{
-            emptyText: moduleReady
-              ? "Chưa có đơn giao hàng"
-              : "Chưa có đơn / category giao hàng trên hệ thống",
-          }}
+          scroll={{ x: 1200 }}
+          locale={{ emptyText: "Chưa có đơn giao hàng" }}
           pagination={{
             current: page,
             pageSize,

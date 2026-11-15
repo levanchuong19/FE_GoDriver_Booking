@@ -15,10 +15,12 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
   approveSelfDriveVehicle,
+  cancelAdminSelfDriveBooking,
   hideSelfDriveVehicle,
   listAdminSelfDriveBookings,
   listAdminSelfDriveVehicles,
   rejectSelfDriveVehicle,
+  updateAdminSelfDriveBookingStatus,
 } from "../../Config/adminApi";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
@@ -69,6 +71,7 @@ export default function SelfDrivePage() {
   const [bookingPage, setBookingPage] = useState(1);
   const [bookingPageSize, setBookingPageSize] = useState(10);
   const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingWorkingId, setBookingWorkingId] = useState<string | null>(null);
   const [bookings, setBookings] = useState<AnyRow[]>([]);
   const [bookingTotal, setBookingTotal] = useState(0);
 
@@ -344,6 +347,74 @@ export default function SelfDrivePage() {
           ),
         ),
       width: 140,
+    },
+    {
+      title: "Thao tác",
+      width: 220,
+      render: (_, row) => {
+        const id = rowId(row);
+        const status = String(row.status || "").toUpperCase();
+        if (!id || ["CANCELLED", "COMPLETED", "REJECTED"].includes(status)) {
+          return null;
+        }
+        return (
+          <Space wrap>
+            <Select
+              size="small"
+              placeholder="Đổi TT"
+              style={{ width: 140 }}
+              disabled={bookingWorkingId === id}
+              options={[
+                { value: "CONFIRMED", label: "CONFIRMED" },
+                { value: "COMPLETED", label: "COMPLETED" },
+                { value: "CANCELLED", label: "CANCELLED" },
+              ].filter((o) => o.value !== status)}
+              onChange={async (next) => {
+                setBookingWorkingId(id);
+                try {
+                  if (next === "CANCELLED") {
+                    const reason =
+                      window.prompt("Lý do hủy booking?") ||
+                      "Admin hủy booking";
+                    await cancelAdminSelfDriveBooking(id, reason);
+                  } else {
+                    await updateAdminSelfDriveBookingStatus(id, {
+                      status: next,
+                    });
+                  }
+                  message.success("Đã cập nhật booking");
+                  await loadBookings();
+                } catch (error) {
+                  notifyError(error, "Cập nhật booking thất bại");
+                } finally {
+                  setBookingWorkingId(null);
+                }
+              }}
+            />
+            <Button
+              danger
+              size="small"
+              loading={bookingWorkingId === id}
+              onClick={async () => {
+                const reason =
+                  window.prompt("Lý do hủy booking?") || "Admin hủy booking";
+                setBookingWorkingId(id);
+                try {
+                  await cancelAdminSelfDriveBooking(id, reason);
+                  message.success("Đã hủy booking");
+                  await loadBookings();
+                } catch (error) {
+                  notifyError(error, "Hủy booking thất bại");
+                } finally {
+                  setBookingWorkingId(null);
+                }
+              }}
+            >
+              Hủy
+            </Button>
+          </Space>
+        );
+      },
     },
   ];
 

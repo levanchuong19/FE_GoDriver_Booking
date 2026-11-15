@@ -11,14 +11,11 @@ import {
   message,
 } from "antd";
 import dayjs from "dayjs";
+import { updateAdminSharedTripStatus } from "../../Config/adminApi";
 import {
-  cancelSharedTrip,
-  completeSharedTrip,
   getSharedTrip,
   getSharedTripDashboard,
   getSharedTripManifest,
-  publishSharedTrip,
-  startSharedTrip,
 } from "../../Config/managementApi";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
@@ -100,18 +97,24 @@ export default function SharedRideDetailPage() {
                     loading={working}
                     onClick={() =>
                       runAction(
-                        () => publishSharedTrip(tripId!),
-                        "Đã đăng chuyến",
+                        () =>
+                          updateAdminSharedTripStatus(tripId!, {
+                            status: "OPEN",
+                          }),
+                        "Đã mở chuyến",
                       )
                     }
                   >
-                    Publish
+                    Mở (OPEN)
                   </Button>
                   <Button
                     loading={working}
                     onClick={() =>
                       runAction(
-                        () => startSharedTrip(tripId!),
+                        () =>
+                          updateAdminSharedTripStatus(tripId!, {
+                            status: "IN_PROGRESS",
+                          }),
                         "Đã bắt đầu chuyến",
                       )
                     }
@@ -123,7 +126,10 @@ export default function SharedRideDetailPage() {
                     loading={working}
                     onClick={() =>
                       runAction(
-                        () => completeSharedTrip(tripId!),
+                        () =>
+                          updateAdminSharedTripStatus(tripId!, {
+                            status: "COMPLETED",
+                          }),
                         "Đã hoàn thành chuyến",
                       )
                     }
@@ -133,12 +139,19 @@ export default function SharedRideDetailPage() {
                   <Button
                     danger
                     loading={working}
-                    onClick={() =>
+                    onClick={() => {
+                      const reason =
+                        window.prompt("Lý do hủy chuyến?") ||
+                        "Admin hủy chuyến";
                       runAction(
-                        () => cancelSharedTrip(tripId!),
+                        () =>
+                          updateAdminSharedTripStatus(tripId!, {
+                            status: "CANCELLED",
+                            reason,
+                          }),
                         "Đã hủy chuyến",
-                      )
-                    }
+                      );
+                    }}
                   >
                     Cancel
                   </Button>

@@ -11,10 +11,9 @@ const DashboardGuard = () => {
     const decoded: JwtPayload = jwtDecode(token);
     // Giả sử role nằm ở decoded.role hoặc decoded.roles
     const role = decoded.role;
-    if (role === "admin") {
+    if (role === "admin" || role === "staff") {
       return <DashboardLayout />;
     }
-    // Không đúng quyền
     return <Navigate to="/" replace />;
   } catch {
     return <Navigate to="/login" replace />;

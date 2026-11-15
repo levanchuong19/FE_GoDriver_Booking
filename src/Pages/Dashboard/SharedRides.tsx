@@ -13,15 +13,11 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import {
+  cancelAdminSharedBooking,
   listAdminSharedBookings,
   listAdminSharedTrips,
+  updateAdminSharedTripStatus,
 } from "../../Config/adminApi";
-import {
-  cancelSharedTrip,
-  completeSharedTrip,
-  publishSharedTrip,
-  startSharedTrip,
-} from "../../Config/managementApi";
 import { notifyError } from "../../Utils/notify";
 import formatVND from "../../Utils/currency";
 
@@ -199,17 +195,21 @@ export default function SharedRidesPage() {
                 type="primary"
                 loading={workingId === id}
                 onClick={() =>
-                  runTripAction(id, "Đã publish", () => publishSharedTrip(id))
+                  runTripAction(id, "Đã mở chuyến", () =>
+                    updateAdminSharedTripStatus(id, { status: "OPEN" }),
+                  )
                 }
               >
-                Publish
+                Mở (OPEN)
               </Button>
             )}
-            {(status === "PUBLISHED" || status === "OPEN" || status === "FULL") && (
+            {(status === "OPEN" || status === "FULL" || status === "PUBLISHED") && (
               <Button
                 loading={workingId === id}
                 onClick={() =>
-                  runTripAction(id, "Đã bắt đầu", () => startSharedTrip(id))
+                  runTripAction(id, "Đã bắt đầu", () =>
+                    updateAdminSharedTripStatus(id, { status: "IN_PROGRESS" }),
+                  )
                 }
               >
                 Start
@@ -221,7 +221,7 @@ export default function SharedRidesPage() {
                 loading={workingId === id}
                 onClick={() =>
                   runTripAction(id, "Đã hoàn thành", () =>
-                    completeSharedTrip(id),
+                    updateAdminSharedTripStatus(id, { status: "COMPLETED" }),
                   )
                 }
               >
@@ -232,9 +232,16 @@ export default function SharedRidesPage() {
               <Button
                 danger
                 loading={workingId === id}
-                onClick={() =>
-                  runTripAction(id, "Đã hủy", () => cancelSharedTrip(id))
-                }
+                onClick={() => {
+                  const reason =
+                    window.prompt("Lý do hủy chuyến?") || "Admin hủy chuyến";
+                  runTripAction(id, "Đã hủy", () =>
+                    updateAdminSharedTripStatus(id, {
+                      status: "CANCELLED",
+                      reason,
+                    }),
+                  );
+                }}
               >
                 Hủy
               </Button>
@@ -308,6 +315,38 @@ export default function SharedRidesPage() {
           ? dayjs(String(row.createdAt)).format("DD/MM/YYYY HH:mm")
           : "—",
       width: 160,
+    },
+    {
+      title: "Thao tác",
+      width: 120,
+      render: (_, row) => {
+        const id = rowId(row);
+        const status = String(row.status || "").toUpperCase();
+        if (!id || ["CANCELLED", "COMPLETED", "REFUNDED"].includes(status)) {
+          return null;
+        }
+        return (
+          <Button
+            danger
+            size="small"
+            loading={workingId === id}
+            onClick={async () => {
+              setWorkingId(id);
+              try {
+                await cancelAdminSharedBooking(id);
+                message.success("Đã hủy booking");
+                await loadBookings();
+              } catch (error) {
+                notifyError(error, "Hủy booking thất bại");
+              } finally {
+                setWorkingId(null);
+              }
+            }}
+          >
+            Hủy
+          </Button>
+        );
+      },
     },
   ];
 
