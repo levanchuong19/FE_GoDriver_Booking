@@ -227,7 +227,7 @@ export default function DeliveryOrdersPage() {
         if (!id || !moduleReady) return null;
         return (
           <Space wrap>
-            <Select
+            <Select<string>
               size="small"
               placeholder="Đổi TT"
               style={{ width: 150 }}
@@ -240,6 +240,7 @@ export default function DeliveryOrdersPage() {
                 }),
               )}
               onChange={(next) => {
+                if (!next) return;
                 if (next === "CANCELLED") {
                   const reason =
                     window.prompt("Lý do hủy đơn?") || "Admin hủy đơn";

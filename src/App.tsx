@@ -37,6 +37,9 @@ import ChatSupportPage from "./Pages/Dashboard/ChatSupport";
 import ChatbotAdminPage from "./Pages/Dashboard/ChatbotAdmin";
 import NotificationsPage from "./Pages/Dashboard/Notifications";
 import DriverWalletsPage from "./Pages/Dashboard/DriverWallets";
+import CommunityPostsPage from "./Pages/Dashboard/CommunityPosts";
+import CommunityPostDetailPage from "./Pages/Dashboard/CommunityPostDetail";
+import CommunityReportsPage from "./Pages/Dashboard/CommunityReports";
 
 function App() {
   const router = createBrowserRouter([
@@ -140,6 +143,18 @@ function App() {
         {
           path: "/dashboard/used-car-reports",
           element: <UsedCarReportsPage />,
+        },
+        {
+          path: "/dashboard/community",
+          element: <CommunityPostsPage />,
+        },
+        {
+          path: "/dashboard/community/:id",
+          element: <CommunityPostDetailPage />,
+        },
+        {
+          path: "/dashboard/community-reports",
+          element: <CommunityReportsPage />,
         },
         {
           path: "/dashboard/rides",

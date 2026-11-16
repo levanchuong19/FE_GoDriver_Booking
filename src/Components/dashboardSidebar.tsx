@@ -19,6 +19,8 @@ import {
   MessageSquare,
   Bot,
   Bell,
+  MessagesSquare,
+  Flag,
   type LucideIcon,
 } from "lucide-react";
 
@@ -105,6 +107,16 @@ const groups: NavGroup[] = [
         to: "/dashboard/used-cars",
         label: "Chợ xe cũ",
         icon: ShoppingBag,
+      },
+      {
+        to: "/dashboard/community",
+        label: "Cộng đồng",
+        icon: MessagesSquare,
+      },
+      {
+        to: "/dashboard/community-reports",
+        label: "Báo cáo cộng đồng",
+        icon: Flag,
       },
       {
         to: "/dashboard/transactions",
